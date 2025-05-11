@@ -1,0 +1,6 @@
+// src/constants/permissions.js
+
+export const PERMISSIONS = {
+  CAN_CREATE_PROJECT: 'CAN_CREATE_PROJECT',
+  CAN_VIEW:'CAN_VIEW',
+};

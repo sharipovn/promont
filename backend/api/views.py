@@ -1,0 +1,53 @@
+# api/views.py
+
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.response import Response
+from rest_framework import status
+from django.utils.timezone import now
+from django.contrib.auth import authenticate
+
+from api.models import StaffUser
+from api.serializers import StaffUserTokenSerializer
+
+
+class StaffUserLoginView(TokenObtainPairView):
+    serializer_class = StaffUserTokenSerializer
+
+    def post(self, request, *args, **kwargs):
+        username = request.data.get("username")
+        password = request.data.get("password")
+
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None:
+            # ✅ Successful login — update last_login
+            user.last_login = now()
+            user.save(update_fields=["last_login"])
+
+            refresh = RefreshToken.for_user(user)
+
+            # ✅ Add custom claims
+            refresh["user_id"] = user.user_id
+            refresh["username"] = user.username
+            refresh["fio"] = user.fio
+            refresh["position"] = user.position,
+            refresh["role"] = user.role.role_name if user.role else None
+            refresh["capabilities"] = list(
+                user.role.capabilities.values_list("capability_name", flat=True)
+            ) if user.role else []
+
+            return Response({
+                "refresh": str(refresh),
+                "access": str(refresh.access_token),
+            })
+
+        # ❌ Failed login — update last_login_time_fail
+        try:
+            failed_user = StaffUser.objects.get(username=username)
+            failed_user.last_login_time_fail = now()
+            failed_user.save(update_fields=["last_login_time_fail"])
+        except StaffUser.DoesNotExist:
+            pass
+
+        return Response({"detail": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)

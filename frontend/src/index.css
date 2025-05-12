@@ -64,7 +64,7 @@ code {
 
 .search-bar-wrapper {
   width: 300px; /* base width */
-  height: 40px;
+  height: 50px;
   transition: width 0.3s ease;
   overflow: hidden;
 }
@@ -81,5 +81,31 @@ code {
   padding: 0;
   margin: 0;
   transition: none; /* prevent height animation */
-  font-size: 1rem;
+  font-size: 1.1rem;
 }
+
+
+
+/*------------------------------custom-create-btn---------------------------------------------------------*/
+.custom-create-btn {
+  color: #fff;
+  border: none;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+  border-radius: 0.4rem;
+}
+
+.custom-create-btn:hover {
+  background-color: #f7f7f7; /* Bootstrap success dark */
+  box-shadow: 0 4px 10px rgba(35, 47, 179, 0.3);
+  color: #fff;
+}
+
+@media (max-width: 576px) {
+  .custom-create-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/*------------------------------custom-create-btn---------------------------------------------------------*/

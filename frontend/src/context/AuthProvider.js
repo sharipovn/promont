@@ -8,7 +8,7 @@ export const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [accessToken, setAccessToken] = useState(null);
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true); // 🆕 loading holati
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const token = Cookies.get('access');
@@ -19,21 +19,20 @@ export const AuthProvider = ({ children }) => {
         setUser({
           username: decoded.username,
           fio: decoded.fio,
-          position : decoded.position,
+          position: decoded.position,
           role: decoded.role,
           capabilities: decoded.capabilities || [],
         });
       } catch {
-        Cookies.remove('access');
-        Cookies.remove('refresh');
+        logout();
       }
     }
-    setLoading(false); // 🆕 user tekshiruvi tugadi
+    setLoading(false);
   }, []);
 
   const login = async (username, password) => {
     const res = await axios.post(
-      'http://localhost:8000/api/login/',
+      '/api/login/',
       { username, password },
       { headers: { 'Content-Type': 'application/json' } }
     );
@@ -44,7 +43,7 @@ export const AuthProvider = ({ children }) => {
       username: decoded.username,
       fio: decoded.fio,
       role: decoded.role,
-      position : decoded.position,
+      position: decoded.position,
       capabilities: decoded.capabilities || [],
     });
     Cookies.set('access', access, { path: '/', secure: true, sameSite: 'Strict' });
@@ -54,14 +53,14 @@ export const AuthProvider = ({ children }) => {
   const refreshAccessToken = async () => {
     try {
       const refresh = Cookies.get('refresh');
-      const res = await axios.post('http://localhost:8000/api/refresh/', { refresh });
+      const res = await axios.post('/api/refresh/', { refresh });
       const { access } = res.data;
       const decoded = jwtDecode(access);
       setAccessToken(access);
       setUser({
         username: decoded.username,
         fio: decoded.fio,
-        position : decoded.position,
+        position: decoded.position,
         role: decoded.role,
         capabilities: decoded.capabilities || [],
       });
@@ -90,12 +89,11 @@ export const AuthProvider = ({ children }) => {
       logout,
       refreshAccessToken,
       hasCapability,
-      loading // 🆕 contextga qo‘shildi
+      loading
     }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-// ✅ Custom hook
 export const useAuth = () => useContext(AuthContext);

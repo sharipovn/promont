@@ -28,7 +28,7 @@ export default function LoginScreen() {
 
 
   return (
-    <div className="col-3">
+    <div className="col-md-2 col-lg-2 col-sm-3">
       <div className="blob top-left"></div>
       <div className="blob bottom-right"></div>
 

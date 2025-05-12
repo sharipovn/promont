@@ -4,9 +4,11 @@ import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Topbar from '../components/Topbar';
 import NoAccessScreen from './NoAccessScreen';
+import useTokenValidation from '../hooks/useTokenValidation';
 
 export default function DashboardScreen() {
   const { user, logout, hasCapability } = useAuth();
+  useTokenValidation()
   const navigate = useNavigate();
   const [sidebarVisible, setSidebarVisible] = useState(true);
 
@@ -24,7 +26,7 @@ export default function DashboardScreen() {
       <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '100vh' }}>
         {/* Sidebar */}
         {sidebarVisible && (
-          <div style={{ width: '20%', transition: 'width 0.3s ease' }}>
+          <div style={{ width: '18%', transition: 'width 0.3s ease' }}>
             <Sidebar />
           </div>
         )}
@@ -32,7 +34,7 @@ export default function DashboardScreen() {
         {/* Main Content Area */}
         <div
           className="flex-grow-1 d-flex flex-column az aligne-items-start"
-          style={{ transition: 'margin-left 0.3s ease', width: sidebarVisible ? '80%' : '100%',height:'95vh' }}
+          style={{ transition: 'margin-left 0.3s ease', width: sidebarVisible ? '82%' : '100%',height:'95vh' }}
         >
           {/* Topbar */}
           <Topbar
@@ -41,7 +43,7 @@ export default function DashboardScreen() {
           />
 
           {/* Main Page Content */}
-          <div className="p-4">
+          <div className="p-4 border">
             <h2>Welcome, {user?.fio}</h2>
             <p>Your role: {user?.role}</p>
 

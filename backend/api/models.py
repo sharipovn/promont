@@ -91,6 +91,11 @@ class StaffUser(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return self.username
     
+    def get_capability_names(self):
+        if self.role:
+            return list(self.role.capabilities.values_list('capability_name', flat=True))
+        return []
+    
     
 class Role(models.Model):
     role_id = models.AutoField(primary_key=True)

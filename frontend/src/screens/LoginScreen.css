@@ -45,8 +45,10 @@
       padding: 30px 20px 50px;
       text-align: center;
       border-radius: 10px;
-      min-width: 400px;
-      width: 100%;
+       /* 💡 Fixed values */
+      width: 100%;              /* take full width of parent */
+      max-width: 100%;          /* don't go beyond parent */
+      margin: 0 auto; 
       box-shadow: 0 0 40px rgba(0, 0, 0, 0.3);
     }
 

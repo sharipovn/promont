@@ -1,7 +1,10 @@
 # api/serializers.py
 
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from api.models import StaffUser
+from api.models import StaffUser,Project
+from rest_framework import serializers
+
+
 
 class StaffUserTokenSerializer(TokenObtainPairSerializer):
     @classmethod
@@ -18,3 +21,18 @@ class StaffUserTokenSerializer(TokenObtainPairSerializer):
         ) if user.role else []
 
         return token
+
+
+
+class ProjectSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Project
+        fields = '__all__'
+        read_only_fields = ['project_code', 'create_user', 'create_date', 'update_date']
+
+
+
+class StaffUserSimpleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StaffUser
+        fields = ['user_id', 'username', 'fio', 'position']

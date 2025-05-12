@@ -1,14 +1,22 @@
 # api/views.py
 
 from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
 from rest_framework import status
 from django.utils.timezone import now
 from django.contrib.auth import authenticate
+from rest_framework import generics
+from rest_framework.permissions import IsAuthenticated
+from .permissions import HasCapabilityPermission
 
-from api.models import StaffUser
+from api.models import StaffUser,Project
+from .serializers import ProjectSerializer,StaffUserSimpleSerializer
 from api.serializers import StaffUserTokenSerializer
+from rest_framework.filters import SearchFilter, OrderingFilter
+
+
 
 
 class StaffUserLoginView(TokenObtainPairView):
@@ -51,3 +59,33 @@ class StaffUserLoginView(TokenObtainPairView):
             pass
 
         return Response({"detail": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+
+class ProjectCreateAPIView(generics.CreateAPIView):
+    queryset = Project.objects.all()
+    serializer_class = ProjectSerializer
+    permission_classes = [
+        IsAuthenticated,
+        HasCapabilityPermission('CAN_CREATE_PROJECT'),
+    ]
+
+    def perform_create(self, serializer):
+        serializer.save(create_user=self.request.user)
+
+
+
+
+class UsersWithCapabilityAPIView(generics.ListAPIView):
+    serializer_class = StaffUserSimpleSerializer
+    permission_classes = [IsAuthenticated]
+    queryset = StaffUser.objects.all()  # required by DRF if you use filter_backends
+
+    def get_queryset(self):
+        cap = self.request.query_params.get('capability')
+        if not cap:
+            return StaffUser.objects.none()
+
+        return StaffUser.objects.filter(
+            role__capabilities__capability_name=cap
+        ).distinct()

@@ -1,5 +1,4 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios';
 import Cookies from 'js-cookie';
 import { jwtDecode } from 'jwt-decode';
 
@@ -31,45 +30,27 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (username, password) => {
-    const res = await axios.post(
-      '/api/login/',
-      { username, password },
-      { headers: { 'Content-Type': 'application/json' } }
-    );
-    const { access, refresh } = res.data;
+    const res = await fetch('/api/login/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+
+    if (!res.ok) throw new Error('Login failed');
+
+    const { access, refresh } = await res.json();
     const decoded = jwtDecode(access);
     setAccessToken(access);
     setUser({
       username: decoded.username,
       fio: decoded.fio,
-      role: decoded.role,
       position: decoded.position,
+      role: decoded.role,
       capabilities: decoded.capabilities || [],
     });
+
     Cookies.set('access', access, { path: '/', secure: true, sameSite: 'Strict' });
     Cookies.set('refresh', refresh, { path: '/', secure: true, sameSite: 'Strict' });
-  };
-
-  const refreshAccessToken = async () => {
-    try {
-      const refresh = Cookies.get('refresh');
-      const res = await axios.post('/api/refresh/', { refresh });
-      const { access } = res.data;
-      const decoded = jwtDecode(access);
-      setAccessToken(access);
-      setUser({
-        username: decoded.username,
-        fio: decoded.fio,
-        position: decoded.position,
-        role: decoded.role,
-        capabilities: decoded.capabilities || [],
-      });
-      Cookies.set('access', access, { path: '/', secure: true, sameSite: 'Strict' });
-      return access;
-    } catch {
-      logout();
-      throw new Error('Session expired');
-    }
   };
 
   const logout = () => {
@@ -82,15 +63,18 @@ export const AuthProvider = ({ children }) => {
   const hasCapability = (cap) => user?.capabilities?.includes(cap);
 
   return (
-    <AuthContext.Provider value={{
-      user,
-      accessToken,
-      login,
-      logout,
-      refreshAccessToken,
-      hasCapability,
-      loading
-    }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        accessToken,
+        login,
+        logout,
+        hasCapability,
+        loading,
+        setAccessToken, // 🔑 kerak bo'ladi axiosInstance uchun
+        setUser          // 🔑 kerak bo'ladi axiosInstance uchun
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

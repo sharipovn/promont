@@ -16,8 +16,8 @@ export default function Alert({ message, type = 'info' }) {
         width: '90%',
         maxWidth: '600px',
         borderRadius: '8px',
-        backgroundColor: 'rgba(13, 202, 240, 0.2)',
-        color: '#0dcaf0',
+        backgroundColor: 'rgba(13, 202, 240)',
+        color: 'white',
         border: '1px solid #0dcaf0',
         animation: 'fadeInDown 0.5s ease-in-out',
       }}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect,useMemo } from 'react';
 import { useAuth } from '../context/AuthProvider';
 import Sidebar from '../components/Sidebar';
 import Alert from '../components/Alert';
@@ -7,15 +7,22 @@ import { FaFileAlt, FaMoneyBill, FaCalendarAlt, FaUserTie } from 'react-icons/fa
 import { HiCalendarDateRange } from "react-icons/hi2";
 import { BiSolidInfoCircle } from "react-icons/bi";
 import { GrProjects } from "react-icons/gr";
-import { MdAccountBalanceWallet } from "react-icons/md";
-import { MdCreateNewFolder } from "react-icons/md";
-import axios from 'axios';
-import useTokenValidation from '../hooks/useTokenValidation';
+import { MdAccountBalanceWallet, MdCreateNewFolder } from "react-icons/md";
+import { useNavigate } from 'react-router-dom';
+import { createAxiosInstance } from '../utils/createAxiosInstance';
+
+
+
 
 export default function CreateProjectScreen() {
-  const { accessToken } = useAuth();
-  useTokenValidation();
-
+  const {  setAccessToken, setUser } = useAuth();
+  const navigate = useNavigate();
+  const axiosInstance = useMemo(() => {
+    return createAxiosInstance(navigate, setUser, setAccessToken);
+  }, [navigate, setUser, setAccessToken]);
+  const [financierOptions, setFinancierOptions] = useState([]);
+  const [message, setMessage] = useState(null);
+  const [messageType, setMessageType] = useState(null);
 
   const [form, setForm] = useState({
     project_name: '',
@@ -24,8 +31,6 @@ export default function CreateProjectScreen() {
     end_date: '',
     financier: null,
   });
-
-  const [financierOptions, setFinancierOptions] = useState([]);
 
   const formatNumber = (value) =>
     value.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
@@ -40,48 +45,29 @@ export default function CreateProjectScreen() {
     }
   };
 
-  const [message, setMessage] = useState(null);
-const [messageType, setMessageType] = useState(null);
-
-const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const payload = {
       ...form,
       total_price: parseInt(form.total_price.replace(/\s/g, ''), 10),
       financier: form.financier?.value || null,
     };
-    console.log('Submitted project:', payload);
-    axios.post('/api/create-project/', payload, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`
-    }
-  })
-      .then((res) => {
-    setMessage('✅ Project successfully created!');
-    setMessageType('success');
-    console.log('✅ Project created:', res.data);
-  })
-      .catch((err) => {
-    if (err.response && err.response.data) {
-      const msg = typeof err.response.data === 'string'
-        ? err.response.data
-        : JSON.stringify(err.response.data);
-      setMessage(`❌ Error: ${msg}`);
+
+    try {
+      const res = await axiosInstance.post('/create-project/', payload);
+      setMessage('✅ Project successfully created!');
+      setMessageType('success');
+      console.log('✅ Project created:', res.data);
+    } catch (err) {
+      const msg = err.response?.data || '❌ Server error occurred.';
+      setMessage(`❌ Error: ${JSON.stringify(msg)}`);
       setMessageType('danger');
-    } else {
-      setMessage('❌ Server error occurred.');
-      setMessageType('danger');
+      console.error('❌ Failed to create project:', err);
     }
-    console.error('❌ Failed to create project:', err);
-  });
   };
 
-  React.useEffect(() => {
-    axios.get('/api/users-with-capability/?capability=CAN_CONFIRM_PROJECT_FINANCIER', {
-      headers: {
-        Authorization: `Bearer ${accessToken}`
-      }
-    })
+  useEffect(() => {
+    axiosInstance.get('/users-with-capability/?capability=CAN_CONFIRM_PROJECT_FINANCIER')
       .then((res) => {
         const options = res.data.map((user) => ({
           value: user.user_id,
@@ -90,11 +76,11 @@ const handleSubmit = (e) => {
         setFinancierOptions(options);
       })
       .catch((err) => {
-        console.error('Error loading financier list:', err);
-        setMessage('❌ Server error occurred.'+err);
+        setMessage('❌ Server error occurred.' + err);
         setMessageType('danger');
+        console.error('Error loading financier list:', err);
       });
-  }, [accessToken]);
+  }, [axiosInstance]);
 
   return (
     <div className="container-fluid">

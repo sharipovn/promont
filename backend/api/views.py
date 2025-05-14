@@ -76,6 +76,22 @@ class ProjectCreateAPIView(generics.CreateAPIView):
 
 
 
+
+#for notifications for prject
+class ProjectListNotificationFinancierView(generics.ListAPIView):
+    serializer_class = ProjectSerializer
+    permission_classes = [
+        IsAuthenticated,
+        HasCapabilityPermission('CAN_CONFIRM_PROJECT_FINANCIER'),
+    ]
+
+    def get_queryset(self):
+        user = self.request.user
+        return Project.objects.filter(
+            financier=user,
+            financier_confirm=False
+        )
+
 class UsersWithCapabilityAPIView(generics.ListAPIView):
     serializer_class = StaffUserSimpleSerializer
     permission_classes = [IsAuthenticated]
@@ -89,3 +105,9 @@ class UsersWithCapabilityAPIView(generics.ListAPIView):
         return StaffUser.objects.filter(
             role__capabilities__capability_name=cap
         ).distinct()
+        
+        
+        
+        
+
+

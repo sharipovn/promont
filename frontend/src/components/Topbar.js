@@ -3,6 +3,7 @@ import { FaSearch, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { IoMdSettings } from "react-icons/io";
 import NotificationCard from './NotificationCard'; // 👈 Qo‘shing
 import { useAuth } from '../context/AuthProvider';
+import SettingsDropdown from './SettingsDropdown'; // joyini to‘g‘rilang
 
 
 export default function Topbar({ sidebarVisible, toggleSidebar }) {
@@ -42,7 +43,7 @@ export default function Topbar({ sidebarVisible, toggleSidebar }) {
           <small className="text-muted text-white-50 fs-8" style={{ fontSize: '0.7rem' }}>{user?.position}</small>
         </div>
         <NotificationCard />
-        <IoMdSettings />
+        <SettingsDropdown />
       </div>
 
     </div>

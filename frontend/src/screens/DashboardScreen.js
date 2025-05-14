@@ -10,8 +10,6 @@ import ProjectCard from '../components/ProjectCard';
 
 
 export default function DashboardScreen() {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
   const [sidebarVisible, setSidebarVisible] = useState(true);
 
    

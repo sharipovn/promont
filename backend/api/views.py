@@ -14,8 +14,9 @@ from .permissions import HasCapabilityPermission
 from api.models import StaffUser,Project
 from .serializers import ProjectSerializer,StaffUserSimpleSerializer
 from api.serializers import StaffUserTokenSerializer
-from rest_framework.filters import SearchFilter, OrderingFilter
-
+from django.utils.dateparse import parse_date
+from django.db.models import Q
+from .pagination import ProjectsPagination
 
 
 
@@ -109,5 +110,49 @@ class UsersWithCapabilityAPIView(generics.ListAPIView):
         
         
         
+
+
+
+class ProjectListAPIView(generics.ListAPIView):
+    serializer_class = ProjectSerializer
+    pagination_class = ProjectsPagination  # 👈 shu yerda biriktiramiz
+    # permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        qs = Project.objects.all()
+
+        # 🔎 Filtrlarni olish
+        start_date_from = self.request.query_params.get('start_date_from')
+        start_date_to = self.request.query_params.get('start_date_to')
+        end_date_from = self.request.query_params.get('end_date_from')
+        end_date_to = self.request.query_params.get('end_date_to')
+        financier_confirmed = self.request.query_params.get('financier_confirmed')
+        gip_confirmed = self.request.query_params.get('gip_confirmed')
+
+        # 📅 Sanalar bo‘yicha filter
+        if start_date_from:
+            qs = qs.filter(start_date__gte=parse_date(start_date_from))
+        if start_date_to:
+            qs = qs.filter(start_date__lte=parse_date(start_date_to))
+        if end_date_from:
+            qs = qs.filter(end_date__gte=parse_date(end_date_from))
+        if end_date_to:
+            qs = qs.filter(end_date__lte=parse_date(end_date_to))
+
+        # ✅ Checkbox holatlari
+        if financier_confirmed == 'true':
+            qs = qs.filter(financier_confirm=True)
+        elif financier_confirmed == 'false':
+            qs = qs.filter(financier_confirm=False)
+
+        if gip_confirmed == 'true':
+            qs = qs.filter(gip_confirm=True)
+        elif gip_confirmed == 'false':
+            qs = qs.filter(gip_confirm=False)
+
+        return qs.order_by('-create_date')  # so‘ngi loyihalar birinchi
+
+
 
 

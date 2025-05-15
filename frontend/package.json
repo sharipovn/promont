@@ -11,6 +11,7 @@
     "axios": "^1.9.0",
     "bootstrap": "^5.3.6",
     "crypto-js": "^4.2.0",
+    "date-fns": "^2.29.3",
     "js-cookie": "^3.0.5",
     "jwt-decode": "^4.0.0",
     "react": "^19.1.0",

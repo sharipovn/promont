@@ -97,7 +97,7 @@ export default function NotificationCard() {
 
 
 {notifications.map((n, i) => {
-  console.log('notifications:',notifications)
+  // console.log('notifications:',notifications)
   const createdAt = new Date(n.create_date);
   const daysOld = Math.floor((new Date() - createdAt) / (1000 * 60 * 60 * 24));
   return (

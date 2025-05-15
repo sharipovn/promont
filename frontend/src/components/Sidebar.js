@@ -69,7 +69,7 @@ export default function Sidebar() {
               </NavLink>
             </li>
          )}
-        <li className="nav-item mt-1">
+        {/* <li className="nav-item mt-1">
           <NavLink to="/users" className="sidebar-link" >
             👥 Users
           </NavLink>
@@ -78,7 +78,7 @@ export default function Sidebar() {
           <NavLink to="/settings" className="sidebar-link">
             ⚙️ Settings
           </NavLink>
-        </li>
+        </li> */}
       </ul>
     </div>
   );

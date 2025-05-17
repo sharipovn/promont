@@ -81,7 +81,7 @@ export default function DashboardScreen() {
 
         {/* Main Content Area */}
         <div
-          className="flex-grow-1 d-flex flex-column az aligne-items-start"
+          className="flex-grow-1 d-flex flex-column  aligne-items-start"
           style={{ transition: 'margin-left 0.3s ease', width: sidebarVisible ? '82%' : '100%', height: '95vh' }}
         >
           {/* Topbar */}
@@ -134,6 +134,7 @@ export default function DashboardScreen() {
                   display: 'grid',
                   gridTemplateColumns: 'repeat(5, 1fr)',
                   gap: '1rem',
+                  height:'70vh'
                 }}
               >
                 {projects.map((proj) => (

@@ -5,6 +5,7 @@ import { RxDesktop } from "react-icons/rx";
 import { SiOpenproject } from "react-icons/si";
 import { useAuth } from '../context/AuthProvider';
 import { PERMISSIONS } from '../constants/permissions'; // 👈 import permissions
+import { PiTreeViewFill } from "react-icons/pi";
 
 
 
@@ -69,16 +70,18 @@ export default function Sidebar() {
               </NavLink>
             </li>
          )}
-        {/* <li className="nav-item mt-1">
-          <NavLink to="/users" className="sidebar-link" >
-            👥 Users
-          </NavLink>
-        </li>
-        <li className="nav-item mt-1">
-          <NavLink to="/settings" className="sidebar-link">
-            ⚙️ Settings
-          </NavLink>
-        </li> */}
+        {hasCapability(PERMISSIONS.CAN_CONFIRM_PROJECT_FINANCIER) && (
+            <li className="nav-item mt-1 mx-3">
+              <NavLink to="/confirm-project-financier" className="sidebar-link d-flex align-items-center gap-2" 
+                  style={{
+                    color: '#344767',
+                    fontSize: 'clamp(0.85rem, 1vw + 0.4rem, 1.1rem)',
+                  }}>
+                <PiTreeViewFill style={{ fontSize: 'clamp(1rem, 1vw + 0.5rem, 1.4rem)' }}/>
+                <span>Confirm Projects (Financier)</span>
+              </NavLink>
+            </li>
+         )}
       </ul>
     </div>
   );

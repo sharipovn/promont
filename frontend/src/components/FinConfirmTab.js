@@ -22,7 +22,7 @@ export default function FinConfirmTab() {
       page: currentPage,
     };
       axiosInstance
-        .get('projects-confirm/financier/', { params }j)
+        .get('projects-confirm/financier/', { params })
         .then((res) => {
           setProjects(res.data.results);
           setTotalPages(Math.ceil(res.data.count / 8)); // 20 = page_size

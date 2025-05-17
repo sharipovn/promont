@@ -11,7 +11,7 @@ export default function Topbar({ sidebarVisible, toggleSidebar }) {
   const { user } = useAuth(); // 👈 access user info here
   console.log('user:',user)
   return (
-    <div className="d-flex justify-content-between align-items-center px-3 py-2 mt-1" style={{ color: 'white' }}>
+    <div className="d-flex justify-content-between align-items-center px-3 py-2 mt-1 border-0" style={{ color: 'white',minHeight:'6vh' }}>
       
       {/* Left: Toggle + Search */}
       <div className="d-flex align-items-center gap-3">

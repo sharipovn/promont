@@ -1,4 +1,5 @@
 import React from 'react';
+import HoverText from './HoverText';
 import {
   FaProjectDiagram,
   FaMoneyBillAlt,
@@ -36,7 +37,8 @@ export default function ProjectCard({ proj }) {
         boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
         transition: 'all 0.3s ease',
         cursor: 'pointer',
-        minHeight : '35vh',
+        maxHeight : '33vh',
+        fontFamily:'consolas',
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.boxShadow = '0 6px 24px rgba(0,255,255,0.3)';
@@ -48,34 +50,57 @@ export default function ProjectCard({ proj }) {
       }}
     >
       {/* Sarlavha */}
-      <h6 className="mb-3 fw-bold d-flex align-items-center gap-2" style={{ color: '#00f0ff' }}>
-        <FaProjectDiagram  size={'1.5rem'}/> {project_name} {isNew && (
+      <h6 className="mb-3 fw-bold d-flex align-items-center gap-2 fs-sm" style={{ color: '#00f0ff' }}>
+        <FaProjectDiagram  size={'1rem'}/> <HoverText>{project_name}</HoverText> {isNew && (
           <span className="badge bg-success">Yangi</span>
         )}
       </h6>
 
       {/* Narxi */}
-      <div className="d-flex justify-content-between align-items-center border-bottom border-secondary pb-1 mb-3 small">
-        <span className="d-flex align-items-center gap-2 text-warning">
-          <FaMoneyBillAlt  size={'1.5rem'}/> Narxi:
-        </span>
-        <span className="text-end">{Number(total_price).toLocaleString()} UZS</span>
-      </div>
+      <div
+          className="d-flex align-items-center border-bottom border-secondary fs-xs pb-1 mb-3 small"
+          style={{ minWidth: 0 }}
+        >
+          <span
+            className="d-flex align-items-center gap-2 text-warning"
+            style={{ whiteSpace: 'nowrap' }}
+          >
+            <FaMoneyBillAlt size="1rem" /> Narxi:
+          </span>
+
+          <span
+            className="text-end text-light ms-2"
+            style={{
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              flexGrow: 1,
+            }}
+          >
+            <HoverText maxWidth="100%">
+              {Number(total_price).toLocaleString()} UZS
+            </HoverText>
+          </span>
+        </div>
+
 
       {/* Muddati */}
-      <div className="d-flex justify-content-between align-items-center border-bottom border-secondary pb-1 mb-3 small">
-        <span className="d-flex align-items-center gap-2 text-light" style={{ fontFamily: 'consolas' }}>
-          <FaCalendarAlt   size={'1.5rem'}/> Muddati:
-        </span>
-        <span className="text-end text-light" style={{ fontFamily: 'consolas' }}>
-          {start_date} — {end_date}
-        </span>
-      </div>
+      <div
+          className="d-flex justify-content-between align-items-center border-bottom border-secondary fs-xs pb-1 mb-3 small"
+          style={{ minWidth: 0 }}
+        >
+          <span className="d-flex align-items-center gap-2 text-light">
+            <FaCalendarAlt size="1rem" /> Muddati:
+          </span>
+          <HoverText>{start_date} — {end_date}</HoverText>
+        </div>
+
+
 
       {/* ✅ Completion */}
-      <div className="d-flex justify-content-between align-items-center small mb-3">
+      <div className="d-flex justify-content-between align-items-center  fs-xs small mb-3">
         <span className="text-light d-flex align-items-center gap-2">
-        <TbPercentage75  size={'1.5rem'}/>Completion:
+        <TbPercentage75  size={'1rem'}/>Completion:
         </span>
         <div className="d-flex align-items-center gap-2">
           <span className="text-info fw-semibold">60%</span>
@@ -101,34 +126,61 @@ export default function ProjectCard({ proj }) {
       {/* ✅ Completion */}
 
       {/* Moliyachi */}
-      <div className="d-flex justify-content-between align-items-center border-bottom border-success pb-1 mb-3 small">
-        <span className="d-flex align-items-center gap-2 text-light">
-          <FaUserTie  size={'1.5rem'}/> Moliyachi:
+      <div
+        className="d-flex align-items-center border-bottom fs-xs border-success pb-1 mb-3 small"
+        style={{ minWidth: 0 }}
+      >
+        <span className="d-flex align-items-center gap-2 text-light" style={{ whiteSpace: 'nowrap' }}>
+          <FaUserTie size="1rem" />
+          Moliyachi:
         </span>
-        <span className="text-end text-light">{financier_fio}</span>
+
+        <span
+          className="text-light ms-2"
+          style={{
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            flexGrow: 1,
+          }}
+        >
+          <HoverText maxWidth="100%">{financier_fio}</HoverText>
+        </span>
       </div>
+
+
+
 
       {/* Yaratuvchi */}
       <div
-        title={`Created by: ${create_user_fio}`}
-        className="small text-secondary d-flex align-items-center gap-2"
-        style={{
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          fontWeight: 400,
-          fontSize: '0.85rem',
-          marginBottom: '6px'
-        }}
+        className="d-flex align-items-center border-bottom border-secondary fs-xs pb-1 mb-3 small"
+        style={{ minWidth: 0 }}
       >
-        <FaUserEdit size={'1.5rem'} className="text-secondary" /> {create_user_fio}
+        <span className="d-flex align-items-center gap-2 text-light" style={{ whiteSpace: 'nowrap' }}>
+          <FaUserEdit size="1rem" /> Created:
+        </span>
+
+        <span
+          className="text-light ms-2"
+          style={{
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            flexGrow: 1,
+          }}
+        >
+          <HoverText maxWidth="100%">{create_user_fio}</HoverText>
+        </span>
       </div>
+
+
+
 
       {/* Tasdiqlanmagan bo‘lsa */}
       {!financier_confirm && (
         <div className="d-flex align-items-center justify-content-between mt-3 small">
           <span className="text-warning d-flex align-items-center gap-2">
-            <FaExclamationTriangle  size={'1.5rem'}/> Moliyachi hali tasdiqlamagan
+            <FaExclamationTriangle size={'1rem'}/>Tasdiqlanmagan
           </span>
           <span className="badge bg-light text-dark">
             {daysOld === 0 ? 'Bugun' : `${daysOld} kun oldin`}
@@ -140,7 +192,7 @@ export default function ProjectCard({ proj }) {
       {financier_confirm && (
         <div className="d-flex align-items-center justify-content-between mt-2 small">
           <span className="text-success d-flex align-items-center gap-2">
-            <FaCheckCircle  size={'1.5rem'}/> Moliyachi tasdiqladi
+            <FaCheckCircle  size={'1.5rem'} /> Tasdiqlangan
           </span>
           <span className="badge bg-light text-dark">{daysOld} kun oldin</span>
         </div>

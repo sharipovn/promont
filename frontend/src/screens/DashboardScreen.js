@@ -91,8 +91,8 @@ export default function DashboardScreen() {
           />
 
           {/* Main Page Content */}
-          <div className="p-1 d-flex flex-column">
-            <div className="card p-4 rounded-4 border-0 shadow-lg dashboard-screen-card">
+          <div className="p-1 d-flex flex-column border-0">
+            <div className="card p-3 rounded-4  shadow-lg dashboard-screen-card"  style={{maxHeight:'12vh'}}>
                 <div className="d-flex flex-wrap gap-4 align-items-end">
                   <div>
                     <label className="form-label dboard-filter-input-label">Start Date From</label>
@@ -132,9 +132,9 @@ export default function DashboardScreen() {
                 className=" p-2"
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(5, 1fr)',
+                   gridTemplateColumns: 'repeat(5, minmax(200px, 1fr))',
                   gap: '1rem',
-                  height:'70vh'
+                  height:'65vh'
                 }}
               >
                 {projects.map((proj) => (

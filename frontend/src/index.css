@@ -64,7 +64,7 @@ code {
 
 .search-bar-wrapper {
   width: 300px; /* base width */
-  height: 50px;
+  height: '100%';
   transition: width 0.3s ease;
   overflow: hidden;
 }
@@ -138,3 +138,18 @@ code {
 
 
 /*------------------------------DASHBOARD SCREEN FILTER---------------------------------------------------------*/
+
+/*------------------------------PROJECT CARD SCREEN---------------------------------------------------------*/
+:root {
+  --fs-xs: clamp(0.75rem, 0.9vw, 0.9rem);   /* Tiny */
+  --fs-sm: clamp(0.85rem, 1vw, 1.05rem);    /* Normal */
+  --fs-md: clamp(1rem, 1.5vw, 1.25rem);     /* Subtitle */
+  --fs-lg: clamp(1.25rem, 2vw, 1.5rem);     /* Title */
+}
+
+.fs-xs { font-size: var(--fs-xs); }
+.fs-sm { font-size: var(--fs-sm); }
+.fs-md { font-size: var(--fs-md); }
+.fs-lg { font-size: var(--fs-lg); }
+
+/*------------------------------PROJECT CARD SCREEN---------------------------------------------------------*/

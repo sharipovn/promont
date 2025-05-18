@@ -1,11 +1,11 @@
-// components/ProjectFilters.js
 import React from 'react';
 
 export default function ProjectFilters({ filters, handleInputChange }) {
   return (
-    <div className="card p-3 rounded-4 shadow-lg dashboard-screen-card border" style={{ maxHeight: '12vh' }}>
-      <div className="d-flex flex-wrap gap-4 align-items-end">
-        <div>
+    <div className="card p-3 rounded-4 shadow-lg dashboard-screen-card border">
+      <div className="d-flex flex-wrap align-items-end gap-2">
+
+        <div style={{ flex: '1 1 160px', minWidth: '160px' }}>
           <label className="form-label dboard-filter-input-label">Start Date From</label>
           <input
             type="date"
@@ -16,7 +16,7 @@ export default function ProjectFilters({ filters, handleInputChange }) {
           />
         </div>
 
-        <div>
+        <div style={{ flex: '1 1 160px', minWidth: '160px' }}>
           <label className="form-label dboard-filter-input-label">Start Date To</label>
           <input
             type="date"
@@ -27,7 +27,7 @@ export default function ProjectFilters({ filters, handleInputChange }) {
           />
         </div>
 
-        <div>
+        <div style={{ flex: '1 1 160px', minWidth: '160px' }}>
           <label className="form-label dboard-filter-input-label">End Date From</label>
           <input
             type="date"
@@ -38,7 +38,7 @@ export default function ProjectFilters({ filters, handleInputChange }) {
           />
         </div>
 
-        <div>
+        <div style={{ flex: '1 1 160px', minWidth: '160px' }}>
           <label className="form-label dboard-filter-input-label">End Date To</label>
           <input
             type="date"
@@ -49,31 +49,32 @@ export default function ProjectFilters({ filters, handleInputChange }) {
           />
         </div>
 
-        <div className="form-check mt-4">
+        <div className="form-check d-flex align-items-center mt-2" style={{ flex: '1 1 180px', minWidth: '180px' }}>
           <input
-            className="form-check-input"
+            className="form-check-input me-2"
             type="checkbox"
             name="financier_confirmed"
             checked={filters.financier_confirmed}
             onChange={handleInputChange}
           />
           <label className="form-check-label dboard-filter-input-label" htmlFor="financierConfirmed">
-            Confirmed by Financier
+            Confirmed (Financier)
           </label>
         </div>
 
-        <div className="form-check mt-4">
+        <div className="form-check d-flex align-items-center mt-2" style={{ flex: '1 1 160px', minWidth: '160px' }}>
           <input
-            className="form-check-input"
+            className="form-check-input me-2"
             type="checkbox"
             name="gip_confirmed"
             checked={filters.gip_confirmed}
             onChange={handleInputChange}
           />
           <label className="form-check-label dboard-filter-input-label" htmlFor="gipConfirmed">
-            Confirmed by GIP
+            Confirmed (GIP)
           </label>
         </div>
+
       </div>
     </div>
   );

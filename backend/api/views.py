@@ -16,7 +16,7 @@ from .serializers import ProjectSerializer,StaffUserSimpleSerializer
 from api.serializers import StaffUserTokenSerializer
 from django.utils.dateparse import parse_date
 from django.db.models import Q
-from .pagination import ProjectsPagination
+from .pagination import ProjectsPagination,ProjectsFiancierConfirmPagination
 
 
 
@@ -74,11 +74,7 @@ class ProjectCreateAPIView(generics.CreateAPIView):
     def perform_create(self, serializer):
         serializer.save(create_user=self.request.user)
 
-
-
-
-
-#for notifications for prject
+#for financier confirm project
 class ProjectListNotificationFinancierView(generics.ListAPIView):
     serializer_class = ProjectSerializer
     permission_classes = [
@@ -92,6 +88,29 @@ class ProjectListNotificationFinancierView(generics.ListAPIView):
             financier=user,
             financier_confirm=False
         )
+
+
+
+#for notifications for prject
+class ProjectListFinancierConfirmView(generics.ListAPIView):
+    serializer_class = ProjectSerializer
+    pagination_class = ProjectsFiancierConfirmPagination  # 👈 shu yerda biriktiramiz
+    permission_classes = [
+        IsAuthenticated,
+        HasCapabilityPermission('CAN_CONFIRM_PROJECT_FINANCIER'),
+    ]
+
+    def get_queryset(self):
+        user = self.request.user
+        financier_confirmed = self.request.query_params.get('financier_confirmed')
+        qs=Project.objects.filter(financier=user)
+        if financier_confirmed == 'true':
+            qs = qs.filter(financier_confirm=True)
+        return qs.order_by('-create_date')
+    
+    
+    
+    
 
 class UsersWithCapabilityAPIView(generics.ListAPIView):
     serializer_class = StaffUserSimpleSerializer

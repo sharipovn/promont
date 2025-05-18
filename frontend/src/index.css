@@ -153,3 +153,88 @@ code {
 .fs-lg { font-size: var(--fs-lg); }
 
 /*------------------------------PROJECT CARD SCREEN---------------------------------------------------------*/
+
+/*------------------------------Scrollbar---------------------------------------------------------*/
+/* Custom tiny scrollbar */
+.btn-icon-green,
+.btn-icon-red {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 6px 14px;
+  border: none;
+  border-radius: 50px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: 0.3s ease;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-icon-green {
+  background-color: #2a9d8f;
+  color: white;
+}
+
+.btn-icon-green:hover {
+  background-color: #21867b;
+  box-shadow: 0 0 10px #2a9d8f66;
+}
+
+.btn-icon-red {
+  background-color: #e63946;
+  color: white;
+}
+
+.btn-icon-red:hover {
+  background-color: #c5303e;
+  box-shadow: 0 0 10px #e6394666;
+}
+
+.custom-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Firefox support */
+.custom-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+/*------------------------------Scrollbar---------------------------------------------------------*/
+.normal-style {
+  font-weight: normal !important;
+  font-style: normal !important;
+  font-family: Consolas, monospace !important;
+}
+
+
+/*------------------------------ConfirmModal------------------------------------------*/
+/* Remove Bootstrap white modal box and apply custom dark background */
+.custom-modal-content {
+  background: linear-gradient(145deg, #1c2331, #10141d);
+  color: #e1e1e1;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1rem;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.5);
+}
+
+/* Optional: darken modal backdrop */
+.custom-backdrop {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+/*------------------------------ConfirmModal---------------------------------------------------*/

@@ -30,7 +30,7 @@ export default function FinProjectConfirmScreen() {
                 eventKey="confirm"
                 title={
                   <span className="d-flex align-items-center gap-1">
-                    <FaFolderOpen size={16} /> Tasdiqlash
+                    <FaFolderOpen size={16} /> Confirming
                   </span>
                 }
               >
@@ -40,7 +40,7 @@ export default function FinProjectConfirmScreen() {
                 eventKey="archive"
                 title={
                   <span className="d-flex align-items-center gap-1">
-                    <FaArchive size={16} /> Arxiv
+                    <FaArchive size={16} /> Archive
                   </span>
                 }
               >

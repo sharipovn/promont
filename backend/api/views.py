@@ -17,6 +17,8 @@ from api.serializers import StaffUserTokenSerializer
 from django.utils.dateparse import parse_date
 from django.db.models import Q
 from .pagination import ProjectsPagination,ProjectsFiancierConfirmPagination
+from django.utils import timezone
+from rest_framework.views import APIView
 
 
 
@@ -103,7 +105,7 @@ class ProjectListFinancierConfirmView(generics.ListAPIView):
     def get_queryset(self):
         user = self.request.user
         financier_confirmed = self.request.query_params.get('financier_confirmed')
-        qs=Project.objects.filter(financier=user)
+        qs=Project.objects.filter(financier=user,financier_confirm=False)
         if financier_confirmed == 'true':
             qs = qs.filter(financier_confirm=True)
         return qs.order_by('-create_date')
@@ -174,4 +176,23 @@ class ProjectListAPIView(generics.ListAPIView):
 
 
 
+class ConfirmProjectByFinancierView(APIView):
+    permission_classes = [
+        IsAuthenticated,
+        HasCapabilityPermission('CAN_CONFIRM_PROJECT_FINANCIER'),
+    ]
 
+    def post(self, request):
+        project_code = request.data.get('project_code')
+        if not project_code:
+            return Response({"error": "Project CODE is required."}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            project = Project.objects.get(project_code=project_code)
+        except Project.DoesNotExist:
+            return Response({"error": "Project not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        project.financier_confirm = True
+        project.financier_confirm_date = timezone.now()
+        project.save()
+
+        return Response({"message": "Project confirmed successfully."}, status=status.HTTP_200_OK)

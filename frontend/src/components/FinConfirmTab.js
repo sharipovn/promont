@@ -5,12 +5,14 @@ import { useAuth } from '../context/AuthProvider';
 import CustomPagination from '../components/CustomPagination';
 import ProjectConfirmRow from '../components/ProjectConfirmRow';
 import ConfirmModal from '../components/ConfirmModal';
+import Alert from '../components/Alert';
+
 
 export default function FinConfirmTab() {
 
   const [selectedProject, setSelectedProject] = useState(null);
   const [showModal, setShowModal] = useState(false);
-
+  const [message, setMessage] = useState(null);
 
   const [projects, setProjects] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -21,6 +23,31 @@ export default function FinConfirmTab() {
   const axiosInstance = useMemo(() => {
     return createAxiosInstance(navigate, setUser, setAccessToken);
   }, [navigate, setUser, setAccessToken]);
+
+
+  const handleConfirmProject = (project) => {
+  axiosInstance.post('/projects-confirm/financier/confirm/', {
+    project_code: project.project_code,
+  })
+  .then(() => {
+    setMessage(`✅ Project "${project.project_name}" confirmed successfully.`);
+    setShowModal(false);
+    fetchProjects();
+
+    // Auto-hide after 3 seconds
+    setTimeout(() => setMessage(''), 3000);
+  })
+  .catch((error) => {
+    console.error('❌ Confirmation error:', error);
+    const errMsg =
+      error.response?.data?.error || "An unexpected error occurred while confirming the project.";
+    setMessage(`❌ ${errMsg}`);
+
+    setTimeout(() => setMessage(''), 4000);
+  });
+};
+
+
 
   const fetchProjects = useCallback(() => {
     axiosInstance
@@ -34,32 +61,32 @@ export default function FinConfirmTab() {
       .catch((err) => console.error('❌ Error fetching projects:', err));
   }, [axiosInstance, currentPage]);
 
-  useEffect(() => {
-    fetchProjects();
-  }, [currentPage, fetchProjects]);
+
 
   const handleConfirmClick = (project) => {
     setSelectedProject(project);
     setShowModal(true);
   };
 
-  const handleConfirmProject = (project) => {
-    console.log('✅ Confirmed project:', project.project_code);
-    setShowModal(false);
-    // TODO: send confirmation to backend via axiosInstance
-  };
+  
+
 
   const handleRefuse = (project) => {
     console.log('❌ Cancel clicked for:', project.project_code);
-    // Optionally open another modal
+    // Optionally open ano
+    // ther modal
   };
 
+  
+  useEffect(() => {
+    fetchProjects();
+  }, [currentPage, fetchProjects]);
 
   return (
     <>
     <div className="mt-3">
       <h5 className="text-info mb-4">Tasdiqlanmagan loyihalar ro'yxati</h5>
-
+      <Alert message={message} type="info" />
       <div className="custom-scroll d-flex flex-column gap-2 px-1" style={{ height: '64vh', overflowY: 'auto' }}>
         {projects.map((proj, i) => (
           <ProjectConfirmRow

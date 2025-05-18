@@ -50,7 +50,7 @@ export default function Sidebar() {
               className="sidebar-link d-flex align-items-center gap-2"
               style={{
                 color: '#344767',
-                fontSize: 'clamp(0.85rem, 1vw + 0.4rem, 1.1rem)',
+                fontSize: 'clamp(0.85rem, 1vw + 0.4rem, 0.9rem)',
               }}
             >
               <RxDesktop style={{ fontSize: 'clamp(1rem, 1vw + 0.5rem, 1.4rem)' }} />
@@ -63,7 +63,7 @@ export default function Sidebar() {
               <NavLink to="/create-project" className="sidebar-link d-flex align-items-center gap-2" 
                   style={{
                     color: '#344767',
-                    fontSize: 'clamp(0.85rem, 1vw + 0.4rem, 1.1rem)',
+                    fontSize: 'clamp(0.85rem, 1vw + 0.4rem, 0.9rem)',
                   }}>
                 <SiOpenproject style={{ fontSize: 'clamp(1rem, 1vw + 0.5rem, 1.4rem)' }}/>
                 <span>Create Project</span>
@@ -75,7 +75,7 @@ export default function Sidebar() {
               <NavLink to="/confirm-project-financier" className="sidebar-link d-flex align-items-center gap-2" 
                   style={{
                     color: '#344767',
-                    fontSize: 'clamp(0.85rem, 1vw + 0.4rem, 1.1rem)',
+                    fontSize: 'clamp(0.85rem, 1vw + 0.4rem, 0.9rem)',
                   }}>
                 <PiTreeViewFill style={{ fontSize: 'clamp(1rem, 1vw + 0.5rem, 1.4rem)' }}/>
                 <span>Confirm Projects (Financier)</span>

@@ -92,7 +92,7 @@ export default function DashboardScreen() {
 
           {/* Main Page Content */}
           <div className="p-1 d-flex flex-column border-0">
-            <div className="card p-3 rounded-4  shadow-lg dashboard-screen-card"  style={{maxHeight:'12vh'}}>
+            <div className="card p-3 rounded-4  shadow-lg dashboard-screen-card border"  style={{maxHeight:'12vh'}}>
                 <div className="d-flex flex-wrap gap-4 align-items-end">
                   <div>
                     <label className="form-label dboard-filter-input-label">Start Date From</label>

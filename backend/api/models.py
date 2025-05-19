@@ -159,3 +159,43 @@ class Project(models.Model):
 
     def __str__(self):
         return f"{self.project_code} - {self.project_name}"
+
+
+class ProjectFinancePart(models.Model):
+    fs_part_code = models.AutoField(primary_key=True)
+
+    project_code = models.ForeignKey(
+        'Project',
+        on_delete=models.CASCADE,
+        related_name='finance_parts'
+    )
+
+    # ✅ Mandatory fields
+    fs_part_no = models.CharField(max_length=50)
+    fs_part_name = models.CharField(max_length=255)
+    fs_part_price = models.BigIntegerField()
+    fs_start_date = models.DateField()
+    fs_finish_date = models.DateField()
+
+    create_date = models.DateTimeField(auto_now_add=True)
+
+    create_user_id = models.ForeignKey(
+        'StaffUser',
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='created_fin_parts'
+    )
+
+    send_to_tech_dir = models.BooleanField(default=False)
+    send_to_tech_dir_date = models.DateTimeField(null=True, blank=True)
+
+    tech_dir_confirm = models.BooleanField(default=False)
+    tech_dir_confirm_date = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'pro_fin_part'
+        verbose_name = "Project Finance Part"
+        verbose_name_plural = "Project Finance Parts"
+
+    def __str__(self):
+        return f"{self.fs_part_code} - {self.fs_part_name}"

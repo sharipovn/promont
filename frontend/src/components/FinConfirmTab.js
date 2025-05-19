@@ -8,7 +8,7 @@ import ConfirmModal from '../components/ConfirmModal';
 import Alert from '../components/Alert';
 
 
-export default function FinConfirmTab() {
+export default function FinConfirmTab({onProjectConfirmed }) {
 
   const [selectedProject, setSelectedProject] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -33,6 +33,7 @@ export default function FinConfirmTab() {
     setMessage(`✅ Project "${project.project_name}" confirmed successfully.`);
     setShowModal(false);
     fetchProjects();
+    if (onProjectConfirmed) onProjectConfirmed(); // 🔥 trigger parent to refresh archive
 
     // Auto-hide after 3 seconds
     setTimeout(() => setMessage(''), 3000);

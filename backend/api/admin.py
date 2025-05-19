@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Capability, Department,StaffUser,Role,Project
+from .models import Capability, Department,StaffUser,Role,Project,ProjectFinancePart
 from django.contrib.auth.admin import UserAdmin
 
 
@@ -62,3 +62,33 @@ class ProjectAdmin(admin.ModelAdmin):
     )
     list_filter = ('financier_confirm', 'gip_confirm', 'start_date', 'end_date')
     search_fields = ('project_code', 'project_name')
+    
+    
+    
+    
+@admin.register(ProjectFinancePart)
+class ProjectFinancePartAdmin(admin.ModelAdmin):
+    list_display = (
+        'fs_part_code', 'fs_part_no', 'fs_part_name', 'fs_part_price',
+        'fs_start_date', 'fs_finish_date',
+        'project_code',
+        'create_user_id', 'create_date',
+        'send_to_tech_dir', 'send_to_tech_dir_date',
+        'tech_dir_confirm', 'tech_dir_confirm_date',
+    )
+    list_filter = (
+        'send_to_tech_dir', 'tech_dir_confirm',
+        'fs_start_date', 'fs_finish_date',
+        'project_code',
+    )
+    search_fields = (
+        'fs_part_code', 'fs_part_no', 'fs_part_name',
+        'project_code__project_name', 'project_code__project_code',
+    )
+    readonly_fields = ('create_date','fs_part_code')
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        for field in ['fs_part_no', 'fs_part_name', 'fs_part_price', 'fs_start_date', 'fs_finish_date']:
+            form.base_fields[field].required = True
+        return form

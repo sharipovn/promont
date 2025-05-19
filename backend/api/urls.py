@@ -6,7 +6,8 @@ from .views import (StaffUserLoginView,
                     ProjectListNotificationFinancierView,
                     ProjectListAPIView,
                     ProjectListFinancierConfirmView,
-                    ConfirmProjectByFinancierView)
+                    ConfirmProjectByFinancierView,
+                    CreateFinancialPartsView)
 
 urlpatterns = [
     path('login/', StaffUserLoginView.as_view(), name='jwt_login'),
@@ -16,6 +17,7 @@ urlpatterns = [
     path('projects-notifications/financier/', ProjectListNotificationFinancierView.as_view(), name='project-notifications-financier'),
     path('projects-confirm/financier/', ProjectListFinancierConfirmView.as_view(), name='project-notifications-financier'),
     path('projects-confirm/financier/confirm/', ConfirmProjectByFinancierView.as_view(), name='confirm-project-financier'),
+    path('projects-financial-parts/create/', CreateFinancialPartsView.as_view(), name='create-financial-parts'),
     path('projects/', ProjectListAPIView.as_view(), name='project-list'),
     
 ]

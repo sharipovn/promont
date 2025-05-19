@@ -8,6 +8,7 @@ import './FinProjectConfirmScreen.css';
 
 export default function FinProjectConfirmScreen() {
   const [key, setKey] = useState('confirm');
+  const [refreshArchiveTab, setRefreshArchiveTab] = useState(false);
 
   return (
     <div className="container-fluid">
@@ -26,26 +27,21 @@ export default function FinProjectConfirmScreen() {
               id="fin-tabs"
               className="custom-tabs"
             >
-              <Tab
-                eventKey="confirm"
-                title={
-                  <span className="d-flex align-items-center gap-1">
-                    <FaFolderOpen size={16} /> Confirming
-                  </span>
-                }
-              >
-                <FinConfirmTab />
-              </Tab>
-              <Tab
-                eventKey="archive"
-                title={
-                  <span className="d-flex align-items-center gap-1">
-                    <FaArchive size={16} /> Archive
-                  </span>
-                }
-              >
-                <FinArchiveTab />
-              </Tab>
+              <Tab eventKey="confirm" title={<span className="d-flex align-items-center gap-1"><FaFolderOpen size={16} /> Confirming</span>}>
+                  <FinConfirmTab
+                    onProjectConfirmed={() => {
+                      setRefreshArchiveTab(true);  // trigger archive refresh
+                      setKey('archive');           // switch to archive tab
+                    }}
+                  />
+                </Tab>
+
+                <Tab eventKey="archive" title={<span className="d-flex align-items-center gap-1"><FaArchive size={16} /> Archive</span>}>
+                  <FinArchiveTab
+                    refresh={refreshArchiveTab}
+                    onRefreshHandled={() => setRefreshArchiveTab(false)}
+                  />
+                </Tab>
             </Tabs>
           </div>
         </div>

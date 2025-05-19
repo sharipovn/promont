@@ -12,10 +12,11 @@ from rest_framework.permissions import IsAuthenticated
 from .permissions import HasCapabilityPermission
 
 from api.models import StaffUser,Project
-from .serializers import ProjectSerializer,StaffUserSimpleSerializer
+from .serializers import ProjectSerializer,StaffUserSimpleSerializer,ProjectFinancePartCreateSerializer
 from api.serializers import StaffUserTokenSerializer
 from django.utils.dateparse import parse_date
 from django.db.models import Q
+from django.db import transaction
 from .pagination import ProjectsPagination,ProjectsFiancierConfirmPagination
 from django.utils import timezone
 from rest_framework.views import APIView
@@ -105,10 +106,13 @@ class ProjectListFinancierConfirmView(generics.ListAPIView):
     def get_queryset(self):
         user = self.request.user
         financier_confirmed = self.request.query_params.get('financier_confirmed')
-        qs=Project.objects.filter(financier=user,financier_confirm=False)
+        print('financier_confirmed:',financier_confirmed)
+        qs=Project.objects.filter(financier=user)
         if financier_confirmed == 'true':
-            qs = qs.filter(financier_confirm=True)
-        return qs.order_by('-create_date')
+            qs = qs.filter(financier_confirm=True).order_by('-financier_confirm_date')
+        else:
+            qs = qs.filter(financier_confirm=False).order_by('-create_date')
+        return qs
     
     
     
@@ -196,3 +200,42 @@ class ConfirmProjectByFinancierView(APIView):
         project.save()
 
         return Response({"message": "Project confirmed successfully."}, status=status.HTTP_200_OK)
+    
+    
+    
+    
+class CreateFinancialPartsView(APIView):
+    permission_classes = [
+        IsAuthenticated,
+        HasCapabilityPermission('CAN_DIVIDE_FS_PARTS')
+    ]
+
+    def post(self, request):
+        project_code = request.data.get('project_code')
+        parts_data = request.data.get('parts', [])
+        user = request.user
+
+        if not project_code or not parts_data:
+            return Response({'error': 'project_code and parts are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        serialized_parts = []
+        errors = []
+
+        for idx, part in enumerate(parts_data):
+            part['project_code'] = project_code
+            part['create_user_id'] = user.user_id
+            part['fs_part_no'] = part.get('fs_part_no') or f"Part {idx + 1}"
+
+            serializer = ProjectFinancePartCreateSerializer(data=part)
+            if serializer.is_valid():
+                serialized_parts.append(serializer)
+            else:
+                errors.append({f"part_{idx + 1}": serializer.errors})
+
+        if errors:
+            return Response({'errors': errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        with transaction.atomic():
+            created = [s.save() for s in serialized_parts]
+
+        return Response({'created': [ProjectFinancePartCreateSerializer(p).data for p in created]}, status=status.HTTP_201_CREATED)

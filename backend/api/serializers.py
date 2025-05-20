@@ -72,3 +72,10 @@ class ProjectFinancePartCreateSerializer(serializers.ModelSerializer):
             'create_user_id',
         ]
         read_only_fields = ['fs_part_code']
+        
+        
+
+class ProjectFinancePartSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectFinancePart
+        fields = '__all__'

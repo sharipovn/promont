@@ -54,7 +54,7 @@ export default function FinArchiveTab({ refresh, onRefreshHandled }) {
         <Alert message={message} type="info" />
         <div className="custom-scroll d-flex flex-column gap-2 px-1" style={{ height: '64vh', overflowY: 'auto' }}>
           {projects.map((proj) => (
-            <FinArchiveRow key={proj.project_code} proj={proj} />
+            <FinArchiveRow key={proj.project_code} proj={proj}  onCreated={fetchProjects} />
           ))}
         </div>
       </div>

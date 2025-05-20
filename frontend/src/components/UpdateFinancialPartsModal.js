@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Modal, Button, Form, Row, Col } from 'react-bootstrap';
 import { FaTrash, FaPlus } from 'react-icons/fa';
 import './FinancialPartsModal.css';
@@ -7,20 +7,54 @@ import { useAuth } from '../context/AuthProvider';
 import { useNavigate } from 'react-router-dom';
 import Alert from './Alert';
 
-export default function FinancialPartsModal({ show, onHide, project, onCreated }) {
+export default function UpdateFinancialPartsModal({ show, onHide, project, onUpdated }) {
   const { setUser, setAccessToken } = useAuth();
   const navigate = useNavigate();
-  const axiosInstance = useMemo(() => createAxiosInstance(navigate, setUser, setAccessToken), [navigate, setUser, setAccessToken]);
+  const axiosInstance = useMemo(
+    () => createAxiosInstance(navigate, setUser, setAccessToken),
+    [navigate, setUser, setAccessToken]
+  );
 
-  const [parts, setParts] = useState([
-    { fs_part_name: '', fs_part_price: '', fs_start_date: '', fs_finish_date: '' },
-  ]);
+  const [parts, setParts] = useState([]);
   const [warning, setWarning] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
 
-  const handleAddPart = () => {
-    setParts([...parts, { fs_part_name: '', fs_part_price: '', fs_start_date: '', fs_finish_date: '' }]);
+  useEffect(() => {
+    if (show && project?.project_code) {
+      axiosInstance
+        .get(`/projects-financial-parts/${project.project_code}/`)
+        .then((res) => setParts(res.data))
+        .catch((err) => {
+          console.error('❌ Failed to fetch parts:', err);
+          setWarning('Failed to load financial parts.');
+        });
+    }
+  }, [show, project?.project_code, axiosInstance]);
+
+  const handleChange = (index, field, value) => {
+    const updated = [...parts];
+    setWarning('');
+
+    if (field === 'fs_part_price') {
+      const numericValue = String(value).replace(/\D/g, '');
+      const totalAllocated = updated.reduce(
+        (sum, p, i) =>
+          sum + (i === index ? Number(numericValue) : Number(String(p.fs_part_price || '').replace(/\D/g, ''))),
+        0
+      );
+
+      const max = Number(project?.total_price || 0);
+      if (totalAllocated > max) {
+        setWarning(`⚠️ Total exceeds by ${(totalAllocated - max).toLocaleString()} so'm`);
+      }
+
+      updated[index][field] = Number(numericValue).toLocaleString();
+    } else {
+      updated[index][field] = value;
+    }
+
+    setParts(updated);
   };
 
   const handleRemovePart = (index) => {
@@ -29,57 +63,38 @@ export default function FinancialPartsModal({ show, onHide, project, onCreated }
     setParts(updated);
   };
 
-  const handleChange = (index, field, value) => {
-    const updated = [...parts];
-    setWarning('');
-
-    if (field === 'fs_part_price') {
-      const numericValue = value.replace(/\D/g, '');
-      const totalAllocated = updated.reduce(
-        (sum, p, i) =>
-          sum + (i === index ? Number(numericValue) || 0 : Number((p.fs_part_price || '').replace(/\D/g, '') || 0)),
-        0
-      );
-      const maxAvailable = Number(project?.total_price || 0);
-      if (totalAllocated > maxAvailable) {
-        setWarning(`⚠️ Total exceeds by ${(totalAllocated - maxAvailable).toLocaleString()} so'm`);
-      } else {
-        setWarning('');
-      }
-      updated[index][field] = Number(numericValue).toLocaleString();
-    } else {
-      updated[index][field] = value;
-    }
-    setParts(updated);
+  const handleAddPart = () => {
+    setParts([
+      ...parts,
+      { fs_part_name: '', fs_part_price: '', fs_start_date: '', fs_finish_date: '' }
+    ]);
   };
 
   const handleSubmit = async () => {
-    const payload = {
-      project_code: project.project_code,
-      parts: parts.map((p, idx) => ({
-        fs_part_no: `Part ${idx + 1}`,
+    try {
+      const payload = parts.map((p, i) => ({
+        fs_part_code: p.fs_part_code,
+        fs_part_no: `Part ${i + 1}`,
         fs_part_name: p.fs_part_name,
-        fs_part_price: Number(p.fs_part_price.replace(/\D/g, '')),
+        fs_part_price: Number(String(p.fs_part_price || '').replace(/\D/g, '')),
         fs_start_date: p.fs_start_date,
         fs_finish_date: p.fs_finish_date,
-      })),
-    };
+      }));
 
-    try {
-      const res = await axiosInstance.post('/projects-financial-parts/create/', payload);
-      console.log('✅ Created parts:', res.data);
-      setSuccessMessage('✅ Financial parts created successfully.');
+      await axiosInstance.put(`/projects-financial-parts/${project.project_code}/update/`, payload);
+      setSuccessMessage('✅ Financial parts successfully updated.');
       setShowSuccessAlert(true);
+
       setTimeout(() => {
         setSuccessMessage('');
         setWarning('');
         setShowSuccessAlert(false);
         onHide();
-        onCreated?.();
+        onUpdated?.();
       }, 2000);
     } catch (err) {
-      console.error('❌ Error creating parts:', err);
-      setWarning('❌ Failed to create parts. Please try again.');
+      console.error('❌ Failed to update:', err);
+      setWarning(`❌ Error saving changes. Try again.\n${err}`);
       setTimeout(() => setWarning(''), 3000);
     }
   };
@@ -96,7 +111,7 @@ export default function FinancialPartsModal({ show, onHide, project, onCreated }
         dialogClassName="custom-fin-modal"
       >
         <Modal.Body className="p-4 text-light" style={{ fontFamily: 'Consolas, monospace' }}>
-          <h3 className="text-light mb-2">Create Financial Parts</h3>
+          <h3 className="text-warning mb-2">Update Financial Parts</h3>
           <h5 className="text-info">{project?.project_name}</h5>
           <div className="fs-5 mb-4 text-white">{project?.total_price.toLocaleString()} so'm</div>
 
@@ -111,7 +126,7 @@ export default function FinancialPartsModal({ show, onHide, project, onCreated }
                   <strong className="text-white">N: Part {index + 1}</strong>
                 </Col>
                 <Col md>
-                  <Form.Label>Financial Part Name</Form.Label>
+                  <Form.Label>Part Name</Form.Label>
                   <Form.Control
                     value={part.fs_part_name}
                     onChange={(e) => handleChange(index, 'fs_part_name', e.target.value)}
@@ -119,7 +134,7 @@ export default function FinancialPartsModal({ show, onHide, project, onCreated }
                   />
                 </Col>
                 <Col md>
-                  <Form.Label>Allocated Expenditure</Form.Label>
+                  <Form.Label>Expenditure</Form.Label>
                   <Form.Control
                     type="text"
                     inputMode="numeric"
@@ -160,7 +175,7 @@ export default function FinancialPartsModal({ show, onHide, project, onCreated }
           </Button>
 
           {warning && (
-            <div className="bg-warning bg-opacity-10 text-warning border border-warning rounded px-3 py-2 mb-3" style={{ fontSize: '0.9rem' }}>
+            <div className="text-warning bg-opacity-10 border border-warning rounded px-3 py-2 mb-3">
               {warning}
             </div>
           )}
@@ -169,8 +184,8 @@ export default function FinancialPartsModal({ show, onHide, project, onCreated }
             <Button variant="outline-secondary" onClick={onHide} className="px-4 rounded-pill">
               Cancel
             </Button>
-            <Button variant="success" className="px-4 rounded-pill" onClick={handleSubmit}>
-              Create and Send to Director
+            <Button variant="success" onClick={handleSubmit} className="px-4 rounded-pill">
+              Save Changes
             </Button>
           </div>
         </Modal.Body>

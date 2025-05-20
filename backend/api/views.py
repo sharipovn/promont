@@ -11,8 +11,8 @@ from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from .permissions import HasCapabilityPermission
 
-from api.models import StaffUser,Project
-from .serializers import ProjectSerializer,StaffUserSimpleSerializer,ProjectFinancePartCreateSerializer
+from api.models import StaffUser,Project,ProjectFinancePart
+from .serializers import ProjectSerializer,StaffUserSimpleSerializer,ProjectFinancePartCreateSerializer,ProjectFinancePartSerializer
 from api.serializers import StaffUserTokenSerializer
 from django.utils.dateparse import parse_date
 from django.db.models import Q
@@ -239,3 +239,46 @@ class CreateFinancialPartsView(APIView):
             created = [s.save() for s in serialized_parts]
 
         return Response({'created': [ProjectFinancePartCreateSerializer(p).data for p in created]}, status=status.HTTP_201_CREATED)
+    
+    
+class ProjectFinancePartsListAPIView(generics.ListAPIView):
+    serializer_class = ProjectFinancePartSerializer
+
+    def get_queryset(self):
+        project_code = self.kwargs.get('project_code')
+        return ProjectFinancePart.objects.filter(project_code=project_code)
+
+
+class ProjectFinancePartsUpdateAPIView(APIView):
+    def put(self, request, project_code):
+        parts_data = request.data  # expect list
+        updated_parts = []
+
+        # Collect existing part codes to delete removed ones later (optional)
+        existing_parts = ProjectFinancePart.objects.filter(project_code=project_code)
+        existing_ids = set(existing_parts.values_list('fs_part_code', flat=True))
+        incoming_ids = set(p['fs_part_code'] for p in parts_data if p.get('fs_part_code'))
+
+        # Optional: delete removed parts
+        to_delete = existing_ids - incoming_ids
+        ProjectFinancePart.objects.filter(fs_part_code__in=to_delete).delete()
+
+        for part_data in parts_data:
+            part_data['project_code'] = project_code  # ensure FK is passed
+
+            if part_data.get('fs_part_code'):
+                try:
+                    part = ProjectFinancePart.objects.get(fs_part_code=part_data['fs_part_code'], project_code=project_code)
+                    serializer = ProjectFinancePartSerializer(part, data=part_data)
+                except ProjectFinancePart.DoesNotExist:
+                    continue
+            else:
+                # Create new part
+                serializer = ProjectFinancePartSerializer(data=part_data)
+
+            if serializer.is_valid():
+                updated_parts.append(serializer.save())
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(ProjectFinancePartSerializer(updated_parts, many=True).data, status=200)

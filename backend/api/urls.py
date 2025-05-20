@@ -7,7 +7,9 @@ from .views import (StaffUserLoginView,
                     ProjectListAPIView,
                     ProjectListFinancierConfirmView,
                     ConfirmProjectByFinancierView,
-                    CreateFinancialPartsView)
+                    CreateFinancialPartsView,
+                    ProjectFinancePartsListAPIView,
+                    ProjectFinancePartsUpdateAPIView,)
 
 urlpatterns = [
     path('login/', StaffUserLoginView.as_view(), name='jwt_login'),
@@ -19,5 +21,10 @@ urlpatterns = [
     path('projects-confirm/financier/confirm/', ConfirmProjectByFinancierView.as_view(), name='confirm-project-financier'),
     path('projects-financial-parts/create/', CreateFinancialPartsView.as_view(), name='create-financial-parts'),
     path('projects/', ProjectListAPIView.as_view(), name='project-list'),
+    
+    #financepartupdate
+    path('projects-financial-parts/<int:project_code>/', ProjectFinancePartsListAPIView.as_view()),
+    path('projects-financial-parts/<int:project_code>/update/', ProjectFinancePartsUpdateAPIView.as_view()),
+    
     
 ]

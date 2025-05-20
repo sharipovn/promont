@@ -199,3 +199,5 @@ class ProjectFinancePart(models.Model):
 
     def __str__(self):
         return f"{self.fs_part_code} - {self.fs_part_name}"
+    
+

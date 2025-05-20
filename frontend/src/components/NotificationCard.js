@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { FaBell, FaEnvelope } from 'react-icons/fa';
+import { FaBell } from 'react-icons/fa';
 import { useAuth } from '../context/AuthProvider';
 import { useNavigate } from 'react-router-dom';
 import Alert from './Alert'; // adjust path if needed
@@ -95,7 +95,7 @@ export default function NotificationCard() {
       )}
 
 
-
+<div style={{ maxHeight: '300px', overflowY: 'auto' }} className="notification-card-scrollbar pe-1">
 {notifications.map((n, i) => {
   // console.log('notifications:',notifications)
   const createdAt = new Date(n.create_date);
@@ -160,6 +160,7 @@ export default function NotificationCard() {
     </div>
   );
 })}
+</div>
 
   </div>
 )}

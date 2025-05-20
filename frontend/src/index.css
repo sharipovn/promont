@@ -238,3 +238,18 @@ code {
   background-color: rgba(0, 0, 0, 0.7);
 }
 /*------------------------------ConfirmModal---------------------------------------------------*/
+/*------------------------------NOTIFICATIONSCROLL---------------------------------------------------*/
+.notification-card-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #888 transparent;
+}
+
+.notification-card-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.notification-card-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #888;
+  border-radius: 4px;
+}
+/*------------------------------NOTIFICATIONSCROLL---------------------------------------------------*/

@@ -4,22 +4,23 @@ import HoverText from './HoverText';
 import { formatDateTime } from '../utils/formatDateTime';
 import './FinArchiveRow.css';
 import FinancialPartsModal from './FinancialPartsModal'; // import the modal
+import UpdateFinancialPartsModal from './UpdateFinancialPartsModal';
 
 
 
 
-export default function FinArchiveRow({ proj }) {
+export default function FinArchiveRow({ proj,onCreated  }) {
   const hasFinancialParts = proj.finance_parts_count > 0;
   const [showModal, setShowModal] = useState(false);
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
 
   const handleClick = () => {
-    if (hasFinancialParts) {
-      console.log('📝 Editing financial parts of:', proj.project_code);
-      // navigate(`/projects/${proj.project_code}/finance-parts/edit`);
-    } else {
-      console.log('➕ Creating financial parts for:', proj.project_code);
-      setShowModal(true);
-    }
+    hasFinancialParts ? setShowUpdateModal(true) : setShowModal(true);
+  };
+
+  const handleCloseAndRefresh = (setter) => {
+    setter(false);
+    onCreated?.(); // refresh archive
   };
 
   return (
@@ -66,10 +67,17 @@ export default function FinArchiveRow({ proj }) {
         </button>
         </div>
     </div>
-    <FinancialPartsModal
-        show={showModal}
-        onHide={() => setShowModal(false)}
-        project={proj}
+      <FinancialPartsModal
+          show={showModal}
+          onHide={() => setShowModal(false)}
+          project={proj}
+          onCreated={() => handleCloseAndRefresh(setShowModal)}
+      />
+      <UpdateFinancialPartsModal
+          show={showUpdateModal}
+          onHide={() => setShowUpdateModal(false)}
+          project={proj}
+          onUpdated={() => handleCloseAndRefresh(setShowUpdateModal)}
       />
      </>
   );

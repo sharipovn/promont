@@ -3,12 +3,16 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from '../context/AuthProvider';
 import "./LoginScreen.css"; 
 import Alert from "../components/Alert";
+import { useI18n } from '../context/I18nProvider';
+
 
 
 
 export default function LoginScreen() {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const { reloadTranslations } = useI18n();
+
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -20,6 +24,7 @@ export default function LoginScreen() {
 
   try {
     await login(username, password); // 🔥 bu yetarli
+    reloadTranslations(); // 🔥 fetch latest translations after login
     navigate("/dashboard");
   } catch (err) {
     setError("Invalid username or password");
@@ -28,7 +33,7 @@ export default function LoginScreen() {
 
 
   return (
-    <div className="col-xl-2 col-md-2 col-lg-2 col-sm-4 col-xxl-2">
+    <div className="col-xl-2 col-md-2 col-lg-2 col-sm-4 col-xxl-3">
       <div className="blob top-left"></div>
       <div className="blob bottom-right"></div>
 

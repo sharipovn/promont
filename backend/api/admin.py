@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Capability, Department,StaffUser,Role,Project,ProjectFinancePart,Partner
+from .models import Capability, Department,StaffUser,Role,Project,ProjectFinancePart,Partner,Translation
 from django.contrib.auth.admin import UserAdmin
 
 
@@ -103,3 +103,14 @@ class PartnerAdmin(admin.ModelAdmin):
     search_fields = ('partner_name', 'partner_inn')
     list_filter = ('create_time',)
     ordering = ('-create_time',)
+    
+
+
+@admin.register(Translation)
+class TranslationAdmin(admin.ModelAdmin):
+    list_display = ('key', 'en', 'ru', 'uz', 'translated_by', 'update_time')
+    search_fields = ('key', 'en', 'ru', 'uz')
+    list_filter = ('translated_by', 'update_time')
+    readonly_fields = ('create_time', 'update_time')
+    ordering = ('key',)
+

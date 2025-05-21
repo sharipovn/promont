@@ -8,12 +8,12 @@ from rest_framework import status
 from django.utils.timezone import now
 from django.contrib.auth import authenticate
 from rest_framework import generics
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated,AllowAny
 from .permissions import HasCapabilityPermission
 
-from api.models import StaffUser,Project,ProjectFinancePart,Partner
-from .serializers import ProjectSerializer,StaffUserSimpleSerializer,ProjectFinancePartCreateSerializer,ProjectFinancePartSerializer,PartnerSerializer
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateAPIView
+from api.models import StaffUser,Project,ProjectFinancePart,Partner,Translation
+from .serializers import ProjectSerializer,StaffUserSimpleSerializer,ProjectFinancePartCreateSerializer,ProjectFinancePartSerializer,PartnerSerializer,TranslationSerializer
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateAPIView,ListAPIView
 from api.serializers import StaffUserTokenSerializer
 from django.utils.dateparse import parse_date
 from django.db.models import Q
@@ -341,3 +341,11 @@ class PartnerUpdateView(RetrieveUpdateAPIView):
                         HasCapabilityPermission('CAN_ADD_PARTNERS'),  # Optional if needed
                           ]
     lookup_field = 'partner_code'
+    
+
+
+
+class TranslationListView(ListAPIView):
+    queryset = Translation.objects.all()
+    serializer_class = TranslationSerializer
+    permission_classes = [AllowAny]

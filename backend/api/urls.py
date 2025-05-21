@@ -13,7 +13,8 @@ from .views import (StaffUserLoginView,
                     SendToTechDirAPIView,
                     ProjectListTechDirConfirmView,
                     PartnerListCreateView,
-                    PartnerUpdateView)
+                    PartnerUpdateView,
+                    TranslationListView)
                     
 
 urlpatterns = [
@@ -37,5 +38,7 @@ urlpatterns = [
     path('partners/', PartnerListCreateView.as_view(), name='partner-list-create'),
     path('partners/<int:partner_code>/update/', PartnerUpdateView.as_view(), name='partner-update'),
     
+    #translations
+    path('translations/', TranslationListView.as_view(), name='translation-list'),
     
 ]

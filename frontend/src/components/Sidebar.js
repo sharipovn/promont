@@ -9,10 +9,13 @@ import { PiTreeStructureBold } from "react-icons/pi";
 import { IoShieldCheckmarkOutline } from "react-icons/io5";
 import { FaListCheck } from "react-icons/fa6";
 import { SiTheboringcompany } from "react-icons/si";
+import { useI18n } from '../context/I18nProvider';
+
 
 
 export default function Sidebar() {
   const { hasCapability } = useAuth();
+  const {returnTitle } = useI18n(); // ✅ include returnTitle
   return (
     <div
       className="sidebar d-flex flex-column justify-content-start p-3 shadow"
@@ -21,6 +24,7 @@ export default function Sidebar() {
         backgroundColor: '#ffffff',
         borderRadius: '25px',
         margin: '10px',
+        userSelect:'none',
       }}
     >
       {/* Logo & Title */}
@@ -56,7 +60,7 @@ export default function Sidebar() {
               }}
             >
               <RxDesktop style={{ fontSize: 'clamp(1rem, 1vw + 0.5rem, 1.4rem)' }} />
-              <span>Home</span>
+              <span>{returnTitle('menu.home')}</span>
             </NavLink>
           </li>
 
@@ -68,7 +72,7 @@ export default function Sidebar() {
                     fontSize: 'clamp(0.85rem, 1vw + 0.4rem, 0.9rem)',
                   }}>
                 <SiOpenproject style={{ fontSize: 'clamp(1rem, 1vw + 0.5rem, 1.4rem)' }}/>
-                <span>Create Project</span>
+                <span>{returnTitle('menu.create_project')}</span>
               </NavLink>
             </li>
          )}

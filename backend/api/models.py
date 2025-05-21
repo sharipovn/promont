@@ -234,5 +234,25 @@ class Partner(models.Model):
         verbose_name = "Partner"
         verbose_name_plural = "Partners"
 
-    
 
+
+class Translation(models.Model):
+    translation_id=models.AutoField(primary_key=True)
+    key = models.CharField(max_length=100, unique=True, help_text="Unique identifier for the text (e.g., 'create_project_admin')")
+    en = models.CharField(max_length=250, blank=True, null=True, help_text="English translation")
+    ru = models.CharField(max_length=250, blank=True, null=True, help_text="Russian translation")
+    uz = models.CharField(max_length=250, blank=True, null=True, help_text="Uzbek translation")
+    translated_by = models.ForeignKey(StaffUser,on_delete=models.SET_NULL,null=True,blank=True,related_name='translations',help_text="The staff user who last updated this translation")
+    create_time = models.DateTimeField(auto_now_add=True)
+    update_time = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'app_internalization'
+        verbose_name = "Translation"
+        verbose_name_plural = "Translations"
+        ordering = ['key']
+
+
+    def __str__(self):
+        return f"{self.key} ({self.en or self.ru or self.uz or 'No translation'})"
+    

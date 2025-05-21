@@ -1,7 +1,7 @@
 # api/serializers.py
 
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from api.models import StaffUser,Project,ProjectFinancePart
+from api.models import StaffUser,Project,ProjectFinancePart,Partner
 from rest_framework import serializers
 
 
@@ -87,3 +87,18 @@ class ProjectFinancePartSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProjectFinancePart
         fields = '__all__'
+        
+
+class PartnerSerializer(serializers.ModelSerializer):
+    create_user_fio = serializers.CharField(source='create_user.fio', read_only=True)
+
+    class Meta:
+        model = Partner
+        fields = [
+            'partner_code',
+            'partner_name',
+            'partner_inn',
+            'create_time',
+            'update_time',
+            'create_user_fio',
+        ]

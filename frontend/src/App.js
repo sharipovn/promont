@@ -5,6 +5,7 @@ import FinProjectConfirmScreen from './screens/FinProjectConfirmScreen'; // opti
 import CreateProjectScreen from './screens/CreateProjectScreen'; // optional
 import VerifyTechDirScreen from './screens/VerifyTechDirScreen'; // optional
 import NoAccessScreen from './screens/NoAccessScreen';
+import AddOrganisationScreen from './screens/AddOrganisationScreen';
 import PrivateRoute from './context/PrivateRoute';
 import { PERMISSIONS } from './constants/permissions';
 
@@ -28,6 +29,9 @@ export default function App() {
       <Route path="/tech-dir-check-and-attach-gip" element={<PrivateRoute requiredCapabilities={[
                                                           PERMISSIONS.CAN_VIEW,PERMISSIONS.CAN_CHECK_AND_GIP_ATTACH
                                                         ]}><VerifyTechDirScreen /></PrivateRoute>} />
+      <Route path="/add-partners" element={<PrivateRoute requiredCapabilities={[
+                                                          PERMISSIONS.CAN_VIEW,PERMISSIONS.CAN_ADD_PARTNERS
+                                                        ]}><AddOrganisationScreen /></PrivateRoute>} />
       <Route path="/noaccess" element={<PrivateRoute><NoAccessScreen /></PrivateRoute>} />
     </Routes>
     </Router>

@@ -212,7 +212,7 @@ class ProjectFinancePart(models.Model):
 
 class Partner(models.Model):
     partner_code = models.AutoField(primary_key=True)
-    partner_name = models.CharField(max_length=500)
+    partner_name = models.CharField(max_length=500,unique=True)
     partner_inn = models.CharField(max_length=500)
 
     create_user = models.ForeignKey(

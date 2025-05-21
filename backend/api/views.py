@@ -11,13 +11,14 @@ from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from .permissions import HasCapabilityPermission
 
-from api.models import StaffUser,Project,ProjectFinancePart
-from .serializers import ProjectSerializer,StaffUserSimpleSerializer,ProjectFinancePartCreateSerializer,ProjectFinancePartSerializer
+from api.models import StaffUser,Project,ProjectFinancePart,Partner
+from .serializers import ProjectSerializer,StaffUserSimpleSerializer,ProjectFinancePartCreateSerializer,ProjectFinancePartSerializer,PartnerSerializer
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateAPIView
 from api.serializers import StaffUserTokenSerializer
 from django.utils.dateparse import parse_date
 from django.db.models import Q
 from django.db import transaction
-from .pagination import ProjectsPagination,ProjectsFiancierConfirmPagination
+from .pagination import ProjectsPagination,ProjectsFiancierConfirmPagination,PartnersPagination
 from django.utils import timezone
 from rest_framework.views import APIView
 
@@ -318,3 +319,25 @@ class ProjectListTechDirConfirmView(generics.ListAPIView):
             qs = qs.exclude(finance_parts__tech_dir_confirm=True)
 
         return qs.order_by('-create_date')
+    
+    
+class PartnerListCreateView(ListCreateAPIView):
+    queryset = Partner.objects.all().order_by('-update_time')
+    serializer_class = PartnerSerializer
+    pagination_class = PartnersPagination
+    permission_classes = [IsAuthenticated,
+                          HasCapabilityPermission('CAN_ADD_PARTNERS'),  # Optional if needed
+                          ]
+
+    def perform_create(self, serializer):
+        serializer.save(create_user=self.request.user)
+
+
+class PartnerUpdateView(RetrieveUpdateAPIView):
+    queryset = Partner.objects.all()
+    serializer_class = PartnerSerializer
+    permission_classes = [
+                        IsAuthenticated,
+                        HasCapabilityPermission('CAN_ADD_PARTNERS'),  # Optional if needed
+                          ]
+    lookup_field = 'partner_code'

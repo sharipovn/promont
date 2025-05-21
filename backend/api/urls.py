@@ -11,7 +11,9 @@ from .views import (StaffUserLoginView,
                     ProjectFinancePartsListAPIView,
                     ProjectFinancePartsUpdateAPIView,
                     SendToTechDirAPIView,
-                    ProjectListTechDirConfirmView)
+                    ProjectListTechDirConfirmView,
+                    PartnerListCreateView,
+                    PartnerUpdateView)
                     
 
 urlpatterns = [
@@ -30,6 +32,10 @@ urlpatterns = [
     path('projects-financial-parts/<int:project_code>/update/', ProjectFinancePartsUpdateAPIView.as_view()),
     path('projects-financial-parts/<int:project_code>/send-to-tech-dir/', SendToTechDirAPIView.as_view()),
     path('projects-confirm/tech-dir/', ProjectListTechDirConfirmView.as_view(), name='projects-confirm-tech-dir'),
+    
+    #organisationadd
+    path('partners/', PartnerListCreateView.as_view(), name='partner-list-create'),
+    path('partners/<int:partner_code>/update/', PartnerUpdateView.as_view(), name='partner-update'),
     
     
 ]

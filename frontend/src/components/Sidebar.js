@@ -5,9 +5,10 @@ import { RxDesktop } from "react-icons/rx";
 import { SiOpenproject } from "react-icons/si";
 import { useAuth } from '../context/AuthProvider';
 import { PERMISSIONS } from '../constants/permissions'; // 👈 import permissions
-import { PiTreeViewFill } from "react-icons/pi";
+import { PiTreeStructureBold } from "react-icons/pi";
 import { IoShieldCheckmarkOutline } from "react-icons/io5";
-
+import { FaListCheck } from "react-icons/fa6";
+import { SiTheboringcompany } from "react-icons/si";
 
 
 export default function Sidebar() {
@@ -78,7 +79,7 @@ export default function Sidebar() {
                     color: '#344767',
                     fontSize: 'clamp(0.85rem, 1vw + 0.4rem, 0.9rem)',
                   }}>
-                <PiTreeViewFill style={{ fontSize: 'clamp(1rem, 1vw + 0.5rem, 1.4rem)' }}/>
+                <FaListCheck style={{ fontSize: 'clamp(1rem, 1vw + 0.5rem, 1.4rem)' }}/>
                 <span>Confirm Projects (Financier)</span>
               </NavLink>
             </li>
@@ -92,6 +93,42 @@ export default function Sidebar() {
                   }}>
                 <IoShieldCheckmarkOutline style={{ fontSize: 'clamp(1rem, 1vw + 0.5rem, 1.4rem)' }}/>
                 <span>Verify project (Tech Dir)</span>
+              </NavLink>
+            </li>
+         )}
+         {hasCapability(PERMISSIONS.CAN_ADD_DEPARTMENTS) && (
+            <li className="nav-item mt-1 mx-3">
+              <NavLink to="/add-departments" className="sidebar-link d-flex align-items-center gap-2" 
+                  style={{
+                    color: '#344767',
+                    fontSize: 'clamp(0.85rem, 1vw + 0.4rem, 0.9rem)',
+                  }}>
+                <IoShieldCheckmarkOutline style={{ fontSize: 'clamp(1rem, 1vw + 0.5rem, 1.4rem)' }}/>
+                <span>Verify project (Tech Dir)</span>
+              </NavLink>
+            </li>
+         )}
+         {hasCapability(PERMISSIONS.CAN_ADD_DEPARTMENTS) && (
+            <li className="nav-item mt-1 mx-3">
+              <NavLink to="/add-departments" className="sidebar-link d-flex align-items-center gap-2" 
+                  style={{
+                    color: '#344767',
+                    fontSize: 'clamp(0.85rem, 1vw + 0.4rem, 0.9rem)',
+                  }}>
+                <PiTreeStructureBold style={{ fontSize: 'clamp(1rem, 1vw + 0.5rem, 1.4rem)' }}/>
+                <span>Add Departments</span>
+              </NavLink>
+            </li>
+         )}
+         {hasCapability(PERMISSIONS.CAN_ADD_PARTNERS) && (
+            <li className="nav-item mt-1 mx-3">
+              <NavLink to="/add-partners" className="sidebar-link d-flex align-items-center gap-2" 
+                  style={{
+                    color: '#344767',
+                    fontSize: 'clamp(0.85rem, 1vw + 0.4rem, 0.9rem)',
+                  }}>
+                <SiTheboringcompany style={{ fontSize: 'clamp(1rem, 1vw + 0.5rem, 1.4rem)' }}/>
+                <span>Add Partners</span>
               </NavLink>
             </li>
          )}

@@ -1,8 +1,6 @@
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family:'Exo2Variable', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -126,7 +124,7 @@ code {
   border: 1px solid rgba(255, 255, 255, 0.2) !important;
   color: #f1f1f1 !important;
   border-radius: 6px !important;
-  font-family: consolas;
+  font-family: 'Exo2Variable', sans-serif;
 }
 
 .dboard-filter-input::placeholder {
@@ -219,7 +217,7 @@ code {
 .normal-style {
   font-weight: normal !important;
   font-style: normal !important;
-  font-family: Consolas, monospace !important;
+  font-family: 'Exo2Variable', sans-serif;
 }
 
 

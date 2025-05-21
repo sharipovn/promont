@@ -28,13 +28,15 @@ class ProjectSerializer(serializers.ModelSerializer):
     create_user_fio = serializers.SerializerMethodField(read_only=True)
     financier_fio = serializers.SerializerMethodField(read_only=True)
     finance_parts_count = serializers.SerializerMethodField(read_only=True)
+    all_sent_to_tech_dir = serializers.SerializerMethodField()
+    all_tech_dir_confirmed = serializers.SerializerMethodField()
     
     class Meta:
         model = Project
         fields = '__all__'
         read_only_fields = [
             'project_code', 'create_user', 'create_date', 'update_date',
-            'create_user_fio', 'financier_fio','finance_parts_count'
+            'create_user_fio', 'financier_fio','finance_parts_count','all_sent_to_tech_dir','all_tech_dir_confirmed'
         ]
         
     def get_create_user_fio(self, obj):
@@ -49,6 +51,12 @@ class ProjectSerializer(serializers.ModelSerializer):
 
     def get_finance_parts_count(self, obj):
         return obj.finance_parts.count()
+    
+    def get_all_sent_to_tech_dir(self, obj):
+        return obj.finance_parts.filter(send_to_tech_dir=False).count() == 0
+    
+    def get_all_tech_dir_confirmed(self, obj):
+        return all(part.tech_dir_confirm for part in obj.finance_parts.all())
 
 
 class StaffUserSimpleSerializer(serializers.ModelSerializer):

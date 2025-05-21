@@ -1,0 +1,101 @@
+/* Overall Modal Content */
+.custom-fin-modal .modal-content {
+  background-color:rgb(49, 62, 82);
+  border: none;
+  border-radius: 1rem;
+  font-family: 'Exo2Variable', sans-serif;
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.5);
+  color: #f8fafc;
+}
+
+/* Title */
+.viewmodal-title {
+  font-size: 1.4rem;
+  color: #fafbfb;
+  margin-bottom: 1rem;
+}
+
+/* Table Header Row */
+.viewmodal-table .row {
+  font-weight: 600;
+  color: #f1f5f9;
+}
+
+/* Table Cell Styling */
+.viewmodal-table .row > .col {
+  font-size: 0.9rem;
+}
+
+/* GIP Select Label */
+.viewmodal-body label {
+  color: #cbd5e1;
+  font-size: 0.9rem;
+  margin-bottom: 0.3rem;
+}
+
+/* Confirm and Refuse Buttons */
+.viewmodal-btn-confirm,
+.viewmodal-btn-refuse {
+  border-radius: 6px;
+  padding: 0.45rem 1.2rem;
+  font-size: 0.92rem;
+  font-weight: 500;
+  transition: background-color 0.25s ease;
+}
+
+.viewmodal-btn-confirm {
+  background-color: #198754;
+  border: 1px solid #198754;
+  color: white;
+}
+
+.viewmodal-btn-refuse {
+font-family:'Exo2Variable', sans-serif;
+  font-weight: 500;
+  font-size: 0.95rem;
+  border-radius: 8px;
+}
+
+.viewmodal-btn-refuse:hover {
+  background-color: #0ea5e9;
+  color: white;
+}
+
+
+/* Cancel Button */
+.viewmodal-btn-cancel {
+  background-color: transparent;
+  color: white;
+  border: 1px solid #94a3b8;
+  border-radius: 6px;
+  padding: 0.4rem 1.8rem;
+}
+
+/* Comment Textarea */
+.viewmodal-textarea {
+  background-color: rgba(255, 255, 255, 0.07);
+  color: #f1f5f9;
+  border: 1px solid #64748b;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-family: 'Exo2Variable', sans-serif;
+  padding: 0.6rem;
+  transition: border-color 0.2s ease;
+}
+
+.viewmodal-textarea:focus {
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.3);
+  outline: none;
+  background-color: rgba(255, 255, 255, 0.07);
+  color: white;
+  font-weight: normal;
+}
+.viewmodal-textarea::placeholder {
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.3);
+  outline: none;
+  background-color: rgba(255, 255, 255, 0.07);
+  color: white;
+  font-weight: normal;
+}

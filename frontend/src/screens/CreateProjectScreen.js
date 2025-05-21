@@ -139,7 +139,7 @@ export default function CreateProjectScreen() {
                       onChange={handleChange}
                       placeholder="Masalan: 50 000 000"
                       required
-                      style={{ borderRadius: 0, fontFamily: 'monospace', fontStyle: 'regular', fontSize: '1.2rem' }}
+                      style={{ borderRadius: 0, fontFamily: 'Exo2Variable', fontStyle: 'regular', fontSize: '1.2rem' }}
                     />
                   </div>
                 </div>

@@ -95,7 +95,7 @@ export default function FinancialPartsModal({ show, onHide, project, onCreated }
         backdrop="static"
         dialogClassName="custom-fin-modal"
       >
-        <Modal.Body className="p-4 text-light" style={{ fontFamily: 'Consolas, monospace' }}>
+        <Modal.Body className="p-4 text-light" style={{ fontFamily: 'Exo2Variable' }}>
           <h3 className="text-light mb-2">Create Financial Parts</h3>
           <h5 className="text-info">{project?.project_name}</h5>
           <div className="fs-5 mb-4 text-white">{project?.total_price.toLocaleString()} so'm</div>

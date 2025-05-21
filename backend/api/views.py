@@ -282,3 +282,39 @@ class ProjectFinancePartsUpdateAPIView(APIView):
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(ProjectFinancePartSerializer(updated_parts, many=True).data, status=200)
+    
+    
+    
+class SendToTechDirAPIView(APIView):
+    def put(self, request, project_code):
+        # Only parts that are not already sent
+        parts = ProjectFinancePart.objects.filter(
+            project_code=project_code,
+            send_to_tech_dir=False
+        )
+        count = parts.count()
+        if count > 0:
+            parts.update(send_to_tech_dir=True, send_to_tech_dir_date=now())
+            return Response({'message': f"{count} parts sent to Tech Director."}, status=status.HTTP_200_OK)
+        return Response({'message': "No new parts to send."}, status=status.HTTP_200_OK)
+    
+    
+class ProjectListTechDirConfirmView(generics.ListAPIView):
+    serializer_class = ProjectSerializer
+    pagination_class = ProjectsFiancierConfirmPagination
+    permission_classes = [
+        IsAuthenticated,
+        HasCapabilityPermission('CAN_CHECK_AND_GIP_ATTACH'),  # Optional if needed
+    ]
+
+    def get_queryset(self):
+        tech_dir_confirmed = self.request.query_params.get('tech_dir_confirmed')
+
+        qs = Project.objects.filter(finance_parts__send_to_tech_dir=True).distinct()
+
+        if tech_dir_confirmed == 'true':
+            qs = qs.filter(finance_parts__tech_dir_confirm=True)
+        elif tech_dir_confirmed == 'false':
+            qs = qs.exclude(finance_parts__tech_dir_confirm=True)
+
+        return qs.order_by('-create_date')

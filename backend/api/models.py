@@ -25,6 +25,13 @@ class Capability(models.Model):
 class Department(models.Model):
     department_id = models.AutoField(primary_key=True)
     department_name = models.CharField(max_length=100, unique=True)
+    parent = models.ForeignKey(
+        'self',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='sub_departments'
+    )
     create_time = models.DateTimeField(auto_now_add=True)
     update_time = models.DateTimeField(auto_now=True)
 
@@ -35,6 +42,7 @@ class Department(models.Model):
 
     def __str__(self):
         return self.department_name
+
 
 
 
@@ -199,5 +207,32 @@ class ProjectFinancePart(models.Model):
 
     def __str__(self):
         return f"{self.fs_part_code} - {self.fs_part_name}"
+    
+
+
+class Partner(models.Model):
+    partner_code = models.AutoField(primary_key=True)
+    partner_name = models.CharField(max_length=500)
+    partner_inn = models.CharField(max_length=500)
+
+    create_user = models.ForeignKey(
+        StaffUser,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='created_partners'
+    )
+
+    create_time = models.DateTimeField(default=timezone.now)
+    update_time = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.partner_name
+
+    class Meta:
+        db_table = 'partners'
+        verbose_name = "Partner"
+        verbose_name_plural = "Partners"
+
     
 

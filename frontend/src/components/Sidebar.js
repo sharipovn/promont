@@ -6,6 +6,7 @@ import { SiOpenproject } from "react-icons/si";
 import { useAuth } from '../context/AuthProvider';
 import { PERMISSIONS } from '../constants/permissions'; // 👈 import permissions
 import { PiTreeViewFill } from "react-icons/pi";
+import { IoShieldCheckmarkOutline } from "react-icons/io5";
 
 
 
@@ -79,6 +80,18 @@ export default function Sidebar() {
                   }}>
                 <PiTreeViewFill style={{ fontSize: 'clamp(1rem, 1vw + 0.5rem, 1.4rem)' }}/>
                 <span>Confirm Projects (Financier)</span>
+              </NavLink>
+            </li>
+         )}
+         {hasCapability(PERMISSIONS.CAN_CHECK_AND_GIP_ATTACH) && (
+            <li className="nav-item mt-1 mx-3">
+              <NavLink to="/tech-dir-check-and-attach-gip" className="sidebar-link d-flex align-items-center gap-2" 
+                  style={{
+                    color: '#344767',
+                    fontSize: 'clamp(0.85rem, 1vw + 0.4rem, 0.9rem)',
+                  }}>
+                <IoShieldCheckmarkOutline style={{ fontSize: 'clamp(1rem, 1vw + 0.5rem, 1.4rem)' }}/>
+                <span>Verify project (Tech Dir)</span>
               </NavLink>
             </li>
          )}

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Capability, Department,StaffUser,Role,Project,ProjectFinancePart
+from .models import Capability, Department,StaffUser,Role,Project,ProjectFinancePart,Partner
 from django.contrib.auth.admin import UserAdmin
 
 
@@ -12,8 +12,10 @@ class CapabilityAdmin(admin.ModelAdmin):
 
 @admin.register(Department)
 class DepartmentAdmin(admin.ModelAdmin):
-    list_display = ('department_id', 'department_name','create_time','update_time')
+    list_display = ('department_id', 'department_name', 'parent', 'create_time', 'update_time')
     search_fields = ('department_name',)
+    list_filter = ('parent',)
+
 
 
 @admin.register(StaffUser)
@@ -92,3 +94,12 @@ class ProjectFinancePartAdmin(admin.ModelAdmin):
         for field in ['fs_part_no', 'fs_part_name', 'fs_part_price', 'fs_start_date', 'fs_finish_date']:
             form.base_fields[field].required = True
         return form
+    
+    
+    
+@admin.register(Partner)
+class PartnerAdmin(admin.ModelAdmin):
+    list_display = ('partner_code', 'partner_name', 'partner_inn', 'create_user', 'create_time')
+    search_fields = ('partner_name', 'partner_inn')
+    list_filter = ('create_time',)
+    ordering = ('-create_time',)

@@ -35,9 +35,9 @@ export default function FinArchiveTab({ refresh, onRefreshHandled }) {
       });
   }, [axiosInstance, currentPage]);
 
-  useEffect(() => {
-  fetchProjects();
-    }, [currentPage, fetchProjects]);
+    useEffect(() => {
+    fetchProjects();
+      }, [currentPage, fetchProjects]);
 
   useEffect(() => {
       if (refresh) {

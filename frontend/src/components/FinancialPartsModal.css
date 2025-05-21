@@ -2,7 +2,7 @@
   background-color:rgb(49, 62, 82);
   border: none;
   border-radius: 1rem;
-  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+  font-family: 'Exo2Variable', sans-serif;
   box-shadow: 0 0 25px rgba(0, 0, 0, 0.6);
 }
 
@@ -11,7 +11,7 @@
   background-color: rgba(255, 255, 255, 0.06) !important;
   border: 1px solid rgba(255, 255, 255, 0.452) !important;
   color: #e2e8f0 !important;
-  font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif !important;
+  font-family:'Exo2Variable', sans-serif !important;
   font-size: 0.9rem;
   padding: 0.45rem 0.75rem;
   border-radius: 0.45rem;
@@ -37,7 +37,7 @@
 .custom-fin-modal h3,
 .custom-fin-modal h4,
 .custom-fin-modal .fs-5 {
-  font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+  font-family:'Exo2Variable', sans-serif;
 }
 
 .custom-fin-modal h3 {
@@ -69,7 +69,7 @@
 .custom-fin-modal .btn-outline-info,
 .custom-fin-modal .btn-outline-secondary,
 .custom-fin-modal .btn-success {
-  font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+  font-family:'Exo2Variable', sans-serif;
   font-weight: 500;
   font-size: 0.95rem;
   border-radius: 8px;

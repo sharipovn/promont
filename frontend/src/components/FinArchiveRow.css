@@ -53,6 +53,27 @@
   min-height: 38px;
 }
 
+.financial-action-btn.send-btn {
+  background: linear-gradient(145deg, #1e2430, #151a26);
+  color: #e2e8f0;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px; /* rectangular with soft rounding */
+  padding: 8px 20px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.35);
+  transition: all 0.3s ease;
+}
+
+.financial-action-btn.send-btn:hover {
+  background: linear-gradient(145deg, #273043, #1a202c);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+  transform: translateY(-1px);
+}
+
+.financial-action-btn.send-btn:active {
+  background: linear-gradient(145deg, #11161e, #0a0d13);
+  transform: scale(0.98);
+}
+
 
 
 .create-btn {

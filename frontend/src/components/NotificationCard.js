@@ -126,7 +126,7 @@ export default function NotificationCard() {
         <div className="fw-semibold text-info">{n.project_name}</div>
         <span className="badge bg-success-subtle text-success ms-auto">New Project</span>
       </div>
-      <div className="text-secondary mb-2" style={{ fontSize: '0.85rem', fontWeight: 'normal',fontFamily:'consolas' }}>
+      <div className="text-secondary mb-2" style={{ fontSize: '0.85rem', fontWeight: 'normal',fontFamily:'Exo2Variable' }}>
         {n.start_date} → {n.end_date}
       </div>
       <div

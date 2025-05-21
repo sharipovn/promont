@@ -38,7 +38,7 @@ export default function ProjectCard({ proj }) {
         transition: 'all 0.3s ease',
         cursor: 'pointer',
         maxHeight : '33vh',
-        fontFamily:'consolas',
+        fontFamily:'Exo2Variable',
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.boxShadow = '0 6px 24px rgba(0,255,255,0.3)';

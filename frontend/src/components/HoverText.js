@@ -53,7 +53,7 @@ export default function HoverText({ children, maxWidth = '100%', className = '',
                 padding: '6px 12px',
                 borderRadius: '8px',
                 fontSize: '0.8rem',
-                fontFamily: 'consolas, monospace', // ✅ Match the main content font
+                fontFamily: 'Exo2Variable', // ✅ Match the main content font
                 whiteSpace: 'nowrap',
                 boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
                 zIndex: 9999,

@@ -8,6 +8,10 @@ import CustomPagination from '../components/CustomPagination';
 import AddOrganisationModal from '../components/AddOrganisationModal'; // ✅ Import modal
 import { Button } from 'react-bootstrap';
 import './FinProjectConfirmScreen.css';
+import { useI18n } from '../context/I18nProvider';
+
+
+
 
 export default function AddOrganisationScreen() {
   const [organisations, setOrganisations] = useState([]);
@@ -16,6 +20,8 @@ export default function AddOrganisationScreen() {
   const [showAddOrganisationModal, setShowAddOrganisationModal] = useState(false); // ✅ Rename 
   const { setUser, setAccessToken } = useAuth();
   const navigate = useNavigate();
+
+  const {returnTitle } = useI18n(); // ✅ include returnTitle
 
   const axiosInstance = useMemo(() => {
     return createAxiosInstance(navigate, setUser, setAccessToken);
@@ -50,10 +56,10 @@ export default function AddOrganisationScreen() {
 
         <div style={{ width: '82%', padding: '1rem' }}>
           <div className="d-flex justify-content-between align-items-center mb-3">
-            <h5 className="text-info mb-0">Organisation List</h5>
+            <h5 className="text-info mb-0">{returnTitle('add_part.organisation_list')}</h5>
             <Button variant="primary" className="financial-action-btn send-btn" onClick={() => setShowAddOrganisationModal(true)} // ✅ Use new name
             >
-              + Add Organisation
+              + {returnTitle('add_part.add_organisation')}
             </Button>
           </div>
 

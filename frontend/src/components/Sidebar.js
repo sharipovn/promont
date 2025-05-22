@@ -114,13 +114,13 @@ export default function Sidebar() {
          )}
          {hasCapability(PERMISSIONS.CAN_ADD_DEPARTMENTS) && (
             <li className="nav-item mt-1 mx-3">
-              <NavLink to="/add-departments" className="sidebar-link d-flex align-items-center gap-2" 
+              <NavLink to="/dashboard" className="sidebar-link d-flex align-items-center gap-2" 
                   style={{
                     color: '#344767',
                     fontSize: 'clamp(0.85rem, 1vw + 0.4rem, 0.9rem)',
                   }}>
                 <PiTreeStructureBold style={{ fontSize: 'clamp(1rem, 1vw + 0.5rem, 1.4rem)' }}/>
-                <span>Add Departments</span>
+                <span>{returnTitle('menu.add_departments')}</span>
               </NavLink>
             </li>
          )}
@@ -132,7 +132,7 @@ export default function Sidebar() {
                     fontSize: 'clamp(0.85rem, 1vw + 0.4rem, 0.9rem)',
                   }}>
                 <SiTheboringcompany style={{ fontSize: 'clamp(1rem, 1vw + 0.5rem, 1.4rem)' }}/>
-                <span>Add Partners</span>
+                <span>{returnTitle('menu.add_partners')}</span>
               </NavLink>
             </li>
          )}

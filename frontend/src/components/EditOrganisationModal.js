@@ -1,32 +1,33 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
-import { useAuth } from '../context/AuthProvider';
-import DraggableModalDialog from './DraggableModalDialog'
-import { useNavigate } from 'react-router-dom';
-import { createAxiosInstance } from '../utils/createAxiosInstance';
-import { LuPlus } from "react-icons/lu";
-import Alert from './Alert';
 import { useI18n } from '../context/I18nProvider';
+import { createAxiosInstance } from '../utils/createAxiosInstance';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthProvider';
+import Alert from './Alert';
+import DraggableModalDialog from './DraggableModalDialog';
 
-
-
-export default function AddOrganisationModal({ show, onHide, onCreated }) {
-
-  const {  returnTitle } = useI18n(); // ✅ include returnTitle
-
+export default function EditOrganisationModal({ show, onHide, organisation, onUpdated }) {
+  const { returnTitle } = useI18n();
   const [name, setName] = useState('');
   const [inn, setInn] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false); // 🟡
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { setUser, setAccessToken } = useAuth();
   const navigate = useNavigate();
 
-  const axiosInstance = useMemo(
-    () => createAxiosInstance(navigate, setUser, setAccessToken),
-    [navigate, setUser, setAccessToken]
-  );
+  const axiosInstance = useMemo(() => createAxiosInstance(navigate, setUser, setAccessToken), [
+    navigate, setUser, setAccessToken
+  ]);
+
+  useEffect(() => {
+    if (organisation) {
+      setName(organisation.partner_name);
+      setInn(organisation.partner_inn);
+    }
+  }, [organisation]);
 
   const handleSubmit = async () => {
     if (!name || !inn) {
@@ -34,27 +35,25 @@ export default function AddOrganisationModal({ show, onHide, onCreated }) {
       return;
     }
 
-    setIsSubmitting(true); // 🔒 Prevent duplicate submit
+    setIsSubmitting(true);
     setError('');
     try {
-      const res = await axiosInstance.post('/partners/', {
+      await axiosInstance.put(`/partners/${organisation.partner_code}/update/`, {
         partner_name: name,
-        partner_inn: inn,
+        partner_inn: inn
       });
 
-      setSuccess('✅ Organisation successfully added.');
+      setSuccess('✅ Organisation successfully updated.');
       setTimeout(() => {
+        onUpdated?.();
         onHide();
-        onCreated?.(); // 🔄 refresh list
-        setName('');
-        setInn('');
-        setError('');
         setSuccess('');
-        setIsSubmitting(false); // 🔓
+        setError('');
+        setIsSubmitting(false);
       }, 1500);
     } catch (err) {
-      setError(`❌ ${err}`);
-      setIsSubmitting(false); // 🔓 on error too
+      setError('❌ Failed to update organisation');
+      setIsSubmitting(false);
     }
   };
 
@@ -71,14 +70,13 @@ export default function AddOrganisationModal({ show, onHide, onCreated }) {
         dialogClassName="custom-fin-modal"
       >
         <Modal.Body className="p-4 text-light" dialogAs={DraggableModalDialog}>
-          <h5 className="text-light mb-4"><LuPlus/> {returnTitle('add_part.add_organisation')}</h5>
+          <h5 className="text-light mb-4">{returnTitle('add_part.update_organisation')}</h5>
 
           <Form.Group className="mb-3">
             <Form.Label>{returnTitle('add_part.organisation_name')}</Form.Label>
             <Form.Control
               type="text"
               value={name}
-              placeholder={returnTitle('app.e.g.') + ' UZBEKENERGO LTD'}
               onChange={(e) => setName(e.target.value)}
               disabled={isSubmitting}
             />
@@ -89,7 +87,6 @@ export default function AddOrganisationModal({ show, onHide, onCreated }) {
             <Form.Control
               type="text"
               value={inn}
-              placeholder= {returnTitle('app.e.g.') + ' 123456789'}
               onChange={(e) => setInn(e.target.value)}
               disabled={isSubmitting}
             />
@@ -100,7 +97,7 @@ export default function AddOrganisationModal({ show, onHide, onCreated }) {
               {returnTitle('app.cancel')}
             </Button>
             <Button variant="success" onClick={handleSubmit} disabled={isSubmitting}>
-              {isSubmitting ? returnTitle('app.creating') + '...' : returnTitle('app.create')}
+              {isSubmitting ? returnTitle('app.updating') + '...' : returnTitle('app.update')}
             </Button>
           </div>
         </Modal.Body>

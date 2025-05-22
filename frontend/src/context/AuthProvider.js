@@ -49,8 +49,11 @@ export const AuthProvider = ({ children }) => {
       capabilities: decoded.capabilities || [],
     });
 
-    Cookies.set('access', access, { path: '/', secure: true, sameSite: 'Strict' });
-    Cookies.set('refresh', refresh, { path: '/', secure: true, sameSite: 'Strict' });
+    // Cookies.set('access', access, { path: '/', secure: true, sameSite: 'Strict' });
+    // Cookies.set('refresh', refresh, { path: '/', secure: true, sameSite: 'Strict' });
+
+    Cookies.set('access', access, { path: '/' });
+    Cookies.set('refresh', refresh, { path: '/'});
   };
 
   const logout = () => {

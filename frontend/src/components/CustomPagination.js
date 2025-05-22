@@ -1,9 +1,13 @@
 import React from "react";
 import { Pagination } from "react-bootstrap";
 import './CustomPagination.css';
+import { useI18n } from '../context/I18nProvider';
 
 
 const CustomPagination = ({ currentPage, totalPages, onPageChange }) => {
+
+const {  returnTitle } = useI18n(); // ✅ include returnTitle
+
   const handleNavigate = (pageNumber) => {
     if (pageNumber >= 1 && pageNumber <= totalPages) {
       onPageChange(pageNumber);
@@ -21,7 +25,7 @@ const CustomPagination = ({ currentPage, totalPages, onPageChange }) => {
         onClick={() => handleNavigate(currentPage - 1)}
         className="custom-pagination-btn"
       >
-        Oldingisi
+        {returnTitle('app.previous_page')}
       </Pagination.Prev>
     );
 
@@ -58,7 +62,7 @@ const CustomPagination = ({ currentPage, totalPages, onPageChange }) => {
         onClick={() => handleNavigate(currentPage + 1)}
         className="custom-pagination-btn"
       >
-        Keyingisi
+        {returnTitle('app.next_page')}
       </Pagination.Next>
     );
 

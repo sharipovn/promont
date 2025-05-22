@@ -11,8 +11,8 @@ from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated,AllowAny
 from .permissions import HasCapabilityPermission
 
-from api.models import StaffUser,Project,ProjectFinancePart,Partner,Translation
-from .serializers import ProjectSerializer,StaffUserSimpleSerializer,ProjectFinancePartCreateSerializer,ProjectFinancePartSerializer,PartnerSerializer,TranslationSerializer
+from api.models import StaffUser,Project,ProjectFinancePart,Partner,Translation,Department
+from .serializers import ProjectSerializer,StaffUserSimpleSerializer,ProjectFinancePartCreateSerializer,ProjectFinancePartSerializer,PartnerSerializer,TranslationSerializer,DepartmentSerializer
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateAPIView,ListAPIView
 from api.serializers import StaffUserTokenSerializer
 from django.utils.dateparse import parse_date
@@ -349,3 +349,23 @@ class TranslationListView(ListAPIView):
     queryset = Translation.objects.all()
     serializer_class = TranslationSerializer
     permission_classes = [AllowAny]
+    
+    
+class DepartmentListCreateView(ListCreateAPIView):
+    queryset = Department.objects.all().order_by('-update_time')
+    serializer_class = DepartmentSerializer
+    permission_classes = [IsAuthenticated, HasCapabilityPermission('CAN_ADD_DEPARTMENTS')]
+    pagination_class = PartnersPagination  # reuse or define similar pagination
+    
+    def perform_create(self, serializer):
+        serializer.save(create_user=self.request.user)
+        
+        
+class DepartmentUpdateView(RetrieveUpdateAPIView):
+    queryset = Department.objects.all()
+    serializer_class = DepartmentSerializer
+    permission_classes = [
+        IsAuthenticated,
+        HasCapabilityPermission('CAN_ADD_DEPARTMENTS'),  # adjust as needed
+    ]
+    lookup_field = 'department_id'

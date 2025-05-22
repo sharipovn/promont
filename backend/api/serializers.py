@@ -1,7 +1,7 @@
 # api/serializers.py
 
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from api.models import StaffUser,Project,ProjectFinancePart,Partner,Translation
+from api.models import StaffUser,Project,ProjectFinancePart,Partner,Translation,Department
 from rest_framework import serializers
 
 
@@ -108,3 +108,20 @@ class TranslationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Translation
         fields = ['key', 'en', 'ru', 'uz']
+        
+        
+class DepartmentSerializer(serializers.ModelSerializer):
+    parent_name = serializers.CharField(source='parent.department_name', read_only=True)
+    create_user_fio = serializers.CharField(source='create_user.fio', read_only=True)
+
+    class Meta:
+        model = Department
+        fields = [
+            'department_id',
+            'department_name',
+            'parent',
+            'parent_name',
+            'create_user_fio',
+            'create_time',
+            'update_time',
+        ]

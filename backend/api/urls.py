@@ -14,7 +14,9 @@ from .views import (StaffUserLoginView,
                     ProjectListTechDirConfirmView,
                     PartnerListCreateView,
                     PartnerUpdateView,
-                    TranslationListView)
+                    TranslationListView,
+                    DepartmentListCreateView,
+                    DepartmentUpdateView)
                     
 
 urlpatterns = [
@@ -40,5 +42,9 @@ urlpatterns = [
     
     #translations
     path('translations/', TranslationListView.as_view(), name='translation-list'),
+    
+    #departments
+    path('departments/', DepartmentListCreateView.as_view(), name='department-list-create'),
+    path('departments/<int:department_id>/update/', DepartmentUpdateView.as_view(), name='department-update'),
     
 ]

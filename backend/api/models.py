@@ -32,6 +32,13 @@ class Department(models.Model):
         blank=True,
         related_name='sub_departments'
     )
+    create_user = models.ForeignKey(
+        'StaffUser',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='created_departments'
+    )
     create_time = models.DateTimeField(auto_now_add=True)
     update_time = models.DateTimeField(auto_now=True)
 

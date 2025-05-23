@@ -1,6 +1,5 @@
 import React from 'react';
 import { FaSearch, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
-import { IoMdSettings } from "react-icons/io";
 import NotificationCard from './NotificationCard'; // 👈 Qo‘shing
 import { useAuth } from '../context/AuthProvider';
 import SettingsDropdown from './SettingsDropdown'; // joyini to‘g‘rilang

@@ -6,6 +6,7 @@ import CreateProjectScreen from './screens/CreateProjectScreen'; // optional
 import VerifyTechDirScreen from './screens/VerifyTechDirScreen'; // optional
 import NoAccessScreen from './screens/NoAccessScreen';
 import AddOrganisationScreen from './screens/AddOrganisationScreen';
+import AddDepartmentScreen from './screens/AddDepartmentScreen';
 import PrivateRoute from './context/PrivateRoute';
 import { PERMISSIONS } from './constants/permissions';
 
@@ -32,6 +33,9 @@ export default function App() {
       <Route path="/add-partners" element={<PrivateRoute requiredCapabilities={[
                                                           PERMISSIONS.CAN_VIEW,PERMISSIONS.CAN_ADD_PARTNERS
                                                         ]}><AddOrganisationScreen /></PrivateRoute>} />
+      <Route path="/add-departments" element={<PrivateRoute requiredCapabilities={[
+                                                          PERMISSIONS.CAN_VIEW,PERMISSIONS.CAN_ADD_DEPARTMENTS
+                                                        ]}><AddDepartmentScreen /></PrivateRoute>} />
       <Route path="/noaccess" element={<PrivateRoute><NoAccessScreen /></PrivateRoute>} />
     </Routes>
     </Router>

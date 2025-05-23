@@ -107,18 +107,6 @@ export default function Sidebar() {
                     color: '#344767',
                     fontSize: 'clamp(0.85rem, 1vw + 0.4rem, 0.9rem)',
                   }}>
-                <IoShieldCheckmarkOutline style={{ fontSize: 'clamp(1rem, 1vw + 0.5rem, 1.4rem)' }}/>
-                <span>Verify project (Tech Dir)</span>
-              </NavLink>
-            </li>
-         )}
-         {hasCapability(PERMISSIONS.CAN_ADD_DEPARTMENTS) && (
-            <li className="nav-item mt-1 mx-3">
-              <NavLink to="/dashboard" className="sidebar-link d-flex align-items-center gap-2" 
-                  style={{
-                    color: '#344767',
-                    fontSize: 'clamp(0.85rem, 1vw + 0.4rem, 0.9rem)',
-                  }}>
                 <PiTreeStructureBold style={{ fontSize: 'clamp(1rem, 1vw + 0.5rem, 1.4rem)' }}/>
                 <span>{returnTitle('menu.add_departments')}</span>
               </NavLink>

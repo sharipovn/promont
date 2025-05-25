@@ -10,16 +10,22 @@ import { GrProjects } from "react-icons/gr";
 import { MdAccountBalanceWallet, MdCreateNewFolder } from "react-icons/md";
 import { useNavigate } from 'react-router-dom';
 import { createAxiosInstance } from '../utils/createAxiosInstance';
+import { useI18n } from '../context/I18nProvider';
+import { withValidation } from '../utils/withValidation';
+
 
 
 
 
 export default function CreateProjectScreen() {
   const {  setAccessToken, setUser } = useAuth();
+  const { returnTitle } = useI18n();
   const navigate = useNavigate();
   const axiosInstance = useMemo(() => {
     return createAxiosInstance(navigate, setUser, setAccessToken);
   }, [navigate, setUser, setAccessToken]);
+
+  const [partnerOptions, setPartnerOptions] = useState([]);
   const [financierOptions, setFinancierOptions] = useState([]);
   const [message, setMessage] = useState(null);
   const [messageType, setMessageType] = useState(null);
@@ -30,6 +36,7 @@ export default function CreateProjectScreen() {
     start_date: '',
     end_date: '',
     financier: null,
+    partner: null, // ✅ single partner
   });
 
   const formatNumber = (value) =>
@@ -51,6 +58,7 @@ export default function CreateProjectScreen() {
       ...form,
       total_price: parseInt(form.total_price.replace(/\s/g, ''), 10),
       financier: form.financier?.value || null,
+      partner: form.partner?.value || null, // ✅ send partner_code
     };
 
     try {
@@ -82,6 +90,21 @@ export default function CreateProjectScreen() {
       });
   }, [axiosInstance]);
 
+
+  useEffect(() => {
+    axiosInstance.get('/partners/').then((res) => {
+      const options = res.data.results.map((p) => ({
+        value: p.partner_code,
+        label: `${p.partner_name} (${p.partner_inn})`,
+      }));
+      setPartnerOptions(options);
+    }).catch((err) => {
+        setMessage('❌ Server error occurred.' + err);
+        setMessageType('danger');
+        console.error('Error loading partners list:', err);
+    });
+  }, [axiosInstance]);
+
   return (
     <div className="container-fluid">
       <div className="d-flex" style={{ minHeight: '95vh' }}>
@@ -94,7 +117,7 @@ export default function CreateProjectScreen() {
             <div className="mb-5">
               <h4 className="fw-bold mb-5" style={{ color: '#344a6d' }}>
                 <span className="me-3"><GrProjects /></span>
-                Create New Project
+                {returnTitle('create_proj.create_new_project')}
               </h4>
             </div>
 
@@ -104,7 +127,7 @@ export default function CreateProjectScreen() {
                 <div className="mb-5">
                   <div className="d-flex align-items-center gap-2" style={{ color: '#8898aa' }}>
                     <BiSolidInfoCircle />
-                    <h6 className="text-uppercase fw-bold small mb-0">Project Info</h6>
+                    <h6 className="text-uppercase fw-bold small mb-0">{returnTitle('create_proj.project_info')}</h6>
                   </div>
                   <hr style={{ borderTop: '1px solid #344a6d', marginTop: '6px' }} />
                 </div>
@@ -112,7 +135,7 @@ export default function CreateProjectScreen() {
                 <div className="row g-4">
                   <div className="col-md-6">
                     <label className="form-label d-flex align-items-center gap-2" style={{ color: '#525f8d' }}>
-                      <FaFileAlt style={{ color: '#525f8d' }} /> Project Name
+                      <FaFileAlt style={{ color: '#525f8d' }} /> {returnTitle('create_proj.project_name')}
                     </label>
                     <input
                       type="text"
@@ -120,7 +143,8 @@ export default function CreateProjectScreen() {
                       name="project_name"
                       value={form.project_name}
                       onChange={handleChange}
-                      placeholder="Masalan: Energiya Monitoringi"
+                      placeholder={returnTitle('app.e.g.')+": Energiya Monitoringi"}
+                      {...withValidation(returnTitle('create_proj.project_name_required'))}
                       required
                       style={{ borderRadius: 0, fontFamily: 'inherit' }}
                     />
@@ -128,7 +152,7 @@ export default function CreateProjectScreen() {
 
                   <div className="col-md-6">
                     <label className="form-label d-flex align-items-center gap-2" style={{ color: '#525f8d' }}>
-                      <FaMoneyBill style={{ color: '#525f8d' }} /> Total Price (UZS)
+                      <FaMoneyBill style={{ color: '#525f8d' }} /> {returnTitle('create_proj.total_price')} ({returnTitle('create_proj.uzs')})
                     </label>
                     <input
                       type="text"
@@ -137,7 +161,8 @@ export default function CreateProjectScreen() {
                       name="total_price"
                       value={form.total_price}
                       onChange={handleChange}
-                      placeholder="Masalan: 50 000 000"
+                      placeholder={returnTitle('app.e.g.')+": 50 000 000"}
+                      {...withValidation(returnTitle('create_proj.total_price_required'))}
                       required
                       style={{ borderRadius: 0, fontFamily: 'Exo2Variable', fontStyle: 'regular', fontSize: '1.2rem' }}
                     />
@@ -149,14 +174,14 @@ export default function CreateProjectScreen() {
                 <div className="mb-5">
                   <div className="d-flex align-items-center gap-2" style={{ color: '#8898aa' }}>
                     <HiCalendarDateRange />
-                    <h6 className="text-uppercase fw-bold small mb-0">Period</h6>
+                    <h6 className="text-uppercase fw-bold small mb-0">{returnTitle('create_proj.period')}</h6>
                   </div>
                   <hr style={{ borderTop: '1px solid #344a6d', marginTop: '6px' }} />
                 </div>
                 <div className="row g-4">
                   <div className="col-md-6">
                     <label className="form-label d-flex align-items-center gap-2" style={{ color: '#525f8d' }}>
-                      <FaCalendarAlt style={{ color: '#525f8d' }} /> Start Date
+                      <FaCalendarAlt style={{ color: '#525f8d' }} /> {returnTitle('app.start_date')}
                     </label>
                     <input
                       type="date"
@@ -164,6 +189,7 @@ export default function CreateProjectScreen() {
                       name="start_date"
                       value={form.start_date}
                       onChange={handleChange}
+                      {...withValidation(returnTitle('app.start_date_required'))}
                       required
                       style={{ borderRadius: 0, fontFamily: 'inherit' }}
                     />
@@ -171,7 +197,7 @@ export default function CreateProjectScreen() {
 
                   <div className="col-md-6">
                     <label className="form-label d-flex align-items-center gap-2" style={{ color: '#525f8d' }}>
-                      <FaCalendarAlt style={{ color: '#525f8d' }} /> End Date
+                      <FaCalendarAlt style={{ color: '#525f8d' }} />{returnTitle('app.end_date')}
                     </label>
                     <input
                       type="date"
@@ -179,6 +205,7 @@ export default function CreateProjectScreen() {
                       name="end_date"
                       value={form.end_date}
                       onChange={handleChange}
+                      {...withValidation(returnTitle('app.end_date_required'))}
                       required
                       style={{ borderRadius: 0, fontFamily: 'inherit' }}
                     />
@@ -190,21 +217,22 @@ export default function CreateProjectScreen() {
                 <div className="mb-5">
                   <div className="d-flex align-items-center gap-2" style={{ color: '#8898aa' }}>
                     <MdAccountBalanceWallet />
-                    <h6 className="text-uppercase fw-bold small mb-0">Financier</h6>
+                    <h6 className="text-uppercase fw-bold small mb-0">{returnTitle('create_proj.financier')}</h6>
                   </div>
                   <hr style={{ borderTop: '1px solid #344a6d', marginTop: '6px' }} />
                 </div>
                 <div className="row g-4">
                   <div className="col-md-6">
                     <label className="form-label d-flex align-items-center gap-2" style={{ color: '#525f8d' }}>
-                      <FaUserTie style={{ color: '#525f8d' }} /> Select Financier
+                      <FaUserTie style={{ color: '#525f8d' }} /> {returnTitle('create_proj.select_financier')}
                     </label>
                     <Select
                       options={financierOptions}
                       value={form.financier}
                       onChange={(selectedOption) => setForm({ ...form, financier: selectedOption })}
-                      placeholder="Financierni tanlang"
+                      placeholder={returnTitle('create_proj.select_financier')}
                       className="text-primary-emphasis"
+                      required
                       isClearable
                       styles={{
                         control: (base) => ({
@@ -222,6 +250,30 @@ export default function CreateProjectScreen() {
                       }}
                     />
                   </div>
+
+                  <div className="col-md-6">
+                      <label className="form-label d-flex align-items-center gap-2" style={{ color: '#525f8d' }}>
+                        <MdAccountBalanceWallet style={{ color: '#525f8d' }} /> {returnTitle('create_proj.select_partner')}
+                      </label>
+                      <Select
+                        options={partnerOptions}
+                        value={form.partner}
+                        onChange={(selected) => setForm({ ...form, partner: selected })}
+                        placeholder={returnTitle('create_proj.select_partner')}
+                        className="text-primary-emphasis"
+                        isClearable
+                        required
+                        styles={{
+                          control: (base) => ({
+                            ...base,
+                            minHeight: 45,
+                            borderRadius: 0,
+                            fontFamily: 'inherit'
+                          }),
+                        }}
+                      />
+                    </div>
+
                 </div>
               </div>
 
@@ -231,7 +283,7 @@ export default function CreateProjectScreen() {
                   className="btn custom-create-btn d-inline-flex align-items-center gap-2 px-4 py-2 fw-semibold bg-success text-white"
                 >
                   <MdCreateNewFolder size={16} />
-                  Yaratish
+                  {returnTitle('app.create')}
                 </button>
               </div>
             </form>

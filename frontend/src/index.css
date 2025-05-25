@@ -251,3 +251,8 @@ code {
   border-radius: 4px;
 }
 /*------------------------------NOTIFICATIONSCROLL---------------------------------------------------*/
+
+.custom-textarea::placeholder {
+  color: #ccc;
+  opacity:0.3;
+}

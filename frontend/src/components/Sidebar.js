@@ -10,6 +10,7 @@ import { IoShieldCheckmarkOutline } from "react-icons/io5";
 import { FaListCheck } from "react-icons/fa6";
 import { SiTheboringcompany } from "react-icons/si";
 import { useI18n } from '../context/I18nProvider';
+import { LuLanguages } from "react-icons/lu";
 
 
 
@@ -121,6 +122,18 @@ export default function Sidebar() {
                   }}>
                 <SiTheboringcompany style={{ fontSize: 'clamp(1rem, 1vw + 0.5rem, 1.4rem)' }}/>
                 <span>{returnTitle('menu.add_partners')}</span>
+              </NavLink>
+            </li>
+         )}
+         {hasCapability(PERMISSIONS.CAN_MANAGE_TRANSLATIONS) && (
+            <li className="nav-item mt-1 mx-3">
+              <NavLink to="/manage-internalization" className="sidebar-link d-flex align-items-center gap-2" 
+                  style={{
+                    color: '#344767',
+                    fontSize: 'clamp(0.85rem, 1vw + 0.4rem, 0.9rem)',
+                  }}>
+                <LuLanguages style={{ fontSize: 'clamp(1rem, 1vw + 0.5rem, 1.4rem)' }}/>
+                <span>{returnTitle('menu.internalization')}</span>
               </NavLink>
             </li>
          )}

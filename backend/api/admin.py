@@ -1,5 +1,14 @@
 from django.contrib import admin
-from .models import Capability, Department,StaffUser,Role,Project,ProjectFinancePart,Partner,Translation
+from .models import (Capability, 
+                     Department,
+                     StaffUser,
+                     Role,
+                     Project,
+                     ProjectFinancePart,
+                     Partner,
+                     Translation,
+                     PhaseType,
+                     ProjectPhase)
 from django.contrib.auth.admin import UserAdmin
 
 
@@ -56,14 +65,14 @@ class RoleAdmin(admin.ModelAdmin):
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
     list_display = (
-        'project_code', 'project_name', 'total_price',
+        'project_code', 'project_name', 'total_price','partner',  # ✅ show partner in list
         'start_date', 'end_date',
         'financier', 'financier_confirm', 'financier_confirm_date',
         'project_gip', 'gip_confirm', 'gip_confirm_date',
         'create_user', 'create_date', 'update_date',
     )
-    list_filter = ('financier_confirm', 'gip_confirm', 'start_date', 'end_date')
-    search_fields = ('project_code', 'project_name')
+    list_filter = ('financier_confirm', 'gip_confirm', 'start_date', 'end_date', 'partner')
+    search_fields = ('project_code', 'project_name','partner__partner_name')
     
     
     
@@ -114,3 +123,43 @@ class TranslationAdmin(admin.ModelAdmin):
     readonly_fields = ('create_time', 'update_time')
     ordering = ('key',)
 
+
+
+
+@admin.register(PhaseType)
+class PhaseTypeAdmin(admin.ModelAdmin):
+    list_display = ('key', 'name', 'is_refusal', 'order')
+    search_fields = ('key', 'name')
+    list_filter = ('is_refusal',)
+    ordering = ('order',)
+    
+    
+
+
+
+@admin.register(ProjectPhase)
+class ProjectPhaseAdmin(admin.ModelAdmin):
+    list_display = (
+        'phase_id',
+        'project',
+        'phase_type',
+        'performed_by',
+        'notify_to',
+        'is_acknowledged',
+        'performed_at',
+        'acknowledged_at',
+        'is_refusal'
+    )
+    search_fields = (
+        'project__project_name',
+        'phase_type__name',
+        'performed_by__username',
+        'notify_to__username',
+    )
+    list_filter = ('phase_type', 'is_acknowledged', 'performed_at')
+    readonly_fields = ('performed_at', 'acknowledged_at')
+    ordering = ('-performed_at',)
+    
+    @admin.display(boolean=True)
+    def is_refusal(self, obj):
+        return obj.phase_type.is_refusal

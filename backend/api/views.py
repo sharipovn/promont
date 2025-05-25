@@ -11,14 +11,14 @@ from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated,AllowAny
 from .permissions import HasCapabilityPermission
 
-from api.models import StaffUser,Project,ProjectFinancePart,Partner,Translation,Department
-from .serializers import ProjectSerializer,StaffUserSimpleSerializer,ProjectFinancePartCreateSerializer,ProjectFinancePartSerializer,PartnerSerializer,TranslationSerializer,DepartmentSerializer
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateAPIView,ListAPIView
+from api.models import StaffUser,Project,ProjectFinancePart,Partner,Translation,Department,PhaseType, ProjectPhase
+from .serializers import ProjectSerializer,StaffUserSimpleSerializer,ProjectFinancePartCreateSerializer,ProjectFinancePartSerializer,PartnerSerializer,TranslationSerializer,DepartmentSerializer,TranslationSerializer
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateAPIView,ListAPIView,UpdateAPIView
 from api.serializers import StaffUserTokenSerializer
 from django.utils.dateparse import parse_date
 from django.db.models import Q
 from django.db import transaction
-from .pagination import ProjectsPagination,ProjectsFiancierConfirmPagination,PartnersPagination
+from .pagination import ProjectsPagination,ProjectsFiancierConfirmPagination,PartnersPagination,TranslationsPagination
 from django.utils import timezone
 from rest_framework.views import APIView
 
@@ -76,7 +76,24 @@ class ProjectCreateAPIView(generics.CreateAPIView):
     ]
 
     def perform_create(self, serializer):
-        serializer.save(create_user=self.request.user)
+        project = serializer.save(create_user=self.request.user)
+
+        created_phase_type = PhaseType.objects.get(key='CREATED')
+        sent_to_financier_phase_type = PhaseType.objects.get(key='SENT_TO_FINANCIER')
+
+        ProjectPhase.objects.bulk_create([
+            ProjectPhase(
+                project=project,
+                phase_type=created_phase_type,
+                performed_by=self.request.user
+            ),
+            ProjectPhase(
+                project=project,
+                phase_type=sent_to_financier_phase_type,
+                performed_by=self.request.user,
+                notify_to=project.financier
+            )
+        ])
 
 #for financier confirm project
 class ProjectListNotificationFinancierView(generics.ListAPIView):
@@ -191,14 +208,28 @@ class ConfirmProjectByFinancierView(APIView):
         project_code = request.data.get('project_code')
         if not project_code:
             return Response({"error": "Project CODE is required."}, status=status.HTTP_400_BAD_REQUEST)
+
         try:
             project = Project.objects.get(project_code=project_code)
         except Project.DoesNotExist:
             return Response({"error": "Project not found."}, status=status.HTTP_404_NOT_FOUND)
 
+        # Update project fields
         project.financier_confirm = True
         project.financier_confirm_date = timezone.now()
         project.save()
+
+        # Log project phase
+        try:
+            phase_type = PhaseType.objects.get(key='FINANCIER_CONFIRMED')
+        except PhaseType.DoesNotExist:
+            return Response({"error": "PhaseType 'FINANCIER_CONFIRMED' not found."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        ProjectPhase.objects.create(
+            project=project,
+            phase_type=phase_type,
+            performed_by=request.user
+        )
 
         return Response({"message": "Project confirmed successfully."}, status=status.HTTP_200_OK)
     
@@ -247,7 +278,14 @@ class ProjectFinancePartsListAPIView(generics.ListAPIView):
 
     def get_queryset(self):
         project_code = self.kwargs.get('project_code')
-        return ProjectFinancePart.objects.filter(project_code=project_code)
+        queryset = ProjectFinancePart.objects.filter(project_code=project_code).order_by('fs_part_code')
+
+        send_to_tech_dir = self.request.query_params.get('send_to_tech_dir')
+        if send_to_tech_dir == 'true':
+            queryset = queryset.filter(send_to_tech_dir=True)
+
+        return queryset
+
 
 
 class ProjectFinancePartsUpdateAPIView(APIView):
@@ -369,3 +407,67 @@ class DepartmentUpdateView(RetrieveUpdateAPIView):
         HasCapabilityPermission('CAN_ADD_DEPARTMENTS'),  # adjust as needed
     ]
     lookup_field = 'department_id'
+    
+
+
+
+
+
+class RefuseProjectByFinancierView(APIView):
+    permission_classes = [
+        IsAuthenticated,
+        HasCapabilityPermission('CAN_CONFIRM_PROJECT_FINANCIER'),
+    ]
+
+    def post(self, request):
+        project_code = request.data.get('project_code')
+        comment = request.data.get('comment')
+
+        if not project_code or not comment:
+            return Response({"error": "Project code and comment are required."},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            project = Project.objects.get(project_code=project_code)
+        except Project.DoesNotExist:
+            return Response({"error": "Project not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            phase_type = PhaseType.objects.get(key='FINANCIER_REFUSED')
+        except PhaseType.DoesNotExist:
+            return Response({"error": "PhaseType 'FINANCIER_REFUSED' not found."},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        # Log refusal as project phase
+        ProjectPhase.objects.create(
+            project=project,
+            phase_type=phase_type,
+            performed_by=request.user,
+            notify_to=project.create_user,
+            comment=comment,
+            is_acknowledged=False,
+        )
+
+        return Response({"message": "Project refusal logged successfully."},
+                        status=status.HTTP_200_OK)
+        
+        
+class TranslationListCreateAPIView(ListCreateAPIView):
+    queryset = Translation.objects.all().order_by('-update_time')
+    serializer_class = TranslationSerializer
+    pagination_class = TranslationsPagination  # reuse or define similar pagination
+    # permission_classes = [IsAuthenticated,HasCapabilityPermission('CAN_MANAGE_TRANSLATIONS')]
+
+    def perform_create(self, serializer):
+        serializer.save(translated_by=self.request.user)
+
+
+class TranslationUpdateAPIView(UpdateAPIView):
+    queryset = Translation.objects.all()
+    serializer_class = TranslationSerializer
+    pagination_class = TranslationsPagination  # reuse or define similar pagination
+    # permission_classes = [IsAuthenticated,HasCapabilityPermission('CAN_MANAGE_TRANSLATIONS')]
+    lookup_field = 'translation_id'
+
+    def perform_update(self, serializer):
+        serializer.save(translated_by=self.request.user)

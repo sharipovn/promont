@@ -6,12 +6,16 @@ import CustomPagination from '../components/CustomPagination';
 import ProjectConfirmRow from '../components/ProjectConfirmRow';
 import ConfirmModal from '../components/ConfirmModal';
 import Alert from '../components/Alert';
-
+import { useI18n } from '../context/I18nProvider';
+import RefuseModal from '../components/RefuseModal';
 
 export default function FinConfirmTab({onProjectConfirmed }) {
 
+  const {returnTitle}=useI18n()
+
   const [selectedProject, setSelectedProject] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [showRefuseModal, setShowRefuseModal] = useState(false);
   const [message, setMessage] = useState(null);
 
   const [projects, setProjects] = useState([]);
@@ -72,13 +76,34 @@ export default function FinConfirmTab({onProjectConfirmed }) {
   
 
 
-  const handleRefuse = (project) => {
-    console.log('❌ Cancel clicked for:', project.project_code);
-    // Optionally open ano
-    // ther modal
-  };
+    const handleRefuse = (project) => {
+      setSelectedProject(project);
+      setShowRefuseModal(true);
+    };
+
 
   
+    const handleRefuseConfirm = async (project, comment) => {
+        try {
+          await axiosInstance.post('/projects-confirm/financier/refuse/', {
+            project_code: project.project_code,
+            comment,
+          });
+
+          setMessage(`❌ Project "${project.project_name}" refused successfully.`);
+          fetchProjects();
+          // if (onProjectConfirmed) onProjectConfirmed();
+
+          setTimeout(() => setMessage(''), 3000);
+        } catch (error) {
+          const errMsg = error.response?.data?.error || 'An error occurred while refusing the project.';
+          setMessage(`❌ ${errMsg}`);
+          setTimeout(() => setMessage(''), 4000);
+        }
+      };
+
+
+
   useEffect(() => {
     fetchProjects();
   }, [currentPage, fetchProjects]);
@@ -86,7 +111,7 @@ export default function FinConfirmTab({onProjectConfirmed }) {
   return (
     <>
     <div className="mt-3">
-      <h5 className="text-info mb-4">Tasdiqlanmagan loyihalar ro'yxati</h5>
+      <h5 className="text-info mb-4">{returnTitle('fin_confirm.list_of_not_confirmed_projects')}</h5>
       <Alert message={message} type="info" />
       <div className="custom-scroll d-flex flex-column gap-2 px-1" style={{ height: '64vh', overflowY: 'auto' }}>
         {projects.map((proj, i) => (
@@ -113,6 +138,13 @@ export default function FinConfirmTab({onProjectConfirmed }) {
           onConfirm={handleConfirmProject}
           project={selectedProject}
       />
+      <RefuseModal
+        show={showRefuseModal}
+        onHide={() => setShowRefuseModal(false)}
+        onRefuseConfirm={handleRefuseConfirm}
+        project={selectedProject}
+      />
+
       </div>
       </>
   );

@@ -7,6 +7,7 @@ import VerifyTechDirScreen from './screens/VerifyTechDirScreen'; // optional
 import NoAccessScreen from './screens/NoAccessScreen';
 import AddOrganisationScreen from './screens/AddOrganisationScreen';
 import AddDepartmentScreen from './screens/AddDepartmentScreen';
+import TranslationScreen from './screens/TranslationScreen';
 import PrivateRoute from './context/PrivateRoute';
 import { PERMISSIONS } from './constants/permissions';
 
@@ -36,6 +37,9 @@ export default function App() {
       <Route path="/add-departments" element={<PrivateRoute requiredCapabilities={[
                                                           PERMISSIONS.CAN_VIEW,PERMISSIONS.CAN_ADD_DEPARTMENTS
                                                         ]}><AddDepartmentScreen /></PrivateRoute>} />
+      <Route path="/manage-internalization" element={<PrivateRoute requiredCapabilities={[
+                                                          PERMISSIONS.CAN_VIEW,PERMISSIONS.CAN_MANAGE_TRANSLATIONS
+                                                        ]}><TranslationScreen /></PrivateRoute>} />
       <Route path="/noaccess" element={<PrivateRoute><NoAccessScreen /></PrivateRoute>} />
     </Routes>
     </Router>

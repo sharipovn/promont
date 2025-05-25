@@ -164,6 +164,13 @@ class Project(models.Model):
     create_user = models.ForeignKey(
         StaffUser, on_delete=models.SET_NULL, null=True, related_name='created_projects'
     )
+    partner = models.ForeignKey(
+        'Partner',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='projects'
+    )
     create_date = models.DateTimeField(auto_now_add=True)
     update_date = models.DateTimeField(auto_now=True)
 
@@ -263,3 +270,110 @@ class Translation(models.Model):
     def __str__(self):
         return f"{self.key} ({self.en or self.ru or self.uz or 'No translation'})"
     
+    
+
+
+class PhaseType(models.Model):
+    phase_type_id = models.AutoField(primary_key=True)
+    key = models.CharField(max_length=50, unique=True)  # Example: SENT_TO_FINANCIER
+    name = models.CharField(max_length=100)             # Example: Sent to Financier
+    description = models.TextField(blank=True, null=True)
+    is_refusal = models.BooleanField(default=False)     # Is this a refusal-type phase?
+    order = models.PositiveIntegerField(default=0)      # For frontend timeline sorting
+
+    class Meta:
+        db_table = 'project_phase_types'
+        verbose_name = "Phase Type"
+        verbose_name_plural = "Phase Types"
+        ordering = ['order']
+
+    def __str__(self):
+        return f"{self.name} ({self.key})"
+
+
+
+
+
+class ProjectPhase(models.Model):
+    phase_id = models.AutoField(primary_key=True)
+
+    project = models.ForeignKey(
+        'Project',
+        on_delete=models.CASCADE,
+        related_name='phases',
+        verbose_name="Project"
+    )
+
+    phase_type = models.ForeignKey(
+        'PhaseType',
+        on_delete=models.SET_NULL,
+        null=True,
+        db_column='phase_type_id',
+        verbose_name="Phase Type"
+    )
+
+    comment = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="Comment or Reason"
+    )
+
+    performed_by = models.ForeignKey(
+        'StaffUser',
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='performed_project_phases',
+        verbose_name="Performed By"
+    )
+
+    performed_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Performed At"
+    )
+
+    notify_to = models.ForeignKey(
+        'StaffUser',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='phases_to_respond',
+        verbose_name="Notify To"
+    )
+
+    is_acknowledged = models.BooleanField(
+        default=False,
+        verbose_name="Acknowledged?"
+    )
+
+    acknowledged_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="Acknowledged At"
+    )
+
+    acknowledged_by = models.ForeignKey(
+        'StaffUser',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='acknowledged_refusals',
+        verbose_name="Acknowledged By"
+    )
+
+    class Meta:
+        db_table = 'project_phases'
+        verbose_name = "Project Phase"
+        verbose_name_plural = "Project Phases"
+        ordering = ['-performed_at']
+
+    def __str__(self):
+        return f"{self.project.project_name} - {self.phase_type.name if self.phase_type else 'Unknown'}"
+
+    def acknowledge(self, user):
+        """Mark the refusal as acknowledged by the notified user"""
+        from django.utils import timezone
+        self.is_acknowledged = True
+        self.acknowledged_by = user
+        self.acknowledged_at = timezone.now()
+        self.save(update_fields=['is_acknowledged', 'acknowledged_by', 'acknowledged_at'])
+

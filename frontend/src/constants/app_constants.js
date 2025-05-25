@@ -1,0 +1,5 @@
+export const CONSTANTS = {
+  FINANCIER_REFUSED: 'FINANCIER_REFUSED',
+  FINANCIER_CONFIRMED: 'FINANCIER_CONFIRMED',
+  // Add other keys as needed
+};

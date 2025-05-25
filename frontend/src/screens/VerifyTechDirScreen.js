@@ -42,15 +42,14 @@ export default function VerifyTechDirScreen() {
     fetchProjects();
   }, [fetchProjects, currentPage]);
 
+
   return (
     <div className="container-fluid">
       <div className="d-flex" style={{ minHeight: '95vh' }}>
-        {/* Sidebar */}
         <div style={{ width: '18%' }}>
           <Sidebar />
         </div>
 
-        {/* Main Content */}
         <div style={{ width: '82%', padding: '1rem' }}>
           <h5 className="text-info mb-4 d-flex align-items-center gap-2">
             <FaCheckCircle /> Technical Director Review
@@ -60,7 +59,7 @@ export default function VerifyTechDirScreen() {
 
           <div className="custom-scroll d-flex flex-column gap-2 px-1" style={{ height: '64vh', overflowY: 'auto' }}>
             {projects.map((proj) => (
-              <VerifyTechDirRow key={proj.project_code} proj={proj} onVerified={fetchProjects} />
+              <VerifyTechDirRow key={proj.project_code} proj={proj}  onVerified={fetchProjects} />
             ))}
           </div>
 

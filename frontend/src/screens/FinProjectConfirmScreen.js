@@ -5,10 +5,12 @@ import FinConfirmTab from '../components/FinConfirmTab';
 import FinArchiveTab from '../components/FinArchiveTab';
 import { FaFolderOpen, FaArchive } from 'react-icons/fa';
 import './FinProjectConfirmScreen.css';
+import { useI18n } from '../context/I18nProvider';
 
 export default function FinProjectConfirmScreen() {
   const [key, setKey] = useState('confirm');
   const [refreshArchiveTab, setRefreshArchiveTab] = useState(false);
+  const {returnTitle}=useI18n()
 
   return (
     <div className="container-fluid">
@@ -27,7 +29,7 @@ export default function FinProjectConfirmScreen() {
               id="fin-tabs"
               className="custom-tabs"
             >
-              <Tab eventKey="confirm" title={<span className="d-flex align-items-center gap-1"><FaFolderOpen size={16} /> Confirming</span>}>
+              <Tab eventKey="confirm" title={<span className="d-flex align-items-center gap-1"><FaFolderOpen size={16} /> {returnTitle('fin_confirm.confirming')}</span>}>
                   <FinConfirmTab
                     onProjectConfirmed={() => {
                       setRefreshArchiveTab(true);  // trigger archive refresh
@@ -36,7 +38,7 @@ export default function FinProjectConfirmScreen() {
                   />
                 </Tab>
 
-                <Tab eventKey="archive" title={<span className="d-flex align-items-center gap-1"><FaArchive size={16} /> Archive</span>}>
+                <Tab eventKey="archive" title={<span className="d-flex align-items-center gap-1"><FaArchive size={16} /> {returnTitle('fin_confirm.archive')}</span>}>
                   <FinArchiveTab
                     refresh={refreshArchiveTab}
                     onRefreshHandled={() => setRefreshArchiveTab(false)}

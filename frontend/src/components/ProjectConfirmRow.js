@@ -2,8 +2,13 @@ import React from 'react';
 import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 import { formatDateTime } from '../utils/formatDateTime';
 import HoverText from './HoverText';
+import { useI18n } from '../context/I18nProvider';
+import { CONSTANTS } from '../constants/app_constants'; // or wherever your constants are defined
 
 export default function ProjectConfirmRow({ proj, onConfirm, onRefuse }) {
+
+    const {returnTitle}=useI18n()
+
   return (
     <div
       className="d-flex flex-column flex-md-row justify-content-between align-items-start gap-3 shadow-lg rounded-4 px-4 py-3"
@@ -20,18 +25,29 @@ export default function ProjectConfirmRow({ proj, onConfirm, onRefuse }) {
           </h6>
         </div>
         <div className="small">
-          <strong>Created by:</strong> {proj.create_user_fio}{' '}
+          <strong>{returnTitle('fin_confirm.created_by')}  :</strong>  {proj.create_user_fio}{' '}
           <span className="normal-style">({formatDateTime(proj.create_date)})</span>
         </div>
       </div>
 
       <div className="d-flex gap-2 mt-2 mt-md-0">
         <button className="btn-icon-green" onClick={() => onConfirm(proj)}>
-          <FaCheckCircle className="me-1" size={14} /> Confirm
+          <FaCheckCircle className="me-1" size={14} /> {returnTitle('fin_confirm.confirm')}
         </button>
-        <button className="btn-icon-red" onClick={() => onRefuse(proj)}>
-          <FaTimesCircle className="me-1" size={14} /> Cancel
-        </button>
+        
+
+        {proj.current_phase?.key === CONSTANTS.FINANCIER_REFUSED ? (
+          <button className="btn-icon-red rounded-1 border disabled bg-dark">
+            {returnTitle(`project_phase.${proj.current_phase?.key.toLowerCase()}`)}
+          </button>
+        ) : (
+          <button className="btn-icon-red" onClick={() => onRefuse(proj)}>
+            <FaTimesCircle className="me-1" size={14} /> {returnTitle('fin_confirm.refuse')}
+          </button>
+        )}
+
+
+
       </div>
     </div>
   );

@@ -30,13 +30,16 @@ class ProjectSerializer(serializers.ModelSerializer):
     finance_parts_count = serializers.SerializerMethodField(read_only=True)
     all_sent_to_tech_dir = serializers.SerializerMethodField()
     all_tech_dir_confirmed = serializers.SerializerMethodField()
+    partner_name = serializers.CharField(source='partner.partner_name', read_only=True)
+    partner_inn = serializers.CharField(source='partner.partner_inn', read_only=True)
+    current_phase = serializers.SerializerMethodField(read_only=True)
     
     class Meta:
         model = Project
         fields = '__all__'
         read_only_fields = [
             'project_code', 'create_user', 'create_date', 'update_date',
-            'create_user_fio', 'financier_fio','finance_parts_count','all_sent_to_tech_dir','all_tech_dir_confirmed'
+            'create_user_fio', 'financier_fio','finance_parts_count','all_sent_to_tech_dir','all_tech_dir_confirmed','partner_name','partner_inn','current_phase'
         ]
         
     def get_create_user_fio(self, obj):
@@ -58,6 +61,16 @@ class ProjectSerializer(serializers.ModelSerializer):
     def get_all_tech_dir_confirmed(self, obj):
         return all(part.tech_dir_confirm for part in obj.finance_parts.all())
 
+    def get_current_phase(self, obj):
+        latest_phase = obj.phases.order_by('-performed_at').first()
+        if latest_phase and latest_phase.phase_type:
+            return {
+                "key": latest_phase.phase_type.key,
+                "name": latest_phase.phase_type.name,
+                "is_refusal": latest_phase.phase_type.is_refusal,
+                "date": latest_phase.performed_at
+            }
+        return None
 
 class StaffUserSimpleSerializer(serializers.ModelSerializer):
     class Meta:
@@ -105,9 +118,21 @@ class PartnerSerializer(serializers.ModelSerializer):
         
         
 class TranslationSerializer(serializers.ModelSerializer):
+    translated_by_fio = serializers.SerializerMethodField(read_only=True)
+
     class Meta:
         model = Translation
-        fields = ['key', 'en', 'ru', 'uz']
+        fields = [
+            'translation_id', 'key', 'en', 'ru', 'uz',
+            'translated_by', 'translated_by_fio',
+            'create_time', 'update_time'
+        ]
+        read_only_fields = ['translation_id', 'translated_by', 'translated_by_fio', 'create_time', 'update_time']
+
+    def get_translated_by_fio(self, obj):
+        if obj.translated_by:
+            return f"{obj.translated_by.fio} ({obj.translated_by.username})"
+        return None
         
         
 class DepartmentSerializer(serializers.ModelSerializer):

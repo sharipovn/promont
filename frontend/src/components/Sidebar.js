@@ -11,6 +11,7 @@ import { FaListCheck } from "react-icons/fa6";
 import { SiTheboringcompany } from "react-icons/si";
 import { useI18n } from '../context/I18nProvider';
 import { LuLanguages } from "react-icons/lu";
+import { GrTechnology } from "react-icons/gr";
 
 
 
@@ -134,6 +135,18 @@ export default function Sidebar() {
                   }}>
                 <LuLanguages style={{ fontSize: 'clamp(1rem, 1vw + 0.5rem, 1.4rem)' }}/>
                 <span>{returnTitle('menu.internalization')}</span>
+              </NavLink>
+            </li>
+         )}
+         {hasCapability(PERMISSIONS.CAN_CREATE_TECH_PARTS) && (
+            <li className="nav-item mt-1 mx-3">
+              <NavLink to="/manage-internalization" className="sidebar-link d-flex align-items-center gap-2" 
+                  style={{
+                    color: '#344767',
+                    fontSize: 'clamp(0.85rem, 1vw + 0.4rem, 0.9rem)',
+                  }}>
+                <GrTechnology style={{ fontSize: 'clamp(1rem, 1vw + 0.5rem, 1.4rem)' }}/>
+                <span>{returnTitle('menu.create_technical_parts')}</span>
               </NavLink>
             </li>
          )}

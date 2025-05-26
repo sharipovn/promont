@@ -16,7 +16,7 @@ from .serializers import ProjectSerializer,StaffUserSimpleSerializer,ProjectFina
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateAPIView,ListAPIView,UpdateAPIView
 from api.serializers import StaffUserTokenSerializer
 from django.utils.dateparse import parse_date
-from django.db.models import Count, Q
+from django.db.models import Count, Q,Subquery,OuterRef,F
 from django.db import transaction
 from .pagination import ProjectsPagination,ProjectsFiancierConfirmPagination,PartnersPagination,TranslationsPagination
 from django.utils import timezone
@@ -376,30 +376,31 @@ class ProjectListTechDirConfirmView(generics.ListAPIView):
     pagination_class = ProjectsFiancierConfirmPagination
     permission_classes = [
         IsAuthenticated,
-        HasCapabilityPermission('CAN_CHECK_AND_GIP_ATTACH'),  # Optional if needed
+        HasCapabilityPermission('CAN_CHECK_AND_GIP_ATTACH'),
     ]
 
     def get_queryset(self):
         tech_dir_confirmed = self.request.query_params.get('tech_dir_confirmed')
-        current_phase_key = self.request.query_params.get('current_phase_key')
 
+        # Base queryset: only projects with parts sent to technical director
         qs = Project.objects.filter(finance_parts__send_to_tech_dir=True).distinct()
-        if current_phase_key:
-            qs = qs.filter(phases__phase_type__key=current_phase_key)
-        elif tech_dir_confirmed == 'true':
-            # Show only projects where ALL parts are confirmed
+
+        if tech_dir_confirmed == 'true':
+            # All parts confirmed
             qs = qs.annotate(
                 unconfirmed_parts=Count('finance_parts', filter=Q(finance_parts__tech_dir_confirm=False))
             ).filter(unconfirmed_parts=0)
 
         elif tech_dir_confirmed == 'false':
-            # Show projects where AT LEAST ONE part is not confirmed
+            # Some parts not confirmed → includes refused too
             qs = qs.annotate(
-                unconfirmed_parts=Count('finance_parts', filter=Q(finance_parts__tech_dir_confirm=False))
-            ).filter(unconfirmed_parts__gt=0)
+                total_parts=Count('finance_parts'),
+                confirmed_parts=Count('finance_parts', filter=Q(finance_parts__tech_dir_confirm=True)),
+            ).filter(
+                confirmed_parts__lt=F('total_parts')
+            )
 
         return qs.order_by('-create_date')
-
     
     
 
@@ -424,8 +425,6 @@ class TechDirVerifyAPIView(APIView):
         with transaction.atomic():
             # ✅ Attach GIP
             project.project_gip_id = gip_user_id
-            project.gip_confirm = True
-            project.gip_confirm_date = timezone.now()
             project.save()
 
             # ✅ Confirm all finance parts

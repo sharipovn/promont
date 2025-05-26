@@ -38,7 +38,7 @@ export default function ViewModal({ show, onHide, project, onVerified }) {
   } else {
     setComment('');
   }
-}, [show, project]);
+}, [show, project,onVerified]);
 
 
 

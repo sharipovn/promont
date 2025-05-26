@@ -40,8 +40,6 @@ export default function VerifyTechDirScreen() {
         query.tech_dir_confirmed = 'true';
       } else if (filter === 'not_verified') {
         query.tech_dir_confirmed = 'false';
-      } else if (filter === 'refused') {
-        query.current_phase_key = 'TECH_DIR_REFUSED';
       }
 
     axiosInstance
@@ -73,35 +71,32 @@ export default function VerifyTechDirScreen() {
 
           <div className="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
             <h5 className="text-info d-flex align-items-center gap-2 mb-0">
-              <FaCheckCircle /> {returnTitle('tec_dir_confirm.technical_director_review')}
+              <FaCheckCircle/> {returnTitle("tec_dir_confirm.technical_director_review")}
             </h5>
 
             <div className="d-flex flex-wrap gap-2">
-              <Button
-                variant={filter === 'all' ? 'primary' : 'outline-primary'}
-                onClick={() => setFilter('all')}
-              >
-                {returnTitle('tec_dir_confirm.all')}
-              </Button>
-              <Button
-                variant={filter === 'not_verified' ? 'outline-warning' : 'outline-secondary'}
-                onClick={() => setFilter('not_verified')}
-              >
-                {returnTitle('tec_dir_confirm.not_verified')}
-              </Button>
-              <Button
-                variant={filter === 'verified' ? 'outline-success' : 'outline-secondary'}
-                onClick={() => setFilter('verified')}
-              >
-                {returnTitle('tec_dir_confirm.verified')}
-              </Button>
-              <Button
-                variant={filter === 'refused' ? 'outline-danger' : 'outline-secondary'}
-                onClick={() => setFilter('refused')}
-              >
-                {returnTitle('verify_tech_fin.refused')}
-              </Button>
-            </div>
+                <Button
+                  variant={filter === 'all' ? 'primary' : 'outline-primary'}
+                  onClick={() => setFilter('all')}
+                >
+                  {returnTitle('verify_tech_fin.all')}
+                </Button>
+
+                <Button
+                  variant={filter === 'not_verified' ? 'warning' : 'outline-warning'}
+                  onClick={() => setFilter('not_verified')}
+                >
+                  {returnTitle('tec_dir_confirm.not_verified')}
+                </Button>
+
+                <Button
+                  variant={filter === 'verified' ? 'success' : 'outline-success'}
+                  onClick={() => setFilter('verified')}
+                >
+                  {returnTitle('tec_dir_confirm.verified')}
+                </Button>
+              </div>
+
           </div>
 
 

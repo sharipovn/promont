@@ -16,7 +16,7 @@ from .serializers import ProjectSerializer,StaffUserSimpleSerializer,ProjectFina
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateAPIView,ListAPIView,UpdateAPIView
 from api.serializers import StaffUserTokenSerializer
 from django.utils.dateparse import parse_date
-from django.db.models import Q
+from django.db.models import Count, Q
 from django.db import transaction
 from .pagination import ProjectsPagination,ProjectsFiancierConfirmPagination,PartnersPagination,TranslationsPagination
 from django.utils import timezone
@@ -250,6 +250,11 @@ class CreateFinancialPartsView(APIView):
         if not project_code or not parts_data:
             return Response({'error': 'project_code and parts are required'}, status=status.HTTP_400_BAD_REQUEST)
 
+        try:
+            project = Project.objects.get(project_code=project_code)
+        except Project.DoesNotExist:
+            return Response({'error': 'Project not found'}, status=status.HTTP_404_NOT_FOUND)
+
         serialized_parts = []
         errors = []
 
@@ -269,6 +274,18 @@ class CreateFinancialPartsView(APIView):
 
         with transaction.atomic():
             created = [s.save() for s in serialized_parts]
+            
+            # 🔥 Add a ProjectPhase row after creation
+            try:
+                phase_type = PhaseType.objects.get(key='FIN_PARTS_CREATED')  # ✅ make sure this key exists
+            except PhaseType.DoesNotExist:
+                return Response({'error': 'PhaseType FIN_PARTS_CREATED not found'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+            ProjectPhase.objects.create(
+                project=project,
+                phase_type=phase_type,
+                performed_by=user
+            )
 
         return Response({'created': [ProjectFinancePartCreateSerializer(p).data for p in created]}, status=status.HTTP_201_CREATED)
     
@@ -324,18 +341,34 @@ class ProjectFinancePartsUpdateAPIView(APIView):
     
     
     
+
 class SendToTechDirAPIView(APIView):
     def put(self, request, project_code):
+        try:
+            project = Project.objects.get(project_code=project_code)
+        except Project.DoesNotExist:
+            return Response({'error': 'Project not found'}, status=status.HTTP_404_NOT_FOUND)
         # Only parts that are not already sent
         parts = ProjectFinancePart.objects.filter(
             project_code=project_code,
             send_to_tech_dir=False
         )
         count = parts.count()
-        if count > 0:
+        if count == 0:
+            return Response({'message': "No new parts to send."}, status=status.HTTP_200_OK)
+        with transaction.atomic():
             parts.update(send_to_tech_dir=True, send_to_tech_dir_date=now())
-            return Response({'message': f"{count} parts sent to Tech Director."}, status=status.HTTP_200_OK)
-        return Response({'message': "No new parts to send."}, status=status.HTTP_200_OK)
+            # 🔥 Add ProjectPhase
+            try:
+                phase_type = PhaseType.objects.get(key='SENT_TO_TECH_DIR')
+            except PhaseType.DoesNotExist:
+                return Response({'error': 'PhaseType SENT_TO_TECH_DIR not found.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            ProjectPhase.objects.create(
+                project=project,
+                phase_type=phase_type,
+                performed_by=request.user
+            )
+        return Response({'message': f"{count} parts sent to Tech Director."}, status=status.HTTP_200_OK)
     
     
 class ProjectListTechDirConfirmView(generics.ListAPIView):
@@ -348,16 +381,117 @@ class ProjectListTechDirConfirmView(generics.ListAPIView):
 
     def get_queryset(self):
         tech_dir_confirmed = self.request.query_params.get('tech_dir_confirmed')
+        current_phase_key = self.request.query_params.get('current_phase_key')
 
         qs = Project.objects.filter(finance_parts__send_to_tech_dir=True).distinct()
+        if current_phase_key:
+            qs = qs.filter(phases__phase_type__key=current_phase_key)
+        elif tech_dir_confirmed == 'true':
+            # Show only projects where ALL parts are confirmed
+            qs = qs.annotate(
+                unconfirmed_parts=Count('finance_parts', filter=Q(finance_parts__tech_dir_confirm=False))
+            ).filter(unconfirmed_parts=0)
 
-        if tech_dir_confirmed == 'true':
-            qs = qs.filter(finance_parts__tech_dir_confirm=True)
         elif tech_dir_confirmed == 'false':
-            qs = qs.exclude(finance_parts__tech_dir_confirm=True)
+            # Show projects where AT LEAST ONE part is not confirmed
+            qs = qs.annotate(
+                unconfirmed_parts=Count('finance_parts', filter=Q(finance_parts__tech_dir_confirm=False))
+            ).filter(unconfirmed_parts__gt=0)
 
         return qs.order_by('-create_date')
+
     
+    
+
+class TechDirVerifyAPIView(APIView):
+    permission_classes = [
+        IsAuthenticated,
+        HasCapabilityPermission('CAN_CHECK_AND_GIP_ATTACH')
+    ]
+
+    def post(self, request):
+        project_code = request.data.get('project_code')
+        gip_user_id = request.data.get('gip_user_id')
+
+        if not project_code or not gip_user_id:
+            return Response({'error': 'Project code and GIP user are required.'}, status=400)
+
+        try:
+            project = Project.objects.get(project_code=project_code)
+        except Project.DoesNotExist:
+            return Response({'error': 'Project not found'}, status=404)
+
+        with transaction.atomic():
+            # ✅ Attach GIP
+            project.project_gip_id = gip_user_id
+            project.gip_confirm = True
+            project.gip_confirm_date = timezone.now()
+            project.save()
+
+            # ✅ Confirm all finance parts
+            parts = ProjectFinancePart.objects.filter(project_code=project, send_to_tech_dir=True)
+            parts.update(
+                tech_dir_confirm=True,
+                tech_dir_confirm_date=timezone.now()
+            )
+
+            # ✅ Phase 1: TECH_DIR_CONFIRMED_AND_ATTACHED_GIP
+            phase_1 = PhaseType.objects.get(key='TECH_DIR_CONFIRMED_AND_ATTACHED_GIP')
+            ProjectPhase.objects.create(
+                project=project,
+                phase_type=phase_1,
+                performed_by=request.user,
+                notify_to=project.project_gip
+            )
+
+            # ✅ Phase 2: SENT_TO_GIP
+            phase_2 = PhaseType.objects.get(key='SENT_TO_GIP')
+            ProjectPhase.objects.create(
+                project=project,
+                phase_type=phase_2,
+                performed_by=request.user,
+                notify_to=project.project_gip
+            )
+
+        return Response({'message': 'Project confirmed and sent to GIP.'}, status=status.HTTP_200_OK)
+    
+    
+class TechDirRefuseAPIView(APIView):
+    permission_classes = [IsAuthenticated, HasCapabilityPermission('CAN_CHECK_AND_GIP_ATTACH')]
+
+    def post(self, request):
+        project_code = request.data.get('project_code')
+        comment = request.data.get('comment')
+
+        if not project_code or not comment:
+            return Response({'error': 'Project code and comment are required.'}, status=400)
+
+        try:
+            project = Project.objects.get(project_code=project_code)
+        except Project.DoesNotExist:
+            return Response({'error': 'Project not found'}, status=404)
+
+        # PhaseType with key='TECH_DIR_REFUSED' must exist
+        try:
+            phase_type = PhaseType.objects.get(key='TECH_DIR_REFUSED')
+        except PhaseType.DoesNotExist:
+            return Response({'error': 'Phase type not found'}, status=500)
+
+        ProjectPhase.objects.create(
+            project=project,
+            phase_type=phase_type,
+            comment=comment,
+            performed_by=request.user,
+            notify_to=project.financier  # example: notify financier
+        )
+
+        return Response({'message': 'Refusal recorded.'}, status=200)
+
+
+
+
+
+
     
 class PartnerListCreateView(ListCreateAPIView):
     queryset = Partner.objects.all().order_by('-update_time')

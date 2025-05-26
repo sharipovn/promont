@@ -19,7 +19,9 @@ from .views import (StaffUserLoginView,
                     DepartmentUpdateView,
                     RefuseProjectByFinancierView,
                     TranslationListCreateAPIView,
-                    TranslationUpdateAPIView)
+                    TranslationUpdateAPIView,
+                    TechDirRefuseAPIView,
+                    TechDirVerifyAPIView)
                     
 
 urlpatterns = [
@@ -38,7 +40,11 @@ urlpatterns = [
     path('projects-financial-parts/<int:project_code>/', ProjectFinancePartsListAPIView.as_view()),
     path('projects-financial-parts/<int:project_code>/update/', ProjectFinancePartsUpdateAPIView.as_view()),
     path('projects-financial-parts/<int:project_code>/send-to-tech-dir/', SendToTechDirAPIView.as_view()),
+    
+    #tech dir
     path('projects-confirm/tech-dir/', ProjectListTechDirConfirmView.as_view(), name='projects-confirm-tech-dir'),
+    path('projects/tech-dir/refuse/', TechDirRefuseAPIView.as_view()),
+    path('projects/tech-dir/verify/', TechDirVerifyAPIView.as_view()),
     
     #organisationadd
     path('partners/', PartnerListCreateView.as_view(), name='partner-list-create'),

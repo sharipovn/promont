@@ -20,6 +20,8 @@ export default function ViewModal({ show, onHide, project, onVerified }) {
   const [gipUsers, setGipUsers] = useState([]);
   const [loadingParts, setLoadingParts] = useState(true);
   const [loadingGips, setLoadingGips] = useState(true);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [isRefusing, setIsRefusing] = useState(false);
 
   const { setUser, setAccessToken } = useAuth();
   const navigate = useNavigate();
@@ -27,6 +29,18 @@ export default function ViewModal({ show, onHide, project, onVerified }) {
   const axiosInstance = useMemo(() => {
     return createAxiosInstance(navigate, setUser, setAccessToken);
   }, [navigate, setUser, setAccessToken]);
+
+
+  useEffect(() => {
+  if (show && project?.current_phase?.key === 'TECH_DIR_REFUSED') {
+    setComment(project.current_phase.comment || '');
+    onVerified?.(); // 🔥 optional refresh or callback
+  } else {
+    setComment('');
+  }
+}, [show, project]);
+
+
 
   // 🔁 Fetch finance parts
     useEffect(() => {
@@ -54,6 +68,55 @@ export default function ViewModal({ show, onHide, project, onVerified }) {
         .finally(() => setLoadingGips(false));
     }
   }, [axiosInstance,show]);
+
+    const handleRefuse = async () => {
+        if (!comment.trim()) {
+          alert("Please enter a reason.");
+          return;
+        }
+
+        setIsRefusing(true);
+        try {
+          await axiosInstance.post('/projects/tech-dir/refuse/', {
+            project_code: project.project_code,
+            comment,
+          });
+
+          setShowRefuse(false);
+          setComment('');
+          onVerified?.(); // optionally refresh parent
+          onHide(); // close modal
+        } catch (err) {
+          alert("❌ Refusal failed.");
+          console.error(err);
+        } finally {
+          setIsRefusing(false);
+        }
+    };
+
+    const handleVerifyConfirm = async () => {
+      if (!selectedGip) {
+        alert('Please select a Project Manager (GIP).');
+        return;
+      }
+
+      setIsVerifying(true);
+      try {
+        await axiosInstance.post('/projects/tech-dir/verify/', {
+          project_code: project.project_code,
+          gip_user_id: selectedGip.value
+        });
+
+        onVerified?.(); // 🔁 refresh parent
+        onHide();       // ✅ close modal
+      } catch (err) {
+        alert("❌ Verification failed.");
+        console.error(err);
+      } finally {
+        setIsVerifying(false);
+      }
+    };
+
 
   const gipOptions = gipUsers.map((user) => ({
     value: user.user_id,
@@ -125,13 +188,27 @@ export default function ViewModal({ show, onHide, project, onVerified }) {
                   styles={selectStyles}
                   isClearable
                   isDisabled={loadingGips}
+                  required
                 />
               </div>
 
               <div className="d-flex flex-wrap gap-3 ms-auto">
-                <Button className="viewmodal-btn-confirm" disabled={showRefuse}>
-                  <FaCheckCircle className="me-2" /> {returnTitle('tec_dir_confirm.verify_and_confirm')}
+                <Button
+                  className="viewmodal-btn-confirm"
+                  disabled={showRefuse || !selectedGip || isVerifying}
+                  onClick={handleVerifyConfirm}
+                >
+                  {isVerifying ? (
+                    <>
+                      <Spinner animation="border" size="sm" className="me-2" /> {returnTitle('tec_dir_confirm.verifying')}
+                    </>
+                  ) : (
+                    <>
+                      <FaCheckCircle className="me-2" /> {returnTitle('tec_dir_confirm.verify_and_confirm')}
+                    </>
+                  )}
                 </Button>
+
 
                 <Button
                   className="viewmodal-btn-refuse"
@@ -151,10 +228,19 @@ export default function ViewModal({ show, onHide, project, onVerified }) {
                   className="viewmodal-textarea mb-3"
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
+                  required
                 />
                 <div className="d-flex justify-content-end">
-                  <Button className="viewmodal-btn-refuse-submit">
-                    {returnTitle('app.confirm_refusal')}
+                  <Button
+                    className="viewmodal-btn-refuse-submit"
+                    onClick={handleRefuse}
+                    disabled={isRefusing}
+                  >
+                    {isRefusing ? (
+                      <>
+                        <Spinner animation="border" size="sm" className="me-2" /> {returnTitle('app.confirming_refusal')}
+                      </>
+                    ) : returnTitle('app.confirm_refusal')}
                   </Button>
                 </div>
               </>

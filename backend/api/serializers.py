@@ -68,7 +68,8 @@ class ProjectSerializer(serializers.ModelSerializer):
                 "key": latest_phase.phase_type.key,
                 "name": latest_phase.phase_type.name,
                 "is_refusal": latest_phase.phase_type.is_refusal,
-                "date": latest_phase.performed_at
+                "date": latest_phase.performed_at,
+                "comment": latest_phase.comment,
             }
         return None
 

@@ -7,13 +7,23 @@ import CustomPagination from '../components/CustomPagination';
 import Alert from '../components/Alert';
 import VerifyTechDirRow from '../components/VerifyTechDirRow';
 import { FaCheckCircle } from 'react-icons/fa';
+import {Button} from 'react-bootstrap'
+import { useI18n } from '../context/I18nProvider';
 import './FinProjectConfirmScreen.css';
 
+
+
+
 export default function VerifyTechDirScreen() {
+
+  const { returnTitle } = useI18n()
+
   const [projects, setProjects] = useState([]);
   const [message, setMessage] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+
+  const [filter, setFilter] = useState('all');
 
   const { setUser, setAccessToken } = useAuth();
   const navigate = useNavigate();
@@ -23,10 +33,19 @@ export default function VerifyTechDirScreen() {
   }, [navigate, setUser, setAccessToken]);
 
   const fetchProjects = useCallback(() => {
+
+     const query = { page: currentPage };
+
+      if (filter === 'verified') {
+        query.tech_dir_confirmed = 'true';
+      } else if (filter === 'not_verified') {
+        query.tech_dir_confirmed = 'false';
+      } else if (filter === 'refused') {
+        query.current_phase_key = 'TECH_DIR_REFUSED';
+      }
+
     axiosInstance
-      .get('/projects-confirm/tech-dir/', {
-        params: { page: currentPage, tech_dir_confirmed: false },
-      })
+      .get('/projects-confirm/tech-dir/', { params: query })
       .then((res) => {
         setProjects(res.data.results);
         setTotalPages(Math.ceil(res.data.count / 8));
@@ -36,11 +55,11 @@ export default function VerifyTechDirScreen() {
         setMessage('❌ Failed to load projects for technical director verification.');
         setTimeout(() => setMessage(null), 3000);
       });
-  }, [axiosInstance, currentPage]);
+  }, [axiosInstance, currentPage,filter]);
 
   useEffect(() => {
     fetchProjects();
-  }, [fetchProjects, currentPage]);
+  }, [fetchProjects, currentPage,filter]);
 
 
   return (
@@ -51,9 +70,40 @@ export default function VerifyTechDirScreen() {
         </div>
 
         <div style={{ width: '82%', padding: '1rem' }}>
-          <h5 className="text-info mb-4 d-flex align-items-center gap-2">
-            <FaCheckCircle /> Technical Director Review
-          </h5>
+
+          <div className="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+            <h5 className="text-info d-flex align-items-center gap-2 mb-0">
+              <FaCheckCircle /> {returnTitle('tec_dir_confirm.technical_director_review')}
+            </h5>
+
+            <div className="d-flex flex-wrap gap-2">
+              <Button
+                variant={filter === 'all' ? 'primary' : 'outline-primary'}
+                onClick={() => setFilter('all')}
+              >
+                {returnTitle('tec_dir_confirm.all')}
+              </Button>
+              <Button
+                variant={filter === 'not_verified' ? 'outline-warning' : 'outline-secondary'}
+                onClick={() => setFilter('not_verified')}
+              >
+                {returnTitle('tec_dir_confirm.not_verified')}
+              </Button>
+              <Button
+                variant={filter === 'verified' ? 'outline-success' : 'outline-secondary'}
+                onClick={() => setFilter('verified')}
+              >
+                {returnTitle('tec_dir_confirm.verified')}
+              </Button>
+              <Button
+                variant={filter === 'refused' ? 'outline-danger' : 'outline-secondary'}
+                onClick={() => setFilter('refused')}
+              >
+                {returnTitle('verify_tech_fin.refused')}
+              </Button>
+            </div>
+          </div>
+
 
           <Alert message={message} type="info" />
 

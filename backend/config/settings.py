@@ -150,3 +150,8 @@ SIMPLE_JWT = {
     "USER_ID_FIELD": "user_id", # The same value as the Users column
     "USER_ID_CLAIM": "user_id",
 }
+# For cross-site cookies
+CORS_ALLOW_CREDENTIALS = True
+
+CSRF_COOKIE_SECURE = False  # True in prod
+SESSION_COOKIE_SECURE = False

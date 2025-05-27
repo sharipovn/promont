@@ -8,7 +8,8 @@ from .models import (Capability,
                      Partner,
                      Translation,
                      PhaseType,
-                     ProjectPhase)
+                     ProjectPhase,
+                     ProjectGipPart)
 from django.contrib.auth.admin import UserAdmin
 
 
@@ -163,3 +164,23 @@ class ProjectPhaseAdmin(admin.ModelAdmin):
     @admin.display(boolean=True)
     def is_refusal(self, obj):
         return obj.phase_type.is_refusal
+
+
+
+@admin.register(ProjectGipPart)
+class ProjectGipPartAdmin(admin.ModelAdmin):
+    list_display = (
+        'tch_part_code',
+        'fs_part_code',
+        'tch_part_no',
+        'tch_part_name',
+        'tch_part_nach',
+        'tch_start_date',
+        'tch_finish_date',
+        'nach_otd_confirm',
+        'create_date',
+        'create_user_id',
+    )
+    search_fields = ('tch_part_no', 'tch_part_name')
+    list_filter = ('nach_otd_confirm', 'tch_start_date', 'tch_finish_date')
+    readonly_fields = ('create_date',)

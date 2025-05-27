@@ -8,6 +8,8 @@ import { createAxiosInstance } from '../utils/createAxiosInstance';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthProvider';
 import { VscGitPullRequestCreate } from "react-icons/vsc";
+import GipFinPartsModal from './GipFinPartsModal';
+
 
 
 
@@ -15,6 +17,7 @@ import { VscGitPullRequestCreate } from "react-icons/vsc";
 export default function CreateTechnicalRow({ proj, onUpdated }) {
   const { returnTitle } = useI18n();
   const [loading, setLoading] = useState(false);
+  const [showPartsModal, setShowPartsModal] = useState(false);
   const navigate = useNavigate();
   const { setUser, setAccessToken } = useAuth();
   const axiosInstance = createAxiosInstance(navigate, setUser, setAccessToken);
@@ -53,12 +56,17 @@ export default function CreateTechnicalRow({ proj, onUpdated }) {
           <span
             className="financial-action-btn send-btn text-success d-flex align-items-center gap-2"
             style={{ cursor: 'pointer' }}
-            onClick={() => navigate(`/technical-parts/create/${proj.project_code}`)}
+            onClick={() => setShowPartsModal(true)}
           >
             <VscGitPullRequestCreate size={14} />
             {returnTitle('gip.make_parts')}
           </span>
         )}
+        <GipFinPartsModal
+          show={showPartsModal}
+          onHide={() => setShowPartsModal(false)}
+          project={proj}
+        />
 
       </div>
     </div>

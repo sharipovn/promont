@@ -669,3 +669,23 @@ class GIPConfirmAPIView(APIView):
             )
 
         return Response({'message': 'GIP confirmed the project and phase updated.'}, status=status.HTTP_200_OK)
+    
+    
+class GipFinancePartsListAPIView(generics.ListAPIView):
+    serializer_class = ProjectFinancePartSerializer
+    permission_classes = [IsAuthenticated, HasCapabilityPermission('CAN_CREATE_TECH_PARTS')]
+
+    def get_queryset(self):
+        project_code = self.kwargs.get('project_code')
+        queryset = ProjectFinancePart.objects.filter(project_code=project_code).order_by('fs_part_code')
+
+        send_to_tech_dir = self.request.query_params.get('send_to_tech_dir')
+        tech_dir_confirm = self.request.query_params.get('tech_dir_confirm')
+
+        if send_to_tech_dir == 'true':
+            queryset = queryset.filter(send_to_tech_dir=True)
+
+        if tech_dir_confirm == 'true':
+            queryset = queryset.filter(tech_dir_confirm=True)
+
+        return queryset

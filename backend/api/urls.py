@@ -23,7 +23,8 @@ from .views import (StaffUserLoginView,
                     TechDirRefuseAPIView,
                     TechDirVerifyAPIView,
                     GIPProjectListView, 
-                    GIPConfirmAPIView)
+                    GIPConfirmAPIView,
+                    GipFinancePartsListAPIView)
                     
 
 urlpatterns = [
@@ -66,6 +67,7 @@ urlpatterns = [
     #for gip confirm
     path('gip-projects/', GIPProjectListView.as_view(), name='gip-projects'),
     path('gip-projects/confirm-gip/', GIPConfirmAPIView.as_view(), name='gip-confirm'),
+    path('gip-projects/fn-parts/<int:project_code>/', GipFinancePartsListAPIView.as_view()),
     
     
 ]

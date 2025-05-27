@@ -98,10 +98,15 @@ class ProjectFinancePartCreateSerializer(serializers.ModelSerializer):
         
 
 class ProjectFinancePartSerializer(serializers.ModelSerializer):
+    financier_fio = serializers.SerializerMethodField(read_only=True)
     class Meta:
         model = ProjectFinancePart
         fields = '__all__'
         
+    def get_financier_fio(self, obj):
+        if obj.create_user_id:
+            return f"{obj.create_user_id.fio}"
+        return None
 
 class PartnerSerializer(serializers.ModelSerializer):
     create_user_fio = serializers.CharField(source='create_user.fio', read_only=True)

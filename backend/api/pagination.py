@@ -26,3 +26,9 @@ class TranslationsPagination(PageNumberPagination):
     page_size = 15  # Har sahifada 10 ta project
     page_size_query_param = 'page_size'  # Klient tomonidan o‘zgaruvchi page_size
     max_page_size = 15  # Maksimal ruxsat etilgan hajm
+    
+    
+class GipConfirmPagination(PageNumberPagination):
+    page_size = 10  # Har sahifada 10 ta project
+    page_size_query_param = 'page_size'  # Klient tomonidan o‘zgaruvchi page_size
+    max_page_size = 10  # Maksimal ruxsat etilgan hajm

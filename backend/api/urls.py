@@ -21,7 +21,9 @@ from .views import (StaffUserLoginView,
                     TranslationListCreateAPIView,
                     TranslationUpdateAPIView,
                     TechDirRefuseAPIView,
-                    TechDirVerifyAPIView)
+                    TechDirVerifyAPIView,
+                    GIPProjectListView, 
+                    GIPConfirmAPIView)
                     
 
 urlpatterns = [
@@ -60,5 +62,10 @@ urlpatterns = [
     #manage-translations
     path('manage-translations/', TranslationListCreateAPIView.as_view(), name='translation-list-create'),
     path('manage-translations/<int:translation_id>/update/', TranslationUpdateAPIView.as_view()),
+    
+    #for gip confirm
+    path('gip-projects/', GIPProjectListView.as_view(), name='gip-projects'),
+    path('gip-projects/confirm-gip/', GIPConfirmAPIView.as_view(), name='gip-confirm'),
+    
     
 ]

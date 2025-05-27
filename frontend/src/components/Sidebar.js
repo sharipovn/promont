@@ -140,7 +140,7 @@ export default function Sidebar() {
          )}
          {hasCapability(PERMISSIONS.CAN_CREATE_TECH_PARTS) && (
             <li className="nav-item mt-1 mx-3">
-              <NavLink to="/manage-internalization" className="sidebar-link d-flex align-items-center gap-2" 
+              <NavLink to="/manage-technical-parts" className="sidebar-link d-flex align-items-center gap-2" 
                   style={{
                     color: '#344767',
                     fontSize: 'clamp(0.85rem, 1vw + 0.4rem, 0.9rem)',

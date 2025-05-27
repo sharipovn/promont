@@ -40,7 +40,8 @@ export const createAxiosInstance = (navigate, setUser, setAccessToken) => {
           const newAccess = res.data.access;
           const decoded = jwtDecode(newAccess);
 
-          Cookies.set('access', newAccess, { path: '/', secure: true, sameSite: 'Strict' });
+          // Cookies.set('access', newAccess, { path: '/', secure: true, sameSite: 'Strict' });
+          Cookies.set('access', newAccess, { path: '/' });
           setAccessToken(newAccess);
           setUser({
             username: decoded.username,

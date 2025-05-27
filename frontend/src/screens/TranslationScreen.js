@@ -6,9 +6,11 @@ import { createAxiosInstance } from '../utils/createAxiosInstance';
 import CustomPagination from '../components/CustomPagination';
 import AddTranslationModal from '../components/AddTranslationModal';
 import TranslationTable from '../components/TranslationTable';
+import { CiSearch } from "react-icons/ci";
  
 import { Button } from 'react-bootstrap';
 import './FinProjectConfirmScreen.css';
+import './TranslationScreen.css';
 import { useI18n } from '../context/I18nProvider';
 
 export default function TranslationScreen() {
@@ -16,6 +18,8 @@ export default function TranslationScreen() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
 
   const { setUser, setAccessToken } = useAuth();
   const navigate = useNavigate();
@@ -27,13 +31,18 @@ export default function TranslationScreen() {
 
   const fetchTranslations = useCallback(() => {
     axiosInstance
-      .get('/manage-translations/', { params: { page: currentPage } })
+      .get('/manage-translations/', {
+        params: {
+          page: currentPage,
+          search: searchQuery || undefined,  // only include if present
+        },
+      })
       .then((res) => {
         setTranslations(res.data.results);
-        setTotalPages(Math.ceil(res.data.count /15));
+        setTotalPages(Math.ceil(res.data.count / 15));
       })
       .catch((err) => console.error('❌ Failed to fetch translations:', err));
-  }, [axiosInstance, currentPage]);
+  }, [axiosInstance, currentPage, searchQuery]);
 
   useEffect(() => {
     fetchTranslations();
@@ -49,10 +58,36 @@ export default function TranslationScreen() {
           <div style={{ width: '82%', padding: '1rem' }}>
             <div className="d-flex justify-content-between align-items-center mb-3">
               <h5 className="text-info mb-0">{returnTitle('internalization.translation_list')}</h5>
-              <Button variant="primary" className="financial-action-btn send-btn" onClick={() => setShowAddModal(true)}>
-                + {returnTitle('internalization.add_translations')}
-              </Button>
+
+              <div className="d-flex gap-2 align-items-center">
+                <div className="translation-search-wrapper">
+                <CiSearch className="search-icon" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      setCurrentPage(1);
+                      fetchTranslations();
+                    }
+                  }}
+                  className="translation-search-input"
+                  placeholder={returnTitle('internalization.search_by_key')}
+                />
+              </div>
+
+
+                <Button
+                  variant="primary"
+                  className="financial-action-btn send-btn"
+                  onClick={() => setShowAddModal(true)}
+                >
+                  + {returnTitle('internalization.add_translations')}
+                </Button>
+              </div>
             </div>
+
 
             <div className="custom-scroll d-flex flex-column gap-2 px-1" style={{ height: '75vh', overflowY: 'auto' }}>
               <TranslationTable translations={translations} onUpdated={fetchTranslations} />

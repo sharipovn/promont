@@ -18,9 +18,11 @@ from api.serializers import StaffUserTokenSerializer
 from django.utils.dateparse import parse_date
 from django.db.models import Count, Q,Subquery,OuterRef,F
 from django.db import transaction
-from .pagination import ProjectsPagination,ProjectsFiancierConfirmPagination,PartnersPagination,TranslationsPagination
+from .pagination import ProjectsPagination,ProjectsFiancierConfirmPagination,PartnersPagination,TranslationsPagination,GipConfirmPagination
 from django.utils import timezone
 from rest_framework.views import APIView
+from rest_framework.filters import SearchFilter
+
 
 
 
@@ -589,7 +591,10 @@ class TranslationListCreateAPIView(ListCreateAPIView):
     queryset = Translation.objects.all().order_by('-update_time')
     serializer_class = TranslationSerializer
     pagination_class = TranslationsPagination  # reuse or define similar pagination
+    filter_backends = [SearchFilter]
+    search_fields = ['key']  # 🔍 enables ?search=...
     # permission_classes = [IsAuthenticated,HasCapabilityPermission('CAN_MANAGE_TRANSLATIONS')]
+    
 
     def perform_create(self, serializer):
         serializer.save(translated_by=self.request.user)
@@ -604,3 +609,63 @@ class TranslationUpdateAPIView(UpdateAPIView):
 
     def perform_update(self, serializer):
         serializer.save(translated_by=self.request.user)
+        
+        
+        
+        
+        
+#gip confirm views
+class GIPProjectListView(generics.ListAPIView):
+    serializer_class = ProjectSerializer
+    pagination_class = GipConfirmPagination
+    permission_classes = [IsAuthenticated, HasCapabilityPermission('CAN_CREATE_TECH_PARTS')]
+
+    def get_queryset(self):
+        user = self.request.user  # 👈 Use the logged-in user directly
+        gip_confirm = self.request.query_params.get('gip_confirm')
+        search = self.request.query_params.get('search', '').strip()
+
+        qs = Project.objects.filter(project_gip=user)
+
+        if gip_confirm == 'true':
+            qs = qs.filter(gip_confirm=True)
+        elif gip_confirm == 'false':
+            qs = qs.filter(gip_confirm=False)
+
+        if search:
+            qs = qs.filter(Q(project_name__icontains=search))
+
+        return qs.order_by('-create_date')
+
+
+
+
+class GIPConfirmAPIView(APIView):
+    permission_classes = [IsAuthenticated, HasCapabilityPermission('CAN_CREATE_TECH_PARTS')]
+
+    def post(self, request):
+        project_code = request.data.get('project_code')
+        if not project_code:
+            return Response({'error': 'Project code is required.'}, status=400)
+
+        try:
+            project = Project.objects.get(project_code=project_code)
+        except Project.DoesNotExist:
+            return Response({'error': 'Project not found'}, status=404)
+
+        with transaction.atomic():
+            # ✅ Confirm GIP
+            project.gip_confirm = True
+            project.gip_confirm_date = timezone.now()
+            project.save(update_fields=['gip_confirm', 'gip_confirm_date'])
+
+            # ✅ Add phase: GIP_CONFIRMED
+            phase_type = PhaseType.objects.get(key='GIP_CONFIRMED')
+            ProjectPhase.objects.create(
+                project=project,
+                phase_type=phase_type,
+                performed_by=request.user,
+                notify_to=None  # or project.create_user, or whoever should be notified
+            )
+
+        return Response({'message': 'GIP confirmed the project and phase updated.'}, status=status.HTTP_200_OK)

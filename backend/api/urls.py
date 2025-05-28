@@ -24,14 +24,18 @@ from .views import (StaffUserLoginView,
                     TechDirVerifyAPIView,
                     GIPProjectListView, 
                     GIPConfirmAPIView,
-                    GipFinancePartsListAPIView)
+                    GipFinancePartsListAPIView,
+                    GipCreateTechnicalPartsView)
                     
 
 urlpatterns = [
     path('login/', StaffUserLoginView.as_view(), name='jwt_login'),
     path('refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('create-project/', ProjectCreateAPIView.as_view(), name='create-project'),
+    path('create-project/', ProjectCreateAPIView.as_view(), name='create-project'),\
+    
+    #take users with capability     
     path('users-with-capability/', UsersWithCapabilityAPIView.as_view(), name='users-with-capability'),
+    
     path('projects-notifications/financier/', ProjectListNotificationFinancierView.as_view(), name='project-notifications-financier'),
     path('projects-confirm/financier/', ProjectListFinancierConfirmView.as_view(), name='project-notifications-financier'),
     path('projects-confirm/financier/refuse/', RefuseProjectByFinancierView.as_view()),
@@ -68,6 +72,7 @@ urlpatterns = [
     path('gip-projects/', GIPProjectListView.as_view(), name='gip-projects'),
     path('gip-projects/confirm-gip/', GIPConfirmAPIView.as_view(), name='gip-confirm'),
     path('gip-projects/fn-parts/<int:project_code>/', GipFinancePartsListAPIView.as_view()),
+    path('gip-projects/create-technical-parts/', GipCreateTechnicalPartsView.as_view(), name='create-tecnical-parts'),
     
     
 ]

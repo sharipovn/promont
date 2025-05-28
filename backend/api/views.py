@@ -11,7 +11,7 @@ from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated,AllowAny
 from .permissions import HasCapabilityPermission
 
-from api.models import StaffUser,Project,ProjectFinancePart,Partner,Translation,Department,PhaseType, ProjectPhase
+from api.models import StaffUser,Project,ProjectFinancePart,Partner,Translation,Department,PhaseType, ProjectPhase,ProjectGipPart
 from .serializers import ProjectSerializer,StaffUserSimpleSerializer,ProjectFinancePartCreateSerializer,ProjectFinancePartSerializer,PartnerSerializer,TranslationSerializer,DepartmentSerializer,TranslationSerializer
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateAPIView,ListAPIView,UpdateAPIView
 from api.serializers import StaffUserTokenSerializer
@@ -689,3 +689,47 @@ class GipFinancePartsListAPIView(generics.ListAPIView):
             queryset = queryset.filter(tech_dir_confirm=True)
 
         return queryset
+    
+    
+class GipCreateTechnicalPartsView(APIView):
+    permission_classes = [IsAuthenticated, HasCapabilityPermission('CAN_CREATE_TECH_PARTS')]
+
+    def post(self, request):
+        fs_part_code = request.data.get('fs_part_code')
+        parts_data = request.data.get('parts', [])
+        print("✅ Incoming parts:", parts_data)
+        print("✅ fs_part_code:", fs_part_code)
+
+        try:
+            finance_part = ProjectFinancePart.objects.select_related('project_code').get(fs_part_code=fs_part_code)
+        except ProjectFinancePart.DoesNotExist:
+            return Response({'error': 'Finance part not found.'}, status=404)
+        print('finance_part:',finance_part)
+
+        try:
+            with transaction.atomic():
+                created_parts = []
+                for part in parts_data:
+                    obj = ProjectGipPart.objects.create(
+                        fs_part_code=finance_part,
+                        tch_part_no=part['tch_part_no'],
+                        tch_part_name=part['tch_part_name'],
+                        tch_part_nach=StaffUser.objects.get(pk=part['tch_part_nach']),
+                        tch_start_date=part['tch_start_date'],
+                        tch_finish_date=part['tch_finish_date'],
+                        create_user_id=request.user
+                    )
+                    created_parts.append(obj)
+
+                # ✅ Update project phase
+                phase_type = PhaseType.objects.get(key='GIP_CREATED_TECHNICAL_PARTS')
+                ProjectPhase.objects.create(
+                    project=finance_part.project_code,
+                    phase_type=phase_type,
+                    performed_by=request.user
+                )
+
+        except Exception as e:
+            return Response({'error': f'Failed to create technical parts: {str(e)}'}, status=400)
+
+        return Response({'message': '✅ Technical parts created and phase updated.', 'count': len(created_parts)}, status=status.HTTP_201_CREATED)

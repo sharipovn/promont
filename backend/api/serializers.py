@@ -1,7 +1,7 @@
 # api/serializers.py
 
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from api.models import StaffUser,Project,ProjectFinancePart,Partner,Translation,Department
+from api.models import StaffUser,Project,ProjectFinancePart,Partner,Translation,Department,ProjectGipPart
 from rest_framework import serializers
 
 
@@ -95,10 +95,16 @@ class ProjectFinancePartCreateSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['fs_part_code']
         
-        
+class TechnicalPartSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectGipPart
+        fields = ['tch_part_no', 'tch_part_name', 'tch_part_nach', 'tch_start_date', 'tch_finish_date']
+
 
 class ProjectFinancePartSerializer(serializers.ModelSerializer):
     financier_fio = serializers.SerializerMethodField(read_only=True)
+    existing_tech_parts = TechnicalPartSerializer(source='gip_parts', many=True, read_only=True)
+    
     class Meta:
         model = ProjectFinancePart
         fields = '__all__'

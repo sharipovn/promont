@@ -178,8 +178,8 @@ class ProjectGipPartAdmin(admin.ModelAdmin):
         'tch_start_date',
         'tch_finish_date',
         'nach_otd_confirm',
-        'create_date',
         'create_user_id',
+        'create_date',
     )
     search_fields = ('tch_part_no', 'tch_part_name')
     list_filter = ('nach_otd_confirm', 'tch_start_date', 'tch_finish_date')

@@ -383,24 +383,36 @@ class ProjectPhase(models.Model):
 
 class ProjectGipPart(models.Model):
     tch_part_code = models.AutoField(primary_key=True)
+
     fs_part_code = models.ForeignKey(
         'ProjectFinancePart',
         on_delete=models.CASCADE,
         related_name='gip_parts'
     )
+
     tch_part_no = models.CharField(max_length=50)
     tch_part_name = models.CharField(max_length=255)
-    tch_part_nach = models.BigIntegerField()
+
+    tch_part_nach = models.ForeignKey(  # 👈 updated
+        'StaffUser',
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='assigned_tech_parts'
+    )
+
     tch_start_date = models.DateField()
     tch_finish_date = models.DateField()
     create_date = models.DateTimeField(auto_now_add=True)
+
     create_user_id = models.ForeignKey(
         'StaffUser',
         on_delete=models.SET_NULL,
         null=True,
         related_name='created_gip_parts'
     )
+
     nach_otd_confirm = models.BooleanField(default=False)
+
     class Meta:
         db_table = 'project_gip_parts'
         verbose_name = 'Technical Part'
@@ -408,3 +420,4 @@ class ProjectGipPart(models.Model):
 
     def __str__(self):
         return f"{self.tch_part_no} - {self.tch_part_name}"
+

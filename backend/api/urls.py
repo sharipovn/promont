@@ -2,6 +2,7 @@ from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
 from .views import (StaffUserLoginView,
                     ProjectCreateAPIView,
+                    ProjectListCreateView,
                     UsersWithCapabilityAPIView,
                     ProjectListNotificationFinancierView,
                     ProjectListAPIView,
@@ -26,13 +27,17 @@ from .views import (StaffUserLoginView,
                     GIPConfirmAPIView,
                     GipFinancePartsListAPIView,
                     GipCreateTechnicalPartsView,
-                    GipUpdateTechnicalPartsView)
+                    GipUpdateTechnicalPartsView,)
                     
 
 urlpatterns = [
     path('login/', StaffUserLoginView.as_view(), name='jwt_login'),
     path('refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('create-project/', ProjectCreateAPIView.as_view(), name='create-project'),\
+    
+    #project-create
+    path('project-list-create/', ProjectListCreateView.as_view(), name='project-list-create'),
+    
     
     #take users with capability     
     path('users-with-capability/', UsersWithCapabilityAPIView.as_view(), name='users-with-capability'),

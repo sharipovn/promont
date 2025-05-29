@@ -19,7 +19,7 @@ from api.serializers import StaffUserTokenSerializer
 from django.utils.dateparse import parse_date
 from django.db.models import Count, Q,Subquery,OuterRef,F
 from django.db import transaction
-from .pagination import ProjectsPagination,ProjectsFiancierConfirmPagination,PartnersPagination,TranslationsPagination,GipConfirmPagination
+from .pagination import ProjectsPagination,ProjectsFiancierConfirmPagination,PartnersPagination,TranslationsPagination,GipConfirmPagination,ProjectListCreatePagination
 from django.utils import timezone
 from rest_framework.views import APIView
 from rest_framework.exceptions import ValidationError
@@ -156,7 +156,7 @@ class UsersWithCapabilityAPIView(generics.ListAPIView):
         
         
         
-        
+     
 
 
 
@@ -200,6 +200,22 @@ class ProjectListAPIView(generics.ListAPIView):
 
         return qs.order_by('-create_date')  # so‘ngi loyihalar birinchi
 
+
+
+
+class ProjectListCreateView(ListCreateAPIView):
+    serializer_class = ProjectSerializer
+    pagination_class = ProjectListCreatePagination
+
+    def get_queryset(self):
+        queryset = Project.objects.all().order_by('-create_date')
+        search = self.request.query_params.get('search')
+        if search:
+            queryset = queryset.filter(Q(project_name__icontains=search))
+        return queryset
+
+    def perform_create(self, serializer):
+        serializer.save(create_user=self.request.user)
 
 
 class ConfirmProjectByFinancierView(APIView):

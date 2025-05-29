@@ -10,7 +10,7 @@ from django.contrib.auth import authenticate
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated,AllowAny
 from .permissions import HasCapabilityPermission
-from datetime import datetime
+from datetime import datetime,date
 
 from api.models import StaffUser,Project,ProjectFinancePart,Partner,Translation,Department,PhaseType, ProjectPhase,ProjectGipPart
 from .serializers import ProjectSerializer,StaffUserSimpleSerializer,ProjectFinancePartCreateSerializer,ProjectFinancePartSerializer,PartnerSerializer,TranslationSerializer,DepartmentSerializer,TranslationSerializer
@@ -202,7 +202,6 @@ class ProjectListAPIView(generics.ListAPIView):
 
 
 
-
 class ProjectListCreateView(ListCreateAPIView):
     serializer_class = ProjectSerializer
     pagination_class = ProjectListCreatePagination
@@ -215,7 +214,35 @@ class ProjectListCreateView(ListCreateAPIView):
         return queryset
 
     def perform_create(self, serializer):
-        serializer.save(create_user=self.request.user)
+        start_date = serializer.validated_data.get('start_date')
+        end_date = serializer.validated_data.get('end_date')
+
+        if start_date >= end_date:
+            raise ValidationError({'end_date': 'End date must be after start date.'})
+        if date.today() > end_date:
+            raise ValidationError({'end_date': 'End date must be today or in the future.'})
+
+        project = serializer.save(create_user=self.request.user)
+
+        created_phase_type = PhaseType.objects.get(key='CREATED')
+        sent_to_financier_phase_type = PhaseType.objects.get(key='SENT_TO_FINANCIER')
+
+        ProjectPhase.objects.bulk_create([
+            ProjectPhase(
+                project=project,
+                phase_type=created_phase_type,
+                performed_by=self.request.user
+            ),
+            ProjectPhase(
+                project=project,
+                phase_type=sent_to_financier_phase_type,
+                performed_by=self.request.user,
+                notify_to=project.financier
+            )
+        ])
+
+
+
 
 
 class ConfirmProjectByFinancierView(APIView):

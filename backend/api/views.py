@@ -10,6 +10,7 @@ from django.contrib.auth import authenticate
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated,AllowAny
 from .permissions import HasCapabilityPermission
+from datetime import datetime
 
 from api.models import StaffUser,Project,ProjectFinancePart,Partner,Translation,Department,PhaseType, ProjectPhase,ProjectGipPart
 from .serializers import ProjectSerializer,StaffUserSimpleSerializer,ProjectFinancePartCreateSerializer,ProjectFinancePartSerializer,PartnerSerializer,TranslationSerializer,DepartmentSerializer,TranslationSerializer
@@ -21,6 +22,7 @@ from django.db import transaction
 from .pagination import ProjectsPagination,ProjectsFiancierConfirmPagination,PartnersPagination,TranslationsPagination,GipConfirmPagination
 from django.utils import timezone
 from rest_framework.views import APIView
+from rest_framework.exceptions import ValidationError
 from rest_framework.filters import SearchFilter
 
 
@@ -697,14 +699,10 @@ class GipCreateTechnicalPartsView(APIView):
     def post(self, request):
         fs_part_code = request.data.get('fs_part_code')
         parts_data = request.data.get('parts', [])
-        print("✅ Incoming parts:", parts_data)
-        print("✅ fs_part_code:", fs_part_code)
-
         try:
             finance_part = ProjectFinancePart.objects.select_related('project_code').get(fs_part_code=fs_part_code)
         except ProjectFinancePart.DoesNotExist:
             return Response({'error': 'Finance part not found.'}, status=404)
-        print('finance_part:',finance_part)
 
         try:
             with transaction.atomic():
@@ -721,7 +719,6 @@ class GipCreateTechnicalPartsView(APIView):
                     )
                     created_parts.append(obj)
 
-                # ✅ Update project phase
                 phase_type = PhaseType.objects.get(key='GIP_CREATED_TECHNICAL_PARTS')
                 ProjectPhase.objects.create(
                     project=finance_part.project_code,
@@ -733,3 +730,86 @@ class GipCreateTechnicalPartsView(APIView):
             return Response({'error': f'Failed to create technical parts: {str(e)}'}, status=400)
 
         return Response({'message': '✅ Technical parts created and phase updated.', 'count': len(created_parts)}, status=status.HTTP_201_CREATED)
+
+
+
+class GipUpdateTechnicalPartsView(APIView):
+    permission_classes = [IsAuthenticated, HasCapabilityPermission('CAN_CREATE_TECH_PARTS')]
+
+    def post(self, request):
+        fs_part_code = request.data.get('fs_part_code')
+        parts_data = request.data.get('parts', [])
+
+        print('fs_part_code:', fs_part_code)
+        print('parts_data:', parts_data)
+
+        try:
+            finance_part = ProjectFinancePart.objects.get(fs_part_code=fs_part_code)
+        except ProjectFinancePart.DoesNotExist:
+            return Response({'error': 'Finance part not found.'}, status=404)
+
+        fs_start = finance_part.fs_start_date
+        fs_finish = finance_part.fs_finish_date
+
+        incoming_codes = set()
+
+        try:
+            with transaction.atomic():
+                for part in parts_data:
+                    start = datetime.strptime(part['tch_start_date'], "%Y-%m-%d").date()
+                    end = datetime.strptime(part['tch_finish_date'], "%Y-%m-%d").date()
+
+                    if start < fs_start or end > fs_finish:
+                        raise ValidationError(f"❌ Dates for part #{part.get('tch_part_no')} must be between {fs_start} and {fs_finish}")
+                    if start > end:
+                        raise ValidationError(f"❌ Start date must not be after end date in part #{part.get('tch_part_no')}")
+
+                    part_code = part.get('tch_part_code')
+                    if part_code:
+                        incoming_codes.add(part_code)
+                        try:
+                            obj = ProjectGipPart.objects.get(tch_part_code=part_code)
+                            obj.tch_part_no = part['tch_part_no']
+                            obj.tch_part_name = part['tch_part_name']
+                            obj.tch_part_nach_id = part['tch_part_nach']
+                            obj.tch_start_date = part['tch_start_date']
+                            obj.tch_finish_date = part['tch_finish_date']
+                            obj.save()
+                        except ProjectGipPart.DoesNotExist:
+                            # If somehow code is passed but not found, treat as create
+                            ProjectGipPart.objects.create(
+                                fs_part_code=finance_part,
+                                tch_part_no=part['tch_part_no'],
+                                tch_part_name=part['tch_part_name'],
+                                tch_part_nach_id=part['tch_part_nach'],
+                                tch_start_date=part['tch_start_date'],
+                                tch_finish_date=part['tch_finish_date'],
+                                create_user_id=request.user
+                            )
+                    else:
+                        # Newly created part (no part_code)
+                        new_part = ProjectGipPart.objects.create(
+                            fs_part_code=finance_part,
+                            tch_part_no=part['tch_part_no'],
+                            tch_part_name=part['tch_part_name'],
+                            tch_part_nach_id=part['tch_part_nach'],
+                            tch_start_date=part['tch_start_date'],
+                            tch_finish_date=part['tch_finish_date'],
+                            create_user_id=request.user
+                        )
+                        incoming_codes.add(new_part.tch_part_code)
+
+                # ✅ Delete only parts that were NOT included in update
+                ProjectGipPart.objects.filter(
+                    fs_part_code=finance_part
+                ).exclude(tch_part_code__in=incoming_codes).delete()
+
+        except ValidationError as ve:
+            return Response({'error': str(ve)}, status=400)
+        except Exception as e:
+            return Response({'error': f'❌ Failed to update technical parts: {str(e)}'}, status=400)
+
+        return Response({'message': '✅ Technical parts updated successfully.'}, status=200)
+
+
+

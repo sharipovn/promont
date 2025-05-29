@@ -25,7 +25,8 @@ from .views import (StaffUserLoginView,
                     GIPProjectListView, 
                     GIPConfirmAPIView,
                     GipFinancePartsListAPIView,
-                    GipCreateTechnicalPartsView)
+                    GipCreateTechnicalPartsView,
+                    GipUpdateTechnicalPartsView)
                     
 
 urlpatterns = [
@@ -73,6 +74,6 @@ urlpatterns = [
     path('gip-projects/confirm-gip/', GIPConfirmAPIView.as_view(), name='gip-confirm'),
     path('gip-projects/fn-parts/<int:project_code>/', GipFinancePartsListAPIView.as_view()),
     path('gip-projects/create-technical-parts/', GipCreateTechnicalPartsView.as_view(), name='create-tecnical-parts'),
-    
-    
+    path('gip-projects/update-technical-parts/', GipUpdateTechnicalPartsView.as_view(), name='update-technical-parts'),
+
 ]

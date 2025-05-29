@@ -9,7 +9,7 @@ import HoverText from './HoverText';
 import GipCreateTechnicalPartsModal from './GipCreateTechnicalPartsModal';
 import './ViewModal.css';
 
-export default function GipFinPartsModal({ show, onHide, project }) {
+export default function GipFinPartsModal({ show, onHide, project,onCreated,onUpdated }) {
   const { returnTitle } = useI18n();
   const [parts, setParts] = useState([]);
   const [loadingParts, setLoadingParts] = useState(true);
@@ -23,22 +23,26 @@ export default function GipFinPartsModal({ show, onHide, project }) {
     [navigate, setUser, setAccessToken]
   );
 
-  const handleOpenModal = (financePart) => {
-    setSelectedFinancePart(financePart);
+  const fetchParts = () => {
+    setLoadingParts(true);
+    axiosInstance
+      .get(`/gip-projects/fn-parts/${project.project_code}/`, {
+        params: { send_to_tech_dir: true, tech_dir_confirm: true },
+      })
+      .then((res) => setParts(res.data))
+      .catch((err) => console.error('❌ Refresh error:', err))
+      .finally(() => setLoadingParts(false));
   };
 
   useEffect(() => {
     if (show && project?.project_code) {
-      setLoadingParts(true);
-      axiosInstance
-        .get(`/gip-projects/fn-parts/${project.project_code}/`, {
-          params: { send_to_tech_dir: true, tech_dir_confirm: true },
-        })
-        .then((res) => setParts(res.data))
-        .catch((err) => console.error('❌ Failed to load finance parts', err))
-        .finally(() => setLoadingParts(false));
+      fetchParts();
     }
-  }, [axiosInstance, show, project?.project_code]);
+  }, [show, project?.project_code]);
+
+  const handleOpenModal = (financePart) => setSelectedFinancePart(financePart);
+
+  const handlePartModalClose = () => setSelectedFinancePart(null);
 
   return (
     <>
@@ -98,20 +102,14 @@ export default function GipFinPartsModal({ show, onHide, project }) {
       {selectedFinancePart && (
         <GipCreateTechnicalPartsModal
           show={!!selectedFinancePart}
-          onHide={() => setSelectedFinancePart(null)}
+          onHide={handlePartModalClose}
           financialPart={selectedFinancePart}
           project={project}
           onCreated={() => {
-            setSelectedFinancePart(null);
-            setLoadingParts(true);
-            axiosInstance
-              .get(`/gip-projects/fn-parts/${project.project_code}/`, {
-                params: { send_to_tech_dir: true, tech_dir_confirm: true },
-              })
-              .then((res) => setParts(res.data))
-              .catch((err) => console.error('❌ Refresh error:', err))
-              .finally(() => setLoadingParts(false));
+            handlePartModalClose();
+            fetchParts();
           }}
+          onUpdated={onUpdated}    // Pass down
         />
       )}
     </>

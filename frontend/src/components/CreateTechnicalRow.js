@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 import { LuCircleCheckBig } from "react-icons/lu";
 import HoverText from './HoverText';
 import { formatDateTime } from '../utils/formatDateTime';
-import { Button } from 'react-bootstrap';
 import { useI18n } from '../context/I18nProvider';
 import { createAxiosInstance } from '../utils/createAxiosInstance';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthProvider';
 import { VscGitPullRequestCreate } from "react-icons/vsc";
 import GipFinPartsModal from './GipFinPartsModal';
+import {Badge} from 'react-bootstrap';
 
 
 
@@ -31,6 +31,7 @@ export default function CreateTechnicalRow({ proj, onUpdated }) {
       .finally(() => setLoading(false));
   };
 
+
   return (
     <div className="financial-row d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
       {/* Info */}
@@ -40,9 +41,15 @@ export default function CreateTechnicalRow({ proj, onUpdated }) {
           <strong>{returnTitle('app.created_by')}:</strong> {proj.create_user_fio} <span className="normal-style">({formatDateTime(proj.create_date)})</span>
         </div>
       </div>
-
       {/* Action */}
       <div className="d-flex flex-row align-items-center gap-3">
+        
+        {proj.technical_parts_count > 0 && (
+          <div className="text-info small border rounded p-2">
+            {returnTitle('gip.tech_parts_count')} {'  '} <Badge bg="warning" className='mx-1 text-primary'>{proj.technical_parts_count}</Badge> 
+          </div>
+        )}
+
         {!proj.gip_confirm ? (
           <span
             className="financial-action-btn send-btn text-primary d-flex align-items-center gap-2"
@@ -66,6 +73,8 @@ export default function CreateTechnicalRow({ proj, onUpdated }) {
           show={showPartsModal}
           onHide={() => setShowPartsModal(false)}
           project={proj}
+          onCreated={onUpdated}   // Yaratilgandan keyin ham projects yangilansin
+          onUpdated={onUpdated}   // Yangilangandan keyin ham yangilansin
         />
 
       </div>

@@ -28,6 +28,7 @@ class ProjectSerializer(serializers.ModelSerializer):
     create_user_fio = serializers.SerializerMethodField(read_only=True)
     financier_fio = serializers.SerializerMethodField(read_only=True)
     finance_parts_count = serializers.SerializerMethodField(read_only=True)
+    technical_parts_count = serializers.SerializerMethodField(read_only=True)  # 🔥 Yangi qo‘shilmoqda
     all_sent_to_tech_dir = serializers.SerializerMethodField()
     all_tech_dir_confirmed = serializers.SerializerMethodField()
     partner_name = serializers.CharField(source='partner.partner_name', read_only=True)
@@ -39,7 +40,7 @@ class ProjectSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = [
             'project_code', 'create_user', 'create_date', 'update_date',
-            'create_user_fio', 'financier_fio','finance_parts_count','all_sent_to_tech_dir','all_tech_dir_confirmed','partner_name','partner_inn','current_phase'
+            'create_user_fio', 'financier_fio','finance_parts_count','technical_parts_count','all_sent_to_tech_dir','all_tech_dir_confirmed','partner_name','partner_inn','current_phase'
         ]
         
     def get_create_user_fio(self, obj):
@@ -54,6 +55,9 @@ class ProjectSerializer(serializers.ModelSerializer):
 
     def get_finance_parts_count(self, obj):
         return obj.finance_parts.count()
+    
+    def get_technical_parts_count(self, obj):
+        return ProjectGipPart.objects.filter(fs_part_code__project_code=obj).count()
     
     def get_all_sent_to_tech_dir(self, obj):
         return obj.finance_parts.filter(send_to_tech_dir=False).count() == 0

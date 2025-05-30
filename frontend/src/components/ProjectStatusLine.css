@@ -1,0 +1,59 @@
+.status-line-wrapper {
+  display: flex;
+  justify-content: center;
+  padding: 12px 16px;
+  border-radius: 12px;
+}
+
+.status-line {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.status-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  border: 2px solid black;
+  position: relative;
+  z-index: 1;
+  transition: transform 0.2s;
+  cursor: pointer;
+}
+
+.status-dot.current {
+  width: 20px;
+  height: 20px;
+  border: 3px solid black;
+}
+
+.connector {
+  height: 2px;
+  width: 30px;
+  background-color: black;
+  z-index: 0;
+}
+
+.tooltip {
+  visibility: hidden;
+  background-color: #333;
+  color: white;
+  font-size: 0.65rem;
+  padding: 3px 6px;
+  border-radius: 4px;
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  z-index: 5;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.status-dot:hover .tooltip {
+  visibility: visible;
+  opacity: 1;
+}

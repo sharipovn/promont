@@ -19,6 +19,9 @@ export default function DashboardScreen() {
   
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [searchQuery, setSearchQuery] = useState('');
+
+
 
   const [filters, setFilters] = useState({
     start_date_from: '',
@@ -27,6 +30,8 @@ export default function DashboardScreen() {
     end_date_to: '',
     financier_confirmed: false,
     gip_confirmed: false,
+    total_price_from: '',
+    total_price_to: '',
   });
 
   const { setAccessToken, setUser } = useAuth();
@@ -54,6 +59,11 @@ export default function DashboardScreen() {
     if (filters.end_date_to) params.end_date_to = filters.end_date_to;
     if (filters.financier_confirmed) params.financier_confirmed = true;
     if (filters.gip_confirmed) params.gip_confirmed = true;
+    if (searchQuery) params.search = searchQuery;
+
+    // ✅ Add total price filters
+    if (filters.total_price_from) params.total_price_from = filters.total_price_from;
+    if (filters.total_price_to) params.total_price_to = filters.total_price_to;
   
     axiosInstance
       .get('/projects/', { params })
@@ -62,13 +72,13 @@ export default function DashboardScreen() {
         setTotalPages(Math.ceil(res.data.count / 10)); // 20 = page_size
       })
       .catch((err) => console.error('❌ Error fetching projects:', err));
-  }, [axiosInstance, filters, currentPage]);
+  }, [axiosInstance, filters, currentPage, searchQuery]);
   
   
 
   useEffect(() => {
     fetchProjects();
-  }, [filters, currentPage, fetchProjects]);
+  }, [filters, currentPage, fetchProjects,searchQuery]);
   
 
   return (
@@ -90,6 +100,8 @@ export default function DashboardScreen() {
           <Topbar
             sidebarVisible={sidebarVisible}
             toggleSidebar={() => setSidebarVisible(!sidebarVisible)}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
           />
 
           {/* Main Page Content */}

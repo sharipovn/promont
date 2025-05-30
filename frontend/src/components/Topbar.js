@@ -3,10 +3,12 @@ import { FaSearch, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import NotificationCard from './NotificationCard'; // 👈 Qo‘shing
 import { useAuth } from '../context/AuthProvider';
 import SettingsDropdown from './SettingsDropdown'; // joyini to‘g‘rilang
+import { useI18n } from '../context/I18nProvider';
 
 
-export default function Topbar({ sidebarVisible, toggleSidebar }) {
+export default function Topbar({ sidebarVisible, toggleSidebar,searchQuery, setSearchQuery }) {
 
+  const { returnTitle } = useI18n();
   const { user } = useAuth(); // 👈 access user info here
   console.log('user:',user)
   return (
@@ -29,8 +31,15 @@ export default function Topbar({ sidebarVisible, toggleSidebar }) {
             <input
                 type="text"
                 className="form-control border-0 p-0 search-input"
-                placeholder="Search"
-            />
+                placeholder={returnTitle('topbar.search_by_project_name')}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    // Optional: You can trigger fetch here or rely on useEffect in Dashboard
+                  }
+                }}
+              />
         </div>
 
       </div>

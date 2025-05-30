@@ -3,6 +3,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
 import Select from 'react-select';
 import { MdCreateNewFolder } from "react-icons/md";
+
 import { useI18n } from '../context/I18nProvider';
 import { withValidation } from '../utils/withValidation';
 import Alert from './Alert';
@@ -219,6 +220,9 @@ export default function CreateProjectModal({ show, onHide, onCreated }) {
             </div>
           </div>
 
+
+        <div className="row">
+          <div className="col-md-6 mb-3">
           <Form.Group className="mb-3">
             <Form.Label className="text-light">{returnTitle('create_proj.select_financier')}</Form.Label>
             <Select
@@ -229,9 +233,11 @@ export default function CreateProjectModal({ show, onHide, onCreated }) {
               placeholder={returnTitle('create_proj.select_financier')}
               classNamePrefix="react-select"
               styles={customSelectStyles}
+
             />
           </Form.Group>
-
+            </div>
+            <div className="col-md-6 mb-3">
           <Form.Group className="mb-4">
             <Form.Label className="text-light">{returnTitle('create_proj.select_partner')}</Form.Label>
             <Select
@@ -244,6 +250,8 @@ export default function CreateProjectModal({ show, onHide, onCreated }) {
               styles={customSelectStyles}
             />
           </Form.Group>
+            </div>
+          </div>
 
           <div className="d-flex justify-content-between">
             <Button variant="outline-light" onClick={onHide} disabled={submitting}>

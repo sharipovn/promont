@@ -1,8 +1,7 @@
 import React from 'react';
 import HoverText from './HoverText';
+import ProjectStatusLine from './ProjectStatusLine';
 import {
-  FaProjectDiagram,
-  FaMoneyBillAlt,
   FaCalendarAlt,
   FaUserTie,
   FaUserEdit,
@@ -10,6 +9,9 @@ import {
   FaCheckCircle
 } from 'react-icons/fa';
 import { TbPercentage75 } from "react-icons/tb";
+import { FaFolderOpen } from "react-icons/fa6";
+import { FaCoins } from "react-icons/fa6";
+import { FaBusinessTime } from "react-icons/fa";
 
 export default function ProjectCard({ proj }) {
   const {
@@ -21,7 +23,8 @@ export default function ProjectCard({ proj }) {
     create_user_fio,
     financier_confirm,
     gip_confirm,
-    create_date
+    create_date,
+    current_phase
   } = proj;
 
   const isNew = !financier_confirm;
@@ -51,8 +54,8 @@ export default function ProjectCard({ proj }) {
     >
       {/* Sarlavha */}
       <h6 className="mb-3 fw-bold d-flex align-items-center gap-2 fs-sm" style={{ color: '#00f0ff' }}>
-        <FaProjectDiagram  size={'1rem'}/> <HoverText>{project_name}</HoverText> {isNew && (
-          <span className="badge bg-success">Yangi</span>
+        <FaFolderOpen  size={'1rem'}/> <HoverText>{project_name}</HoverText> {isNew && (
+          <span className="badge bg-success">{current_phase.name}</span>
         )}
       </h6>
 
@@ -65,7 +68,7 @@ export default function ProjectCard({ proj }) {
             className="d-flex align-items-center gap-2 text-warning"
             style={{ whiteSpace: 'nowrap' }}
           >
-            <FaMoneyBillAlt size="1rem" /> Narxi:
+            <FaCoins size="1rem" />
           </span>
 
           <span
@@ -90,7 +93,7 @@ export default function ProjectCard({ proj }) {
           style={{ minWidth: 0 }}
         >
           <span className="d-flex align-items-center gap-2 text-light">
-            <FaCalendarAlt size="1rem" /> Muddati:
+            <FaBusinessTime size="1rem" />
           </span>
           <HoverText>{start_date} — {end_date}</HoverText>
         </div>
@@ -132,7 +135,6 @@ export default function ProjectCard({ proj }) {
       >
         <span className="d-flex align-items-center gap-2 text-light" style={{ whiteSpace: 'nowrap' }}>
           <FaUserTie size="1rem" />
-          Moliyachi:
         </span>
 
         <span
@@ -149,33 +151,7 @@ export default function ProjectCard({ proj }) {
       </div>
 
 
-
-
-      {/* Yaratuvchi */}
-      <div
-        className="d-flex align-items-center border-bottom border-secondary fs-xs pb-1 mb-3 small"
-        style={{ minWidth: 0 }}
-      >
-        <span className="d-flex align-items-center gap-2 text-light" style={{ whiteSpace: 'nowrap' }}>
-          <FaUserEdit size="1rem" /> Created:
-        </span>
-
-        <span
-          className="text-light ms-2"
-          style={{
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            flexGrow: 1,
-          }}
-        >
-          <HoverText maxWidth="100%">{create_user_fio}</HoverText>
-        </span>
-      </div>
-
-
-
-
+    <ProjectStatusLine currentPhaseIndex={4} />
       {/* Tasdiqlanmagan bo‘lsa */}
       {!financier_confirm && (
         <div className="d-flex align-items-center justify-content-between mt-3 small">

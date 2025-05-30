@@ -1,7 +1,7 @@
 // CreateProjectScreen.jsx
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { Button } from 'react-bootstrap';
-import { MdCreateNewFolder } from 'react-icons/md';
+import { IoAdd } from "react-icons/io5";
 import { GrProjects } from 'react-icons/gr';
 import Sidebar from '../components/Sidebar';
 import Alert from '../components/Alert';
@@ -100,7 +100,7 @@ export default function CreateProjectScreen() {
                   className="financial-action-btn send-btn"
                   onClick={() => setShowCreateModal(true)}
                 >
-                  <MdCreateNewFolder className="me-2" /> {returnTitle('create_proj.create_new_project')}
+                  <IoAdd className="me-2" /> {returnTitle('create_proj.create_new_project')}
                 </Button>
               </div>
             </div>

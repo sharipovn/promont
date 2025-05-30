@@ -27,7 +27,8 @@ from .views import (StaffUserLoginView,
                     GIPConfirmAPIView,
                     GipFinancePartsListAPIView,
                     GipCreateTechnicalPartsView,
-                    GipUpdateTechnicalPartsView,)
+                    GipUpdateTechnicalPartsView,
+                    ProjectRetrieveUpdateView)
                     
 
 urlpatterns = [
@@ -37,6 +38,7 @@ urlpatterns = [
     
     #project-create
     path('project-list-create/', ProjectListCreateView.as_view(), name='project-list-create'),
+    path('project-list-create/<str:project_code>/', ProjectRetrieveUpdateView.as_view(), name='project-update'),
     
     
     #take users with capability     

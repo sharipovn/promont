@@ -11,6 +11,8 @@ from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated,AllowAny
 from .permissions import HasCapabilityPermission
 from datetime import datetime,date
+from decimal import Decimal
+
 
 from api.models import StaffUser,Project,ProjectFinancePart,Partner,Translation,Department,PhaseType, ProjectPhase,ProjectGipPart
 from .serializers import ProjectSerializer,StaffUserSimpleSerializer,ProjectFinancePartCreateSerializer,ProjectFinancePartSerializer,PartnerSerializer,TranslationSerializer,DepartmentSerializer,TranslationSerializer
@@ -176,6 +178,10 @@ class ProjectListAPIView(generics.ListAPIView):
         end_date_to = self.request.query_params.get('end_date_to')
         financier_confirmed = self.request.query_params.get('financier_confirmed')
         gip_confirmed = self.request.query_params.get('gip_confirmed')
+        search = self.request.query_params.get('search')
+        total_price_from = self.request.query_params.get('total_price_from')
+        total_price_to = self.request.query_params.get('total_price_to')
+        print('total_price_from:',total_price_from)
 
         # 📅 Sanalar bo‘yicha filter
         if start_date_from:
@@ -186,6 +192,12 @@ class ProjectListAPIView(generics.ListAPIView):
             qs = qs.filter(end_date__gte=parse_date(end_date_from))
         if end_date_to:
             qs = qs.filter(end_date__lte=parse_date(end_date_to))
+        if total_price_from and total_price_from.isdigit():
+            qs = qs.filter(total_price__gte=int(total_price_from))
+        if total_price_to and total_price_to.isdigit():
+            qs = qs.filter(total_price__lte=int(total_price_to))
+        if search:
+            qs = qs.filter(project_name__icontains=search)
 
         # ✅ Checkbox holatlari
         if financier_confirmed == 'true':
@@ -197,6 +209,7 @@ class ProjectListAPIView(generics.ListAPIView):
             qs = qs.filter(gip_confirm=True)
         elif gip_confirmed == 'false':
             qs = qs.filter(gip_confirm=False)
+            
 
         return qs.order_by('-create_date')  # so‘ngi loyihalar birinchi
 
@@ -205,6 +218,10 @@ class ProjectListAPIView(generics.ListAPIView):
 class ProjectListCreateView(ListCreateAPIView):
     serializer_class = ProjectSerializer
     pagination_class = ProjectListCreatePagination
+    permission_classes = [
+        IsAuthenticated,
+        HasCapabilityPermission('CAN_CREATE_PROJECT')  # Optional: adjust based on your needs
+    ]
 
     def get_queryset(self):
         queryset = Project.objects.all().order_by('-create_date')
@@ -218,9 +235,9 @@ class ProjectListCreateView(ListCreateAPIView):
         end_date = serializer.validated_data.get('end_date')
 
         if start_date >= end_date:
-            raise ValidationError({'end_date': 'End date must be after start date.'})
+            raise ValidationError({'end_date': 'Дата окончания должна быть позже даты начала'})#End date must be after start date.
         if date.today() > end_date:
-            raise ValidationError({'end_date': 'End date must be today or in the future.'})
+            raise ValidationError({'end_date': 'Дата окончания должна быть сегодня или в будущем.'})#End date must be today or in the future.
 
         project = serializer.save(create_user=self.request.user)
 
@@ -242,6 +259,27 @@ class ProjectListCreateView(ListCreateAPIView):
         ])
 
 
+
+class ProjectRetrieveUpdateView(RetrieveUpdateAPIView):
+    queryset = Project.objects.all()
+    serializer_class = ProjectSerializer
+    permission_classes = [
+        IsAuthenticated,
+        HasCapabilityPermission('CAN_CREATE_PROJECT')  # Optional: adjust based on your needs
+    ]
+    lookup_field = 'project_code'
+
+    def perform_update(self, serializer):
+        project = serializer.instance
+        start_date = serializer.validated_data.get('start_date')
+        end_date = serializer.validated_data.get('end_date')
+
+        if start_date >= end_date:
+            raise ValidationError({'end_date': 'Дата окончания должна быть позже даты начала'})#End date must be after start date.
+        if date.today() > end_date:
+            raise ValidationError({'end_date': 'Дата окончания должна быть сегодня или в будущем.'})#End date must be today or in the future.
+
+        serializer.save()
 
 
 

@@ -31,7 +31,7 @@ export default function ProjectConfirmRow({ proj, onConfirm, onRefuse }) {
       </div>
 
       <div className="d-flex gap-2 mt-2 mt-md-0">
-        <button className="btn-icon-green" onClick={() => onConfirm(proj)}>
+        <button className="btn-icon-green  rounded-3" onClick={() => onConfirm(proj)}>
           <FaCheckCircle className="me-1" size={14} /> {returnTitle('fin_confirm.confirm')}
         </button>
         
@@ -41,7 +41,7 @@ export default function ProjectConfirmRow({ proj, onConfirm, onRefuse }) {
             {returnTitle(`project_phase.${proj.current_phase?.key.toLowerCase()}`)}
           </button>
         ) : (
-          <button className="btn-icon-red" onClick={() => onRefuse(proj)}>
+          <button className="btn-icon-red  rounded-3" onClick={() => onRefuse(proj)}>
             <FaTimesCircle className="me-1" size={14} /> {returnTitle('fin_confirm.refuse')}
           </button>
         )}

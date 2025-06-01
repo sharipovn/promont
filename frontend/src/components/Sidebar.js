@@ -12,6 +12,7 @@ import { SiTheboringcompany } from "react-icons/si";
 import { useI18n } from '../context/I18nProvider';
 import { LuLanguages } from "react-icons/lu";
 import { GrTechnology } from "react-icons/gr";
+import { MdWorkHistory } from "react-icons/md";
 
 
 
@@ -86,7 +87,7 @@ export default function Sidebar() {
                     fontSize: 'clamp(0.85rem, 1vw + 0.4rem, 0.9rem)',
                   }}>
                 <FaListCheck style={{ fontSize: 'clamp(1rem, 1vw + 0.5rem, 1.4rem)' }}/>
-                <span>Confirm Projects (Financier)</span>
+                <span>{returnTitle('menu.create_financial_parts')}</span>
               </NavLink>
             </li>
          )}
@@ -99,6 +100,18 @@ export default function Sidebar() {
                   }}>
                 <IoShieldCheckmarkOutline style={{ fontSize: 'clamp(1rem, 1vw + 0.5rem, 1.4rem)' }}/>
                 <span>Verify project (Tech Dir)</span>
+              </NavLink>
+            </li>
+         )}
+         {hasCapability(PERMISSIONS.CAN_CREATE_WORK_ORDER) && (
+            <li className="nav-item mt-1 mx-3">
+              <NavLink to="/manage-work-orders" className="sidebar-link d-flex align-items-center gap-2" 
+                  style={{
+                    color: '#344767',
+                    fontSize: 'clamp(0.85rem, 1vw + 0.4rem, 0.9rem)',
+                  }}>
+                <MdWorkHistory  style={{ fontSize: 'clamp(1rem, 1vw + 0.5rem, 1.4rem)' }}/>
+                <span>{returnTitle('menu.create_work_orders')}</span>
               </NavLink>
             </li>
          )}

@@ -12,16 +12,16 @@ from rest_framework.permissions import IsAuthenticated,AllowAny
 from .permissions import HasCapabilityPermission
 from datetime import datetime,date
 from decimal import Decimal
+from django.shortcuts import get_object_or_404
 
-
-from api.models import StaffUser,Project,ProjectFinancePart,Partner,Translation,Department,PhaseType, ProjectPhase,ProjectGipPart
-from .serializers import ProjectSerializer,StaffUserSimpleSerializer,ProjectFinancePartCreateSerializer,ProjectFinancePartSerializer,PartnerSerializer,TranslationSerializer,DepartmentSerializer,TranslationSerializer
+from api.models import StaffUser,Project,ProjectFinancePart,Partner,Translation,Department,PhaseType, ProjectPhase,ProjectGipPart,ActionLog
+from .serializers import ProjectSerializer,StaffUserSimpleSerializer,ProjectFinancePartCreateSerializer,ProjectFinancePartSerializer,PartnerSerializer,TranslationSerializer,DepartmentSerializer,TranslationSerializer,ProjectGipPartSerializer,ActionLogSerializer
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateAPIView,ListAPIView,UpdateAPIView
 from api.serializers import StaffUserTokenSerializer
 from django.utils.dateparse import parse_date
 from django.db.models import Count, Q,Subquery,OuterRef,F
 from django.db import transaction
-from .pagination import ProjectsPagination,ProjectsFiancierConfirmPagination,PartnersPagination,TranslationsPagination,GipConfirmPagination,ProjectListCreatePagination
+from .pagination import ProjectsPagination,ProjectsFiancierConfirmPagination,PartnersPagination,TranslationsPagination,GipConfirmPagination,ProjectListCreatePagination,ProjectGipPartPagination
 from django.utils import timezone
 from rest_framework.views import APIView
 from rest_framework.exceptions import ValidationError
@@ -894,3 +894,117 @@ class GipUpdateTechnicalPartsView(APIView):
 
 
 
+
+class ProjectGipPartListView(ListAPIView):
+    serializer_class = ProjectGipPartSerializer
+    permission_classes = [IsAuthenticated, HasCapabilityPermission('CAN_CREATE_WORK_ORDER')]
+    pagination_class=ProjectGipPartPagination
+
+    def get_queryset(self):
+        return ProjectGipPart.objects.filter(tch_part_nach=self.request.user)
+    
+    
+    
+    
+class RefuseTechPartView(APIView):
+    def get(self, request, tch_part_code):
+        part = get_object_or_404(ProjectGipPart, pk=tch_part_code)
+        try:
+            refusal_phase = PhaseType.objects.get(key='TECH_PART_REFUSED')
+            action = ActionLog.objects.filter(
+                full_id=part.full_id,
+                path_type=part.path_type,
+                phase_type=refusal_phase
+            ).latest('performed_at')
+        except PhaseType.DoesNotExist:
+            return Response({'detail': 'Тип этапа TECH_PART_REFUSED не найден.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except ActionLog.DoesNotExist:
+            return Response({'detail': 'Информация об отказе не найдена.'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = ActionLogSerializer(action)
+        return Response(serializer.data)
+
+    def post(self, request, tch_part_code):
+        part = get_object_or_404(ProjectGipPart, pk=tch_part_code)
+
+        comment = request.data.get('comment', '').strip()
+        if not comment:
+            return Response({'detail': 'Пожалуйста, укажите причину отказа.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            refusal_phase = PhaseType.objects.get(key='TECH_PART_REFUSED')
+        except PhaseType.DoesNotExist:
+            return Response({'detail': 'Тип этапа TECH_PART_REFUSED не найден.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        try:
+            ActionLog.objects.create(
+                full_id=part.full_id,
+                path_type=part.path_type,
+                phase_type=refusal_phase,
+                comment=comment,
+                performed_by=request.user,
+                notify_to=part.create_user_id,
+            )
+        except Exception as e:
+            return Response({'detail': f'Ошибка при сохранении журнала действий: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return Response({'detail': 'Отказ успешно зафиксирован.'}, status=status.HTTP_201_CREATED)
+
+    def put(self, request, tch_part_code):
+        part = get_object_or_404(ProjectGipPart, pk=tch_part_code)
+
+        comment = request.data.get('comment', '').strip()
+        if not comment:
+            return Response({'detail': 'Пожалуйста, укажите причину отказа.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            refusal_phase = PhaseType.objects.get(key='TECH_PART_REFUSED')
+        except PhaseType.DoesNotExist:
+            return Response({'detail': 'Тип этапа TECH_PART_REFUSED не найден.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        try:
+            action = ActionLog.objects.filter(
+                full_id=part.full_id,
+                path_type=part.path_type,
+                phase_type=refusal_phase
+            ).latest('performed_at')
+            action.comment = comment
+            action.save()
+        except ActionLog.DoesNotExist:
+            return Response({'detail': 'Запись отказа не найдена для обновления.'}, status=status.HTTP_404_NOT_FOUND)
+
+        return Response({'detail': 'Комментарий к отказу успешно обновлён.'}, status=status.HTTP_200_OK)  
+    
+    
+    
+class ConfirmTechPartView(APIView):
+    permission_classes = [IsAuthenticated, HasCapabilityPermission('CAN_CREATE_WORK_ORDER')]
+
+    def post(self, request, tch_part_code):
+        part = get_object_or_404(ProjectGipPart, pk=tch_part_code)
+
+        if part.nach_otd_confirm:
+            return Response({'detail': 'Часть уже подтверждена.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            confirm_phase = PhaseType.objects.get(key='TECH_PART_CONFIRMED')
+        except PhaseType.DoesNotExist:
+            return Response({'detail': 'Тип этапа TECH_PART_CONFIRMED не найден.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        part.nach_otd_confirm = True
+        part.nach_otd_confirm_date = timezone.now()
+        part.save()
+
+        try:
+            ActionLog.objects.create(
+                full_id=part.full_id,
+                path_type=part.path_type,
+                phase_type=confirm_phase,
+                performed_by=request.user,
+                notify_to=part.create_user_id,
+                comment='Часть подтверждена'
+            )
+        except Exception as e:
+            return Response({'detail': f'Ошибка при сохранении лога: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return Response({'detail': 'Часть успешно подтверждена.'}, status=status.HTTP_200_OK)

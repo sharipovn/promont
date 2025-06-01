@@ -1,7 +1,7 @@
 # api/serializers.py
 
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from api.models import StaffUser,Project,ProjectFinancePart,Partner,Translation,Department,ProjectGipPart
+from api.models import StaffUser,Project,ProjectFinancePart,Partner,Translation,Department,ProjectGipPart,ObjectLastStatus,ActionLog
 from rest_framework import serializers
 
 
@@ -166,3 +166,92 @@ class DepartmentSerializer(serializers.ModelSerializer):
             'create_time',
             'update_time',
         ]
+        
+        
+        
+class ProjectSimpleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Project
+        fields = ['project_code', 'project_name', 'start_date', 'end_date', 'total_price']
+
+
+class ProjectFinancePartSimpleSerializer(serializers.ModelSerializer):
+    project = ProjectSimpleSerializer(source='project_code', read_only=True)
+
+    class Meta:
+        model = ProjectFinancePart
+        fields = ['fs_part_code', 'fs_part_no', 'fs_part_name', 'fs_part_price', 'fs_start_date', 'fs_finish_date', 'project']
+
+
+
+class ProjectGipPartSerializer(serializers.ModelSerializer):
+    finance_part = ProjectFinancePartSimpleSerializer(source='fs_part_code', read_only=True)
+    tch_part_nach_fio = serializers.CharField(source='tch_part_nach.fio', read_only=True)
+    create_user_fio = serializers.CharField(source='create_user_id.fio', read_only=True)
+    full_id = serializers.CharField(read_only=True)
+    path_type = serializers.CharField(read_only=True)
+    last_status = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ProjectGipPart
+        fields = [
+            'tch_part_code',
+            'fs_part_code',
+            'finance_part',
+            'tch_part_no',
+            'tch_part_name',
+            'tch_part_nach',
+            'tch_part_nach_fio',
+            'tch_start_date',
+            'tch_finish_date',
+            'create_date',
+            'create_user_id',
+            'create_user_fio',
+            'nach_otd_confirm',
+            'nach_otd_confirm_date',
+            'full_id',
+            'path_type',
+            'last_status',
+        ]
+
+    def get_last_status(self, obj):
+        from .models import ObjectLastStatus
+        try:
+            status = ObjectLastStatus.objects.get(full_id=obj.full_id)
+            return {
+                "latest_action": status.latest_action,
+                "latest_phase_type": status.latest_phase_type.name if status.latest_phase_type else None,
+                "last_updated": status.last_updated,
+                "updated_by": status.updated_by.fio if status.updated_by else None,
+            }
+        except ObjectLastStatus.DoesNotExist:
+            return None
+
+
+
+
+class ActionLogSerializer(serializers.ModelSerializer):
+    performed_by_fio = serializers.CharField(source='performed_by.fio', read_only=True)
+    notify_to_fio = serializers.CharField(source='notify_to.fio', read_only=True)
+    phase_type_key = serializers.CharField(source='phase_type.key', read_only=True)
+    phase_type_name = serializers.CharField(source='phase_type.name', read_only=True)
+
+    class Meta:
+        model = ActionLog
+        fields = [
+            'action_id',
+            'full_id',
+            'path_type',
+            'phase_type',
+            'phase_type_key',
+            'phase_type_name',
+            'comment',
+            'performed_by',
+            'performed_by_fio',
+            'performed_at',
+            'notify_to',
+            'notify_to_fio',
+            'identified',
+            'identified_time',
+        ]
+        read_only_fields = ['action_id', 'performed_by', 'performed_at', 'notify_to', 'identified', 'identified_time']

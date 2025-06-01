@@ -9,7 +9,11 @@ from .models import (Capability,
                      Translation,
                      PhaseType,
                      ProjectPhase,
-                     ProjectGipPart)
+                     ProjectGipPart,
+                     WorkOrder, 
+                     WorkOrderFile,
+                     ActionLog,
+                     ObjectLastStatus)
 from django.contrib.auth.admin import UserAdmin
 
 
@@ -180,7 +184,83 @@ class ProjectGipPartAdmin(admin.ModelAdmin):
         'nach_otd_confirm',
         'create_user_id',
         'create_date',
+        'full_id_display',
+        'path_type_display',
     )
     search_fields = ('tch_part_no', 'tch_part_name')
     list_filter = ('nach_otd_confirm', 'tch_start_date', 'tch_finish_date')
     readonly_fields = ('create_date',)
+
+    def full_id_display(self, obj):
+        return obj.full_id
+    full_id_display.short_description = "Full ID"
+
+    def path_type_display(self, obj):
+        return obj.path_type
+    path_type_display.short_description = "Path Type"
+
+
+    
+
+
+
+@admin.register(WorkOrder)
+class WorkOrderAdmin(admin.ModelAdmin):
+    list_display = (
+        'wo_id',
+        'wo_no',
+        'wo_name',
+        'tch_part_code',
+        'wo_start_date',
+        'wo_finish_date',
+        'wo_staff',
+        'staff_confirm',
+        'create_user',
+        'create_date',
+        'full_id_display',
+        'path_type_display',
+    )
+    search_fields = ('wo_name',)
+    list_filter = ('staff_confirm', 'wo_start_date', 'wo_finish_date')
+    readonly_fields = ('create_date',)
+
+    def full_id_display(self, obj):
+        return obj.full_id
+    full_id_display.short_description = "Full ID"
+
+    def path_type_display(self, obj):
+        return obj.path_type
+    path_type_display.short_description = "Path Type"
+
+
+
+@admin.register(ActionLog)
+class ActionLogAdmin(admin.ModelAdmin):
+    list_display = (
+        'full_id',
+        'path_type',
+        'phase_type',
+        'performed_by',
+        'performed_at',
+        'notify_to',
+        'identified',
+        'identified_time',
+    )
+    search_fields = ('full_id', 'phase_type__name', 'performed_by__username', 'notify_to__username')
+    list_filter = ('path_type', 'phase_type', 'performed_at', 'identified')
+    readonly_fields = ('performed_at', 'identified_time')
+
+
+@admin.register(ObjectLastStatus)
+class ObjectLastStatusAdmin(admin.ModelAdmin):
+    list_display = (
+        'full_id',
+        'path_type',
+        'latest_phase_type',
+        'latest_action',
+        'updated_by',
+        'last_updated'
+    )
+    search_fields = ('full_id', 'latest_action', 'latest_phase_type__name')
+    list_filter = ('path_type', 'latest_phase_type')
+    readonly_fields = ('last_updated',)

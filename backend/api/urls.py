@@ -28,7 +28,10 @@ from .views import (StaffUserLoginView,
                     GipFinancePartsListAPIView,
                     GipCreateTechnicalPartsView,
                     GipUpdateTechnicalPartsView,
-                    ProjectRetrieveUpdateView)
+                    ProjectRetrieveUpdateView,
+                    ProjectGipPartListView,
+                    RefuseTechPartView,
+                    ConfirmTechPartView)
                     
 
 urlpatterns = [
@@ -82,5 +85,11 @@ urlpatterns = [
     path('gip-projects/fn-parts/<int:project_code>/', GipFinancePartsListAPIView.as_view()),
     path('gip-projects/create-technical-parts/', GipCreateTechnicalPartsView.as_view(), name='create-tecnical-parts'),
     path('gip-projects/update-technical-parts/', GipUpdateTechnicalPartsView.as_view(), name='update-technical-parts'),
+
+
+    #work-order-create-screen
+    path('work-order/tech-parts/', ProjectGipPartListView.as_view(), name='create-work-order'),
+    path('work-order/tech-parts/<int:tch_part_code>/',RefuseTechPartView.as_view(),name='refuse_tech_part'),
+    path('work-order/tech-parts/<int:tch_part_code>/confirm/', ConfirmTechPartView.as_view(), name='confirm_tech_part'),
 
 ]

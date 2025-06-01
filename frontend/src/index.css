@@ -256,3 +256,13 @@ code {
   color: #ccc;
   opacity:0.3;
 }
+/*------------------------------#project filter-------------------------------------------*/
+.xsm-input {
+  padding: 0.15rem 0.4rem;
+  font-size: 0.75rem;
+  height: calc(1.3em + 0.5rem + 2px); /* even smaller than form-control-sm */
+  line-height: 1.2;
+}
+
+/*------------------------------#project filter--------------------------------------------*/
+

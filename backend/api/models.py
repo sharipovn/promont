@@ -1,7 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.utils import timezone
-from django.db import models
+from django.core.validators import FileExtensionValidator
+
 
 
 
@@ -412,6 +413,7 @@ class ProjectGipPart(models.Model):
     )
 
     nach_otd_confirm = models.BooleanField(default=False)
+    nach_otd_confirm_date = models.DateTimeField(null=True, blank=True)  # ✅ New field
 
     class Meta:
         db_table = 'project_gip_parts'
@@ -420,4 +422,181 @@ class ProjectGipPart(models.Model):
 
     def __str__(self):
         return f"{self.tch_part_no} - {self.tch_part_name}"
+    
+    @property
+    def full_id(self):
+        try:
+            project = self.fs_part_code.project_code  # This is the Project instance
+            project_id = project.project_code
+            finance_part_id = self.fs_part_code.fs_part_code
+            tech_part_id = self.tch_part_code
+            return f"{project_id}/{finance_part_id}/{tech_part_id}/"
+        except Exception:
+            return "N/A"
+        
+    @property
+    def path_type(self):
+        return "TECH_PART"
 
+    def __str__(self):
+        return f"{self.tch_part_no} - {self.tch_part_name}"
+
+
+
+
+class WorkOrderFile(models.Model):
+    work_order = models.ForeignKey(
+        'WorkOrder',
+        on_delete=models.CASCADE,
+        related_name='files'
+    )
+
+    file = models.FileField(
+        upload_to='work_orders/%Y/%m/%d/',
+        validators=[FileExtensionValidator(allowed_extensions=['pdf', 'doc', 'docx', 'jpg', 'png'])],
+        help_text='Максимальный размер файла: 10 МБ'
+    )
+
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"File for WO-{self.work_order.wo_no}"
+
+    def clean(self):
+        super().clean()
+        if self.file and self.file.size > 10 * 1024 * 1024:
+            from django.core.exceptions import ValidationError
+            raise ValidationError("Размер файла не должен превышать 10 МБ.")
+
+
+
+class WorkOrder(models.Model):
+    wo_id = models.AutoField(primary_key=True)
+
+    tch_part_code = models.ForeignKey(
+        'ProjectGipPart',
+        on_delete=models.CASCADE,
+        related_name='work_orders'
+    )
+
+    wo_no = models.IntegerField()
+    wo_name = models.CharField(max_length=255)
+
+    wo_start_date = models.DateField()
+    wo_finish_date = models.DateField()
+
+    wo_staff = models.ForeignKey(
+        'StaffUser',
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='assigned_work_orders'
+    )
+
+
+    create_user = models.ForeignKey(
+        'StaffUser',
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='created_work_orders'
+    )
+    create_date = models.DateTimeField(auto_now_add=True)
+    staff_confirm = models.BooleanField(default=False)
+    wo_answer = models.TextField(null=True, blank=True)
+    answer_date = models.DateTimeField(null=True, blank=True)
+    wo_remark = models.TextField(null=True, blank=True)
+    
+    
+
+    class Meta:
+        db_table = 'work_orders'
+        verbose_name = 'Work Order'
+        verbose_name_plural = 'Work Orders'
+        
+    @property
+    def full_id(self):
+        try:
+            finance_part = self.tch_part_code.fs_part_code
+            project = finance_part.project_code
+            return f"{project.project_code}/{finance_part.fs_part_code}/{self.tch_part_code.tch_part_code}/{self.wo_id}/"
+        except Exception:
+            return "N/A"
+
+    @property
+    def path_type(self):
+        return "WORK_ORDER"
+
+
+
+
+class ActionLog(models.Model):
+    action_id = models.AutoField(primary_key=True)
+
+    full_id = models.CharField(max_length=255, help_text="Hierarchical full identifier")
+    path_type = models.CharField(max_length=50, help_text="Type: PROJECT, FIN_PART, TECH_PART, WORK_ORDER")
+
+    phase_type = models.ForeignKey(
+        PhaseType,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="What kind of action (e.g. CONFIRMED, REFUSED, etc)"
+    )
+    comment = models.TextField(null=True, blank=True)
+
+    performed_by = models.ForeignKey(
+        StaffUser,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='performed_actions'
+    )
+    performed_at = models.DateTimeField(auto_now_add=True)
+
+    notify_to = models.ForeignKey(
+        StaffUser,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='notified_actions'
+    )
+    identified = models.BooleanField(default=False)
+    identified_time = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'action_logs'
+        ordering = ['-performed_at']
+        verbose_name = 'Action Log'
+        verbose_name_plural = 'Action Logs'
+
+    def __str__(self):
+        return f"{self.full_id} | {self.phase_type} by {self.performed_by}"
+
+
+
+class ObjectLastStatus(models.Model):
+    full_id = models.CharField(max_length=255, unique=True)
+    path_type = models.CharField(max_length=50)
+
+    latest_phase_type = models.ForeignKey(
+        PhaseType,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+    latest_action = models.CharField(max_length=100)
+    last_updated = models.DateTimeField(auto_now=True)
+
+    updated_by = models.ForeignKey(
+        StaffUser,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='updated_last_statuses'
+    )
+
+    class Meta:
+        db_table = 'object_last_status'
+        verbose_name = 'Last Object Status'
+        verbose_name_plural = 'Last Object Statuses'
+
+    def __str__(self):
+        return f"{self.full_id} → {self.latest_action}"

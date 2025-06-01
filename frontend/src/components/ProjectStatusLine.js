@@ -17,8 +17,7 @@ export default function ProjectStatusLine({ currentPhaseIndex }) {
     <div className="status-line-wrapper">
       <div className="status-line">
         {phases.map((phase, index) => (
-          <React.Fragment key={index}>
-            {index !== 0 && <div className="connector" />}
+          <div className="status-segment" key={index}>
             <div
               className={`status-dot ${index === currentPhaseIndex ? 'current' : ''}`}
               style={{
@@ -27,7 +26,8 @@ export default function ProjectStatusLine({ currentPhaseIndex }) {
             >
               <span className="tooltip">{phase.name}</span>
             </div>
-          </React.Fragment>
+            {index < phases.length - 1 && <div className="connector" />}
+          </div>
         ))}
       </div>
     </div>

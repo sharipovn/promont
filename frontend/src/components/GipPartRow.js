@@ -6,6 +6,7 @@ import { differenceInCalendarDays, parseISO } from 'date-fns';
 import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 import RefuseTechPartModal from './RefuseTechPartModal';
 import ConfirmTechPartModal from './ConfirmTechPartModal';
+import CreateWorkOrderModal from './CreateWorkOrderModal';
 
 
 export default function GipPartRow({ part, onConfirmed, onRefuse }) {
@@ -13,6 +14,7 @@ export default function GipPartRow({ part, onConfirmed, onRefuse }) {
   const confirmed = part.nach_otd_confirm;
   const [showRefuseModal, setShowRefuseModal] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showWorkOrderModal, setShowWorkOrderModal] = useState(false);
 
 
   const handleRefuseClick = () => {
@@ -71,7 +73,11 @@ export default function GipPartRow({ part, onConfirmed, onRefuse }) {
               : returnTitle('create_wo.not_confirmed')}
           </span>
 
-          {!confirmed ? (
+         {confirmed ? (
+            <Button variant="outline-primary" size="sm" onClick={() => setShowWorkOrderModal(true)}>
+              {returnTitle('create_wo.make_work_orders')}
+            </Button>
+          ) : (
             <>
               <button className="btn-icon-green rounded-3" onClick={() => setShowConfirmModal(true)}>
                 <FaCheckCircle className="me-1" size={14} /> {returnTitle('create_wo.confirm')}
@@ -83,10 +89,6 @@ export default function GipPartRow({ part, onConfirmed, onRefuse }) {
                   : returnTitle('create_wo.refuse')}
               </button>
             </>
-          ) : (
-            <Button variant="outline-primary" size="sm">
-              {returnTitle('create_wo.make_work_orders')}
-            </Button>
           )}
         </div>
       </div>
@@ -103,6 +105,12 @@ export default function GipPartRow({ part, onConfirmed, onRefuse }) {
         onHide={() => setShowConfirmModal(false)}
         part={part}
         onConfirmed={onConfirmed}
+      />
+      <CreateWorkOrderModal
+        show={showWorkOrderModal}
+        onHide={() => setShowWorkOrderModal(false)}
+        part={part}
+        onCreated={onConfirmed}  // Optionally re-fetch parts list after creation
       />
     </>
   );

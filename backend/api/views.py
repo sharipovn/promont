@@ -14,8 +14,19 @@ from datetime import datetime,date
 from decimal import Decimal
 from django.shortcuts import get_object_or_404
 
-from api.models import StaffUser,Project,ProjectFinancePart,Partner,Translation,Department,PhaseType, ProjectPhase,ProjectGipPart,ActionLog
-from .serializers import ProjectSerializer,StaffUserSimpleSerializer,ProjectFinancePartCreateSerializer,ProjectFinancePartSerializer,PartnerSerializer,TranslationSerializer,DepartmentSerializer,TranslationSerializer,ProjectGipPartSerializer,ActionLogSerializer
+from api.models import StaffUser,Project,ProjectFinancePart,Partner,Translation,Department,PhaseType, ProjectPhase,ProjectGipPart,ActionLog,WorkOrder
+from .serializers import (ProjectSerializer,
+                          StaffUserSimpleSerializer,
+                          ProjectFinancePartCreateSerializer,
+                          WorkOrderCreateSerializer,
+                          ProjectFinancePartSerializer,
+                          PartnerSerializer,
+                          TranslationSerializer,
+                          DepartmentSerializer,
+                          TranslationSerializer,
+                          ProjectGipPartSerializer,
+                          ActionLogSerializer,
+                          WorkOrderSerializer)
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateAPIView,ListAPIView,UpdateAPIView
 from api.serializers import StaffUserTokenSerializer
 from django.utils.dateparse import parse_date
@@ -1008,3 +1019,131 @@ class ConfirmTechPartView(APIView):
             return Response({'detail': f'Ошибка при сохранении лога: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return Response({'detail': 'Часть успешно подтверждена.'}, status=status.HTTP_200_OK)
+    
+    
+    
+class CreateWorkOrderView(APIView):
+    permission_classes = [IsAuthenticated,HasCapabilityPermission('CAN_CREATE_WORK_ORDER')]
+
+    @transaction.atomic
+    def post(self, request):
+        tch_part_code = request.data.get('tch_part_code')
+        orders = request.data.get('orders', [])
+
+        if not tch_part_code or not orders:
+            return Response({'detail': 'Отсутствует техническая часть или список заданий'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            tech_part = ProjectGipPart.objects.select_related('fs_part_code__project_code').get(pk=tch_part_code)
+        except ProjectGipPart.DoesNotExist:
+            return Response({'detail': 'Техническая часть не найдена'}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            phase_type = PhaseType.objects.get(key='WORK_ORDER_CREATED')
+        except PhaseType.DoesNotExist:
+            phase_type = None
+
+        for order_data in orders:
+            serializer = WorkOrderCreateSerializer(data=order_data)
+            serializer.is_valid(raise_exception=True)
+
+            work_order = serializer.save(
+                tch_part_code=tech_part,
+                create_user=request.user
+            )
+
+            # ➕ Create ActionLog
+            ActionLog.objects.create(
+                full_id=work_order.full_id,
+                path_type=work_order.path_type,
+                phase_type=phase_type,
+                performed_by=request.user,
+                notify_to=work_order.wo_staff,  # 👈 Notify the assigned staff
+                comment=f"Наряд №{work_order.wo_no} создан"
+            )
+
+
+        return Response({'detail': '✅ Наряды успешно созданы'}, status=status.HTTP_201_CREATED)
+    
+    
+
+class LoadWorkOrdersByPartView(APIView):
+    permission_classes = [IsAuthenticated,HasCapabilityPermission('CAN_CREATE_WORK_ORDER')]
+
+    def get(self, request, tch_part_code):
+        orders = WorkOrder.objects.filter(tch_part_code=tch_part_code).order_by('wo_no')
+        serializer = WorkOrderSerializer(orders, many=True)
+        return Response(serializer.data)
+
+
+    
+    
+    
+class UpdateWorkOrdersView(APIView):
+    permission_classes = [IsAuthenticated, HasCapabilityPermission('CAN_CREATE_WORK_ORDER')]
+
+    def put(self, request):
+        data = request.data
+        tch_part_code = data.get('tch_part_code')
+        orders = data.get('orders', [])
+
+        if not tch_part_code or not isinstance(orders, list):
+            return Response({'detail': 'Invalid input.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            part = ProjectGipPart.objects.get(tch_part_code=tch_part_code)
+        except ProjectGipPart.DoesNotExist:
+            return Response({'detail': 'Part not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            phase_type = PhaseType.objects.get(key='WORK_ORDER_UPDATED')
+        except PhaseType.DoesNotExist:
+            phase_type = None
+
+        with transaction.atomic():
+            # Get all existing orders for the part
+            existing_wos = WorkOrder.objects.filter(tch_part_code=part)
+            existing_map = {wo.pk: wo for wo in existing_wos}
+            incoming_ids = {o.get('wo_id') for o in orders if o.get('wo_id')}
+
+            # Process updates and creates
+            for o in orders:
+                wo_id = o.get('wo_id')
+
+                if wo_id and wo_id in existing_map:
+                    # Update existing
+                    wo = existing_map[wo_id]
+                    wo.wo_no = o['wo_no']
+                    wo.wo_name = o['wo_name']
+                    wo.wo_start_date = o['wo_start_date']
+                    wo.wo_finish_date = o['wo_finish_date']
+                    wo.wo_staff_id = o['wo_staff']
+                    wo.save()
+                else:
+                    # Create new
+                    wo = WorkOrder.objects.create(
+                        tch_part_code=part,
+                        wo_no=o['wo_no'],
+                        wo_name=o['wo_name'],
+                        wo_start_date=o['wo_start_date'],
+                        wo_finish_date=o['wo_finish_date'],
+                        wo_staff_id=o['wo_staff'],
+                        create_user_id=request.user.user_id,
+                    )
+
+                # Action log
+                ActionLog.objects.create(
+                    full_id=wo.full_id,
+                    path_type=wo.path_type,
+                    phase_type=phase_type,
+                    performed_by=request.user,
+                    notify_to=wo.wo_staff,
+                    comment=f"Наряд №{wo.wo_no} обновлен или создан"
+                )
+
+            # Delete those not in incoming
+            to_delete = [wo for wo_id, wo in existing_map.items() if wo_id not in incoming_ids]
+            for wo in to_delete:
+                wo.delete()
+
+        return Response({'detail': 'Work orders updated successfully'}, status=status.HTTP_200_OK)

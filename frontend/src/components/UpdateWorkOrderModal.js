@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Modal, Button, Form, Row, Col, Spinner } from 'react-bootstrap';
 import { FaTrash, FaPlus } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
@@ -8,29 +8,26 @@ import { useI18n } from '../context/I18nProvider';
 import Alert from './Alert';
 import Select from 'react-select';
 
-export default function CreateWorkOrderModal({ show, onHide, part, onCreated }) {
+export default function UpdateWorkOrderModal({ show, onHide, part, onUpdated }) {
   const { returnTitle } = useI18n();
   const { setUser, setAccessToken } = useAuth();
   const navigate = useNavigate();
   const axiosInstance = useMemo(() => createAxiosInstance(navigate, setUser, setAccessToken), [navigate, setUser, setAccessToken]);
 
-  const [orders, setOrders] = useState([
-    { wo_no: '', wo_name: '', wo_start_date: '', wo_finish_date: '', wo_staff: null, error: '' }
-  ]);
+  const [orders, setOrders] = useState([]);
   const [staffOptions, setStaffOptions] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const [alert, setAlert] = useState({ show: false, message: '', variant: '' });
 
   useEffect(() => {
+    axiosInstance.get(`/work-order/by-part/${part.tch_part_code}/`).then(res => setOrders(res.data));
     axiosInstance.get('/users-with-capability/', { params: { capability: 'CAN_COMPLETE_WORK_ORDER' } })
       .then((res) => {
         const options = res.data.map(user => ({ label: user.fio, value: user.user_id }));
         setStaffOptions(options);
       })
-      .catch((err) => {
-        console.error("❌ Failed to fetch staff:", err);
-      });
-  }, [axiosInstance]);
+      .catch((err) => console.error("❌ Failed to fetch staff:", err));
+  }, [axiosInstance, part.tch_part_code]);
 
   const handleChange = (index, field, value) => {
     const updated = [...orders];
@@ -79,88 +76,70 @@ export default function CreateWorkOrderModal({ show, onHide, part, onCreated }) 
       return;
     }
 
-    const payload = {
-      tch_part_code: part.tch_part_code,
-      orders: validated.map((o) => ({
-        wo_no: o.wo_no,
-        wo_name: o.wo_name,
-        wo_start_date: o.wo_start_date,
-        wo_finish_date: o.wo_finish_date,
-        wo_staff: o.wo_staff,
-      })),
-    };
-
     try {
-      await axiosInstance.post('/work-order/create/', payload);
-      setAlert({ show: true, variant: 'success', message: returnTitle('create_wo.work_order_created_successfully') });
+      await axiosInstance.put('/work-order/update/', { tch_part_code: part.tch_part_code, orders: validated });
+      setAlert({ show: true, variant: 'success', message: returnTitle('create_wo. work_order_updated_successfully') });
       setTimeout(() => {
         setAlert({ show: false, variant: '', message: '' });
         onHide();
-        onCreated?.();
+        onUpdated?.();
       }, 1000);
     } catch (err) {
-      setAlert({ show: true, variant: 'danger', message: returnTitle('create_wo.work_order_creation_failed') });
+      setAlert({ show: true, variant: 'danger', message: returnTitle('create_wo.work_order_update_failed') });
     } finally {
       setSubmitting(false);
     }
   };
 
-        const customSelectStyles = {
-        control: (base) => ({
-            ...base,
-            backgroundColor: '#1e293b',
-            borderColor: '#475569',
-            color: 'white',
-            minHeight: '40px',
-            height: '40px',
-            boxShadow: 'none',
-        }),
-        valueContainer: (base) => ({
-            ...base,
-            height: '40px',
-            padding: '0 0.75rem',
-        }),
-        input: (base) => ({
-            ...base,
-            margin: 0,
-            padding: 0,
-        }),
-        indicatorsContainer: (base) => ({
-            ...base,
-            height: '40px',
-        }),
-        singleValue: (base) => ({
-            ...base,
-            color: 'white',
-        }),
-        menu: (base) => ({
-            ...base,
-            backgroundColor: '#1e293b',
-            zIndex: 9999,
-        }),
-        option: (base, state) => ({
-            ...base,
-            backgroundColor: state.isFocused ? '#334155' : '#1e293b',
-            color: 'white',
-        }),
-        };
+  const customSelectStyles = {
+    control: (base) => ({
+      ...base,
+      backgroundColor: '#1e293b',
+      borderColor: '#475569',
+      color: 'white',
+      minHeight: '40px',
+      height: '40px',
+      boxShadow: 'none',
+    }),
+    valueContainer: (base) => ({
+      ...base,
+      height: '40px',
+      padding: '0 0.75rem',
+    }),
+    input: (base) => ({
+      ...base,
+      margin: 0,
+      padding: 0,
+    }),
+    indicatorsContainer: (base) => ({
+      ...base,
+      height: '40px',
+    }),
+    singleValue: (base) => ({
+      ...base,
+      color: 'white',
+    }),
+    menu: (base) => ({
+      ...base,
+      backgroundColor: '#1e293b',
+      zIndex: 9999,
+    }),
+    option: (base, state) => ({
+      ...base,
+      backgroundColor: state.isFocused ? '#334155' : '#1e293b',
+      color: 'white',
+    }),
+  };
 
   return (
     <>
       {alert.show && <Alert message={alert.message} type={alert.variant} />}
-      <Modal
-        show={show}
-        onHide={onHide}
-        size="xl"
-        centered
-        backdrop="static"
-        dialogClassName="custom-fin-modal full-width-modal"
-      >
+      <Modal show={show} onHide={onHide} size="xl" centered backdrop="static" dialogClassName="custom-fin-modal full-width-modal">
         <Modal.Body className="p-4 text-light">
-          <h3 className="text-light mb-2">{returnTitle('create_wo.create_work_orders')}</h3>
+          <h3 className="text-light mb-2">{returnTitle('create_wo.update_work_orders')}</h3>
           <h5 className="text-info mb-3">{part?.finance_part?.project?.project_name}</h5>
           <div className="fs-6 mb-3 text-white">
-            {returnTitle('create_wo.technical_part')}: <strong>{part?.tch_part_no}</strong> - {part?.tch_part_name} ({part?.tch_start_date} - {part?.tch_finish_date})
+            Technical Part: <strong>{part?.tch_part_no}</strong> - {part?.tch_part_name} ({part?.tch_start_date} - {part?.tch_finish_date})
           </div>
 
           {orders.map((order, index) => (
@@ -246,7 +225,7 @@ export default function CreateWorkOrderModal({ show, onHide, part, onCreated }) 
                   {returnTitle('create_wo.sending')}
                 </>
               ) : (
-                returnTitle('create_wo.submit')
+                returnTitle('create_wo.update')
               )}
             </Button>
           </div>

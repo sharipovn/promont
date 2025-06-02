@@ -7,6 +7,11 @@ import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 import RefuseTechPartModal from './RefuseTechPartModal';
 import ConfirmTechPartModal from './ConfirmTechPartModal';
 import CreateWorkOrderModal from './CreateWorkOrderModal';
+import UpdateWorkOrderModal from './UpdateWorkOrderModal';
+
+import { GrTasks } from "react-icons/gr";
+import { FiEdit } from "react-icons/fi";
+import { MdAddToPhotos } from "react-icons/md";
 
 
 export default function GipPartRow({ part, onConfirmed, onRefuse }) {
@@ -15,7 +20,9 @@ export default function GipPartRow({ part, onConfirmed, onRefuse }) {
   const [showRefuseModal, setShowRefuseModal] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showWorkOrderModal, setShowWorkOrderModal] = useState(false);
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
 
+  console.log('part:',part)
 
   const handleRefuseClick = () => {
     setShowRefuseModal(true);
@@ -57,26 +64,43 @@ export default function GipPartRow({ part, onConfirmed, onRefuse }) {
 
         {/* Right side actions */}
         <div className="d-flex flex-wrap gap-2 align-items-center">
-          <span
-            className={`financial-action-btn fw-bold send-btn ${
-              confirmed
-                ? 'text-success'
-                : part?.last_status?.latest_action === 'TECH_PART_REFUSED'
-                ? 'text-danger'
-                : 'text-warning'
-            } disabled`}
-          >
-            {confirmed
-              ? returnTitle('create_wo.confirmed')
-              : part?.last_status?.latest_action === 'TECH_PART_REFUSED'
-              ? returnTitle('create_wo.refused')
-              : returnTitle('create_wo.not_confirmed')}
-          </span>
+          {/* 🧾 Work order count */}
+            {part.count_of_work_orders > 0 && (
+              <span className="financial-action-btn fw-bold send-btn text-info disabled d-flex align-items-center gap-1">
+                <GrTasks/> {part.count_of_work_orders} work orders
+              </span>
+            )}
 
-         {confirmed ? (
-            <Button variant="outline-primary" size="sm" onClick={() => setShowWorkOrderModal(true)}>
-              {returnTitle('create_wo.make_work_orders')}
-            </Button>
+            {/* ✅ Status */}
+            <span
+              className={`financial-action-btn fw-bold send-btn ${
+                confirmed
+                  ? 'text-success'
+                  : part?.last_status?.latest_action === 'TECH_PART_REFUSED'
+                  ? 'text-danger'
+                  : 'text-warning'
+              } disabled`}
+            >
+              {confirmed
+                ? returnTitle('create_wo.confirmed')
+                : part?.last_status?.latest_action === 'TECH_PART_REFUSED'
+                ? returnTitle('create_wo.refused')
+                : returnTitle('create_wo.not_confirmed')}
+            </span>
+
+
+        {confirmed ? (
+            <>
+              {part.count_of_work_orders > 0 ? (
+                <Button variant="warning" className='rounded-3' onClick={() => setShowUpdateModal(true)}>
+                  <FiEdit /> {returnTitle('create_wo.update_work_orders')}
+                </Button>
+              ) : (
+                <Button variant="info"  className='rounded-3' onClick={() => setShowWorkOrderModal(true)}>
+                  <MdAddToPhotos/> {returnTitle('create_wo.create_work_orders')}
+                </Button>
+              )}
+            </>
           ) : (
             <>
               <button className="btn-icon-green rounded-3" onClick={() => setShowConfirmModal(true)}>
@@ -90,6 +114,7 @@ export default function GipPartRow({ part, onConfirmed, onRefuse }) {
               </button>
             </>
           )}
+
         </div>
       </div>
 
@@ -112,6 +137,13 @@ export default function GipPartRow({ part, onConfirmed, onRefuse }) {
         part={part}
         onCreated={onConfirmed}  // Optionally re-fetch parts list after creation
       />
+      <UpdateWorkOrderModal
+        show={showUpdateModal}
+        onHide={() => setShowUpdateModal(false)}
+        part={part}
+        onUpdated={onConfirmed}
+      />
+
     </>
   );
 }

@@ -31,7 +31,10 @@ from .views import (StaffUserLoginView,
                     ProjectRetrieveUpdateView,
                     ProjectGipPartListView,
                     RefuseTechPartView,
-                    ConfirmTechPartView)
+                    ConfirmTechPartView,
+                    CreateWorkOrderView,
+                    UpdateWorkOrdersView,
+                    LoadWorkOrdersByPartView)
                     
 
 urlpatterns = [
@@ -91,5 +94,8 @@ urlpatterns = [
     path('work-order/tech-parts/', ProjectGipPartListView.as_view(), name='create-work-order'),
     path('work-order/tech-parts/<int:tch_part_code>/',RefuseTechPartView.as_view(),name='refuse_tech_part'),
     path('work-order/tech-parts/<int:tch_part_code>/confirm/', ConfirmTechPartView.as_view(), name='confirm_tech_part'),
+     path('work-order/by-part/<int:tch_part_code>/', LoadWorkOrdersByPartView.as_view(), name='load_work_orders_by_part'),
+    path('work-order/create/', CreateWorkOrderView.as_view(), name='create_work_order'),
+    path('work-order/update/', UpdateWorkOrdersView.as_view(), name='update_work_orders'),
 
 ]

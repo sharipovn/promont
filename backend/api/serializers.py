@@ -1,7 +1,7 @@
 # api/serializers.py
 
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from api.models import StaffUser,Project,ProjectFinancePart,Partner,Translation,Department,ProjectGipPart,ObjectLastStatus,ActionLog
+from api.models import StaffUser,Project,ProjectFinancePart,Partner,Translation,Department,ProjectGipPart,ObjectLastStatus,ActionLog,WorkOrder
 from rest_framework import serializers
 
 
@@ -191,6 +191,7 @@ class ProjectGipPartSerializer(serializers.ModelSerializer):
     full_id = serializers.CharField(read_only=True)
     path_type = serializers.CharField(read_only=True)
     last_status = serializers.SerializerMethodField()
+    count_of_work_orders = serializers.SerializerMethodField()
 
     class Meta:
         model = ProjectGipPart
@@ -212,7 +213,10 @@ class ProjectGipPartSerializer(serializers.ModelSerializer):
             'full_id',
             'path_type',
             'last_status',
+            'count_of_work_orders',  # ✅ Added count here
         ]
+    def get_count_of_work_orders(self, obj):
+        return obj.work_orders.count()
 
     def get_last_status(self, obj):
         from .models import ObjectLastStatus
@@ -255,3 +259,34 @@ class ActionLogSerializer(serializers.ModelSerializer):
             'identified_time',
         ]
         read_only_fields = ['action_id', 'performed_by', 'performed_at', 'notify_to', 'identified', 'identified_time']
+        
+        
+
+
+
+
+
+class WorkOrderCreateSerializer(serializers.ModelSerializer):
+    wo_staff = serializers.PrimaryKeyRelatedField(queryset=StaffUser.objects.all())
+
+    class Meta:
+        model = WorkOrder
+        fields = [
+            'wo_no',
+            'wo_name',
+            'wo_start_date',
+            'wo_finish_date',
+            'wo_staff'
+        ]
+
+
+class WorkOrderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WorkOrder
+        fields = [
+            'wo_no',
+            'wo_name',
+            'wo_start_date',
+            'wo_finish_date',
+            'wo_staff'
+        ]

@@ -19,6 +19,7 @@ export default function TranslationScreen() {
   const [totalPages, setTotalPages] = useState(1);
   const [showAddModal, setShowAddModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [totalTranslationsCount, setTotalTranslationsCount] = useState(0);
 
 
   const { setUser, setAccessToken } = useAuth();
@@ -39,6 +40,7 @@ export default function TranslationScreen() {
       })
       .then((res) => {
         setTranslations(res.data.results);
+        setTotalTranslationsCount(res.data.count)
         setTotalPages(Math.ceil(res.data.count / 15));
       })
       .catch((err) => console.error('❌ Failed to fetch translations:', err));
@@ -57,7 +59,7 @@ export default function TranslationScreen() {
           </div>
           <div style={{ width: '82%', padding: '1rem' }}>
             <div className="d-flex justify-content-between align-items-center mb-3">
-              <h5 className="text-info mb-0">{returnTitle('internalization.translation_list')}</h5>
+              <h5 className="text-info mb-0">{returnTitle('internalization.translation_list')}({totalTranslationsCount})</h5>
 
               <div className="d-flex gap-2 align-items-center">
                 <div className="translation-search-wrapper">

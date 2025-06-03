@@ -3,10 +3,14 @@ import { FaEdit } from 'react-icons/fa';
 import EditTranslationModal from './EditTranslationModal';
 import './TranslationTable.css';
 import { useI18n } from '../context/I18nProvider';
+import {formatDateOnly} from '../utils/formatDateTime'
+import HoverText from './HoverText'
 
 export default function TranslationTable({ translations, onUpdated }) {
   const [editingTranslation, setEditingTranslation] = useState(null);
   const { returnTitle } = useI18n();
+  console.log('translations:',translations)
+
   
   return (
     <>
@@ -26,6 +30,8 @@ export default function TranslationTable({ translations, onUpdated }) {
               <th>{returnTitle('internalization.en')}</th>
               <th>{returnTitle('internalization.ru')}</th>
               <th>{returnTitle('internalization.uz')}</th>
+              <th>{returnTitle('internalization.update_time')}</th>
+              <th>{returnTitle('internalization.translated')}</th>
               <th className="text-center" style={{ width: '60px' }}></th>
             </tr>
           </thead>
@@ -36,6 +42,8 @@ export default function TranslationTable({ translations, onUpdated }) {
                 <td className="py-3">{tr.en || <span className="text-muted">—</span>}</td>
                 <td className="py-3">{tr.ru || <span className="text-muted">—</span>}</td>
                 <td className="py-3">{tr.uz || <span className="text-muted">—</span>}</td>
+                <td className="py-3">{formatDateOnly(tr.update_time) || <span className="text-muted">—</span>}</td>
+                <td className="py-3"><HoverText>{tr.translated_by_fio || <span className="text-muted">—</span>}</HoverText></td>
                 <td className="text-center py-3">
                   <button
                     onClick={() => setEditingTranslation(tr)}

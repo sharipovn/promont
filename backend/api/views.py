@@ -689,7 +689,7 @@ class TranslationListCreateAPIView(ListCreateAPIView):
     serializer_class = TranslationSerializer
     pagination_class = TranslationsPagination  # reuse or define similar pagination
     filter_backends = [SearchFilter]
-    search_fields = ['key']  # 🔍 enables ?search=...
+    search_fields = ['key', 'en', 'ru', 'uz']  # 🔍 enables ?search=...
     # permission_classes = [IsAuthenticated,HasCapabilityPermission('CAN_MANAGE_TRANSLATIONS')]
     
 

@@ -34,7 +34,11 @@ from .views import (StaffUserLoginView,
                     ConfirmTechPartView,
                     CreateWorkOrderView,
                     UpdateWorkOrdersView,
-                    LoadWorkOrdersByPartView)
+                    LoadWorkOrdersByPartView,
+                    CompleteWorkOrderListAPIView,
+                    RefuseWorkOrderView,
+                    WorkOrderConfirmView,
+                    CompleteOrUpdateWorkOrderView)
                     
 
 urlpatterns = [
@@ -97,5 +101,10 @@ urlpatterns = [
      path('work-order/by-part/<int:tch_part_code>/', LoadWorkOrdersByPartView.as_view(), name='load_work_orders_by_part'),
     path('work-order/create/', CreateWorkOrderView.as_view(), name='create_work_order'),
     path('work-order/update/', UpdateWorkOrdersView.as_view(), name='update_work_orders'),
-
+    
+    #complete-work-order
+    path('complete-work-order/my-tasks/', CompleteWorkOrderListAPIView.as_view(), name='complete_work_order_list'),
+    path('complete-work-order/<int:wo_id>/', RefuseWorkOrderView.as_view(), name='completeworkorder_refuse'),
+    path('complete-work-order/<int:wo_id>/confirm/', WorkOrderConfirmView.as_view(), name='confirm_work_order'),
+    path('complete-work-order/complete/<int:wo_id>/', CompleteOrUpdateWorkOrderView.as_view(), name='complete_work_order'),
 ]

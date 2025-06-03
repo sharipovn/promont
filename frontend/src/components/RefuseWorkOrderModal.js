@@ -1,38 +1,38 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
 import Alert from './Alert';
-import { useMemo } from 'react';
-import { createAxiosInstance } from '../utils/createAxiosInstance';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthProvider';
+import { createAxiosInstance } from '../utils/createAxiosInstance';
 import { useI18n } from '../context/I18nProvider';
 
-export default function RefuseTechPartModal({ show, onHide, part, onRefuse }) {
+export default function RefuseWorkOrderModal({ show, onHide, order, onRefuse }) {
+
+    console.log('order:',order)
   const { returnTitle } = useI18n();
   const { setUser, setAccessToken } = useAuth();
   const navigate = useNavigate();
-const axiosInstance = useMemo(() => {return createAxiosInstance(navigate, setUser, setAccessToken);
-    }, [navigate, setUser, setAccessToken]);
+  const axiosInstance = useMemo(
+    () => createAxiosInstance(navigate, setUser, setAccessToken),
+    [navigate, setUser, setAccessToken]
+  );
 
   const [comment, setComment] = useState('');
   const [loading, setLoading] = useState(false);
   const [alert, setAlert] = useState({ show: false, variant: '', message: '' });
 
-  // Load existing comment if already refused
   useEffect(() => {
-    if (part?.last_status?.latest_action === 'TECH_PART_REFUSED') {
+    if (order?.last_status?.latest_action === 'WORK_ORDER_REFUSED') {
       axiosInstance
-        .get(`/work-order/tech-parts/${part.tch_part_code}/`)
+        .get(`/complete-work-order/${order.wo_id}/`) // Assuming GET returns last refusal info
         .then((res) => {
           setComment(res.data.comment || '');
         })
-        .catch(() => {
-          setComment('');
-        });
+        .catch(() => setComment(''));
     } else {
       setComment('');
     }
-  }, [part,show,axiosInstance]);
+  }, [order, show,axiosInstance]);
 
   const handleClose = () => {
     setComment('');
@@ -47,29 +47,28 @@ const axiosInstance = useMemo(() => {return createAxiosInstance(navigate, setUse
     }
 
     setLoading(true);
-    const method = part?.last_status?.latest_action === 'TECH_PART_REFUSED' ? 'put' : 'post';
+    const method = order?.last_status?.latest_action === 'WORK_ORDER_REFUSED' ? 'put' : 'post';
+
     try {
-      await axiosInstance[method](`/work-order/tech-parts/${part.tch_part_code}/`, {
+      await axiosInstance[method](`/complete-work-order/${order.wo_id}/`, {
         comment: comment.trim(),
       });
-
       setAlert({
         show: true,
         variant: 'success',
         message: returnTitle(
-          method === 'put' ? 'create_wo.refusal_updated' : 'create_wo.refused_success'
+          method === 'put' ? 'complete_wo.refusal_updated' : 'complete_wo.refused_success'
         ),
       });
-
       setTimeout(() => {
         handleClose();
-        onRefuse(); // refresh list
+        onRefuse();
       }, 1000);
     } catch (err) {
       setAlert({
         show: true,
         variant: 'info',
-        message: returnTitle('create_wo.refusal_failed'),
+        message: returnTitle('complete_wo.refusal_failed'),
       });
     } finally {
       setLoading(false);
@@ -87,9 +86,9 @@ const axiosInstance = useMemo(() => {return createAxiosInstance(navigate, setUse
       <Modal.Body className="p-4">
         <h5 className="text-danger mb-4">
           {returnTitle(
-            part?.last_status?.latest_action === 'TECH_PART_REFUSED'
-              ? 'create_wo.update_refusal'
-              : 'create_wo.refuse_part'
+            order?.last_status?.latest_action === 'WORK_ORDER_REFUSED'
+              ? 'complete_wo.update_refusal'
+              : 'complete_wo.refuse_work_order'
           )}
         </h5>
 
@@ -103,27 +102,22 @@ const axiosInstance = useMemo(() => {return createAxiosInstance(navigate, setUse
 
         <Form.Group className="mb-4">
           <Form.Label className="text-light small">
-            {returnTitle('create_wo.refusal_reason_for')}{' '}
-            <span className="text-info">"{part?.tch_part_name}"</span>
+            {returnTitle('complete_wo.refusal_reason_for')}{' '}
+            <span className="text-info">"{order?.wo_name}"</span>
           </Form.Label>
           <Form.Control
             as="textarea"
             rows={4}
             className="bg-transparent border text-light custom-textarea rounded"
-            placeholder={returnTitle('create_wo.enter_reason')}
+            placeholder={returnTitle('complete_wo.enter_reason')}
             value={comment}
             onChange={(e) => setComment(e.target.value)}
-            style={{ pointerEvents: 'auto' }} // ✅ Make sure it's editable
+            style={{ pointerEvents: 'auto' }}
           />
         </Form.Group>
 
         <div className="d-flex justify-content-end gap-3">
-          <Button
-            variant="outline-secondary"
-            onClick={handleClose}
-            className="rounded-2 px-4"
-            disabled={loading}
-          >
+          <Button variant="outline-secondary" onClick={handleClose} className="rounded-2 px-4" disabled={loading}>
             {returnTitle('app.cancel')}
           </Button>
           <Button
@@ -132,7 +126,7 @@ const axiosInstance = useMemo(() => {return createAxiosInstance(navigate, setUse
             className="rounded-2 px-4"
             disabled={loading || !comment.trim()}
           >
-            {loading ? returnTitle('create_wo.sending') : returnTitle('create_wo.confirm_refusal')}
+            {loading ? returnTitle('complete_wo.sending') : returnTitle('complete_wo.confirm_refusal')}
           </Button>
         </div>
       </Modal.Body>

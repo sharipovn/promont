@@ -13,6 +13,7 @@ import { useI18n } from '../context/I18nProvider';
 import { LuLanguages } from "react-icons/lu";
 import { GrTechnology } from "react-icons/gr";
 import { MdWorkHistory } from "react-icons/md";
+import { MdOutlineTaskAlt } from "react-icons/md";
 
 
 
@@ -112,6 +113,18 @@ export default function Sidebar() {
                   }}>
                 <MdWorkHistory  style={{ fontSize: 'clamp(1rem, 1vw + 0.5rem, 1.4rem)' }}/>
                 <span>{returnTitle('menu.create_work_orders')}</span>
+              </NavLink>
+            </li>
+         )}
+          {hasCapability(PERMISSIONS.CAN_COMPLETE_WORK_ORDER) && (
+            <li className="nav-item mt-1 mx-3">
+              <NavLink to="/complete-work-order" className="sidebar-link d-flex align-items-center gap-2" 
+                  style={{
+                    color: '#344767',
+                    fontSize: 'clamp(0.85rem, 1vw + 0.4rem, 0.9rem)',
+                  }}>
+                <MdOutlineTaskAlt  style={{ fontSize: 'clamp(1rem, 1vw + 0.5rem, 1.4rem)' }}/>
+                <span>{returnTitle('menu.complete_work_order')}</span>
               </NavLink>
             </li>
          )}

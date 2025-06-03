@@ -1,7 +1,7 @@
 # api/serializers.py
 
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from api.models import StaffUser,Project,ProjectFinancePart,Partner,Translation,Department,ProjectGipPart,ObjectLastStatus,ActionLog,WorkOrder
+from api.models import StaffUser,Project,ProjectFinancePart,Partner,Translation,Department,ProjectGipPart,ObjectLastStatus,ActionLog,WorkOrder,WorkOrderFile
 from rest_framework import serializers
 
 
@@ -281,12 +281,69 @@ class WorkOrderCreateSerializer(serializers.ModelSerializer):
 
 
 class WorkOrderSerializer(serializers.ModelSerializer):
+    wo_id = serializers.IntegerField(required=False)
     class Meta:
         model = WorkOrder
         fields = [
+            'wo_id',           # ✅ Include this for update logic
             'wo_no',
             'wo_name',
             'wo_start_date',
             'wo_finish_date',
             'wo_staff'
         ]
+
+class WorkOrderFileSerializer(serializers.ModelSerializer):
+    file_url = serializers.SerializerMethodField()
+    name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = WorkOrderFile
+        fields = ['id', 'file_url', 'name']
+
+    def get_file_url(self, obj):
+        request = self.context.get('request')
+        return request.build_absolute_uri(obj.file.url)
+
+    def get_name(self, obj):
+        return obj.file.name.split('/')[-1]  # Just the file name, not full path
+
+
+
+class CompleteWorkOrderSerializer(serializers.ModelSerializer):
+    tech_part = ProjectGipPartSerializer(source='tch_part_code', read_only=True)
+    wo_staff_fio = serializers.CharField(source='wo_staff.fio', read_only=True)
+    last_status = serializers.SerializerMethodField()
+    full_id = serializers.CharField(read_only=True)
+    files = WorkOrderFileSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = WorkOrder
+        fields = [
+            'wo_id',
+            'wo_no',
+            'wo_name',
+            'wo_start_date',
+            'wo_finish_date',
+            'wo_staff',
+            'wo_staff_fio',
+            'staff_confirm',
+            'last_status',
+            'tech_part',
+            'full_id',
+            'files'
+        ]
+
+    def get_last_status(self, obj):
+        from .models import ObjectLastStatus
+        try:
+            status = ObjectLastStatus.objects.get(full_id=obj.full_id)
+            return {
+                "latest_action": status.latest_action,
+                "latest_phase_type": status.latest_phase_type.name if status.latest_phase_type else None,
+                "is_refused": status.latest_phase_type.is_refusal if status.latest_phase_type else False,
+                "updated_by": status.updated_by.fio if status.updated_by else None,
+                "last_updated": status.last_updated
+            }
+        except ObjectLastStatus.DoesNotExist:
+            return None

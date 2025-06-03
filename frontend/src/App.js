@@ -10,6 +10,8 @@ import AddDepartmentScreen from './screens/AddDepartmentScreen';
 import TranslationScreen from './screens/TranslationScreen';
 import CreateTechnicalPartsScreen from './screens/CreateTechnicalPartsScreen';
 import CreateWorkOrderScreen from './screens/CreateWorkOrderScreen';
+import CompleteWorkOrderScreen from './screens/CompleteWorkOrderScreen';
+
 
 
 import PrivateRoute from './context/PrivateRoute';
@@ -50,6 +52,9 @@ export default function App() {
       <Route path="/manage-work-orders" element={<PrivateRoute requiredCapabilities={[
                                                           PERMISSIONS.CAN_VIEW,PERMISSIONS.CAN_CREATE_WORK_ORDER
                                                         ]}><CreateWorkOrderScreen /></PrivateRoute>} />
+      <Route path="/complete-work-order" element={<PrivateRoute requiredCapabilities={[
+                                                          PERMISSIONS.CAN_VIEW,PERMISSIONS.CAN_COMPLETE_WORK_ORDER
+                                                        ]}><CompleteWorkOrderScreen /></PrivateRoute>} />
       <Route path="/noaccess" element={<PrivateRoute><NoAccessScreen /></PrivateRoute>} />
     </Routes>
     </Router>

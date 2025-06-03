@@ -13,8 +13,9 @@ from .permissions import HasCapabilityPermission
 from datetime import datetime,date
 from decimal import Decimal
 from django.shortcuts import get_object_or_404
+from rest_framework.parsers import MultiPartParser, FormParser
 
-from api.models import StaffUser,Project,ProjectFinancePart,Partner,Translation,Department,PhaseType, ProjectPhase,ProjectGipPart,ActionLog,WorkOrder
+from api.models import StaffUser,Project,ProjectFinancePart,Partner,Translation,Department,PhaseType, ProjectPhase,ProjectGipPart,ActionLog,WorkOrder,WorkOrderFile
 from .serializers import (ProjectSerializer,
                           StaffUserSimpleSerializer,
                           ProjectFinancePartCreateSerializer,
@@ -26,13 +27,14 @@ from .serializers import (ProjectSerializer,
                           TranslationSerializer,
                           ProjectGipPartSerializer,
                           ActionLogSerializer,
-                          WorkOrderSerializer)
+                          WorkOrderSerializer,
+                          CompleteWorkOrderSerializer)
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateAPIView,ListAPIView,UpdateAPIView
 from api.serializers import StaffUserTokenSerializer
 from django.utils.dateparse import parse_date
 from django.db.models import Count, Q,Subquery,OuterRef,F
 from django.db import transaction
-from .pagination import ProjectsPagination,ProjectsFiancierConfirmPagination,PartnersPagination,TranslationsPagination,GipConfirmPagination,ProjectListCreatePagination,ProjectGipPartPagination
+from .pagination import ProjectsPagination,ProjectsFiancierConfirmPagination,PartnersPagination,CompleteWorkOrderPagination,TranslationsPagination,GipConfirmPagination,ProjectListCreatePagination,ProjectGipPartPagination
 from django.utils import timezone
 from rest_framework.views import APIView
 from rest_framework.exceptions import ValidationError
@@ -1105,6 +1107,7 @@ class UpdateWorkOrdersView(APIView):
             existing_wos = WorkOrder.objects.filter(tch_part_code=part)
             existing_map = {wo.pk: wo for wo in existing_wos}
             incoming_ids = {o.get('wo_id') for o in orders if o.get('wo_id')}
+            print('incoming_ids',incoming_ids)
 
             # Process updates and creates
             for o in orders:
@@ -1147,3 +1150,162 @@ class UpdateWorkOrdersView(APIView):
                 wo.delete()
 
         return Response({'detail': 'Work orders updated successfully'}, status=status.HTTP_200_OK)
+
+
+
+
+
+
+class CompleteWorkOrderListAPIView(ListAPIView):
+    serializer_class = CompleteWorkOrderSerializer
+    permission_classes = [IsAuthenticated,HasCapabilityPermission('CAN_COMPLETE_WORK_ORDER')]
+    pagination_class = CompleteWorkOrderPagination
+
+    def get_queryset(self):
+        return WorkOrder.objects.filter(wo_staff=self.request.user).order_by('-wo_start_date')
+    
+    
+    
+class RefuseWorkOrderView(APIView):
+    permission_classes = [IsAuthenticated, HasCapabilityPermission('CAN_COMPLETE_WORK_ORDER')]
+    
+    
+    def get(self, request, wo_id):
+        work_order = get_object_or_404(WorkOrder, pk=wo_id)
+        try:
+            refusal_phase = PhaseType.objects.get(key='WORK_ORDER_REFUSED')
+            action = ActionLog.objects.filter(
+                full_id=work_order.full_id,
+                path_type=work_order.path_type,
+                phase_type=refusal_phase
+            ).latest('performed_at')
+            print('action:',action)
+        except PhaseType.DoesNotExist:
+            return Response({'detail': 'Тип этапа WORK_ORDER_REFUSED не найден.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except ActionLog.DoesNotExist:
+            return Response({'detail': 'Информация об отказе не найдена.'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = ActionLogSerializer(action)
+        return Response(serializer.data)
+
+    def post(self, request, wo_id):
+        work_order = get_object_or_404(WorkOrder, pk=wo_id)
+        comment = request.data.get('comment', '').strip()
+        if not comment:
+            return Response({'detail': 'Пожалуйста, укажите причину отказа.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            refusal_phase = PhaseType.objects.get(key='WORK_ORDER_REFUSED')
+            ActionLog.objects.create(
+                full_id=work_order.full_id,
+                path_type=work_order.path_type,
+                phase_type=refusal_phase,
+                comment=comment,
+                performed_by=request.user,
+                notify_to=work_order.create_user,
+            )
+        except Exception as e:
+            return Response({'detail': f'Ошибка при сохранении журнала действий: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return Response({'detail': 'Отказ успешно зафиксирован.'}, status=status.HTTP_201_CREATED)
+
+    def put(self, request, wo_id):
+        work_order = get_object_or_404(WorkOrder, pk=wo_id)
+        comment = request.data.get('comment', '').strip()
+        if not comment:
+            return Response({'detail': 'Пожалуйста, укажите причину отказа.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            refusal_phase = PhaseType.objects.get(key='WORK_ORDER_REFUSED')
+            action = ActionLog.objects.filter(
+                full_id=work_order.full_id,
+                path_type=work_order.path_type,
+                phase_type=refusal_phase
+            ).latest('performed_at')
+            action.comment = comment
+            action.save()
+        except ActionLog.DoesNotExist:
+            return Response({'detail': 'Запись отказа не найдена для обновления.'}, status=status.HTTP_404_NOT_FOUND)
+
+        return Response({'detail': 'Комментарий к отказу успешно обновлён.'}, status=status.HTTP_200_OK)
+    
+    
+    
+    
+
+
+class WorkOrderConfirmView(APIView):
+    permission_classes = [IsAuthenticated, HasCapabilityPermission('CAN_COMPLETE_WORK_ORDER')]
+
+    def post(self, request, wo_id):
+        order = get_object_or_404(WorkOrder, pk=wo_id)
+
+        if order.staff_confirm:
+            return Response({'detail': 'Рабочий наряд уже подтвержден.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            confirm_phase = PhaseType.objects.get(key='WORK_ORDER_CONFIRMED')
+        except PhaseType.DoesNotExist:
+            return Response({'detail': 'Тип этапа WORK_ORDER_CONFIRMED не найден.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        order.staff_confirm = True
+        order.save()
+
+        try:
+            ActionLog.objects.create(
+                full_id=order.full_id,
+                path_type=order.path_type,
+                phase_type=confirm_phase,
+                performed_by=request.user,
+                notify_to=order.create_user,
+                comment='Рабочий наряд подтвержден'
+            )
+        except Exception as e:
+            return Response({'detail': f'Ошибка при сохранении лога: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return Response({'detail': 'Рабочий наряд успешно подтвержден.'}, status=status.HTTP_200_OK)
+    
+    
+    
+class CompleteOrUpdateWorkOrderView(APIView):
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def post(self, request, wo_id):
+        work_order = get_object_or_404(WorkOrder, pk=wo_id)
+
+        wo_answer = request.data.get('wo_answer', '').strip()
+        wo_remark = request.data.get('wo_remark', '').strip()
+        print('wo_answer',wo_answer)
+        print('wo_remark',wo_remark)
+
+        if not wo_answer:
+            return Response({'error': 'Answer is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        work_order.wo_answer = wo_answer
+        work_order.wo_remark = wo_remark
+        work_order.answer_date = timezone.now()
+        work_order.staff_confirm = True
+        work_order.save()
+
+        # Save uploaded files
+        for file in request.FILES.getlist('files'):
+            WorkOrderFile.objects.create(work_order=work_order, file=file)
+
+        # Log action
+        full_id = work_order.full_id
+        path_type = work_order.path_type
+        phase_type = PhaseType.objects.filter(key='WORK_ORDER_COMPLETED').first()
+
+
+        ActionLog.objects.create(
+            full_id=full_id,
+            path_type=path_type,
+            phase_type=phase_type,
+            comment=wo_remark,
+            performed_by=request.user,
+            notify_to=work_order.create_user  # ✅ Notify the work order's creator
+        )
+
+        return Response({'success': True}, status=status.HTTP_200_OK)
+

@@ -299,7 +299,7 @@ class WorkOrderFileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = WorkOrderFile
-        fields = ['id', 'file_url', 'name']
+        fields = ['id', 'file_url', 'name','original_name']
 
     def get_file_url(self, obj):
         request = self.context.get('request')
@@ -331,7 +331,9 @@ class CompleteWorkOrderSerializer(serializers.ModelSerializer):
             'last_status',
             'tech_part',
             'full_id',
-            'files'
+            'files',
+            'wo_answer',
+            'wo_remark'
         ]
 
     def get_last_status(self, obj):

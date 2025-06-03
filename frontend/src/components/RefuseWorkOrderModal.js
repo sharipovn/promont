@@ -8,7 +8,6 @@ import { useI18n } from '../context/I18nProvider';
 
 export default function RefuseWorkOrderModal({ show, onHide, order, onRefuse }) {
 
-    console.log('order:',order)
   const { returnTitle } = useI18n();
   const { setUser, setAccessToken } = useAuth();
   const navigate = useNavigate();

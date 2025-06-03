@@ -456,8 +456,13 @@ class WorkOrderFile(models.Model):
         validators=[FileExtensionValidator(allowed_extensions=['pdf', 'doc', 'docx', 'jpg', 'png'])],
         help_text='Максимальный размер файла: 10 МБ'
     )
-
+    original_name = models.CharField(max_length=255)  # ✅ store original filename
     uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if not self.original_name and self.file:
+            self.original_name = self.file.name
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"File for WO-{self.work_order.wo_no}"

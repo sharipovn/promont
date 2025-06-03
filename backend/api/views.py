@@ -14,6 +14,7 @@ from datetime import datetime,date
 from decimal import Decimal
 from django.shortcuts import get_object_or_404
 from rest_framework.parsers import MultiPartParser, FormParser
+import json
 
 from api.models import StaffUser,Project,ProjectFinancePart,Partner,Translation,Department,PhaseType, ProjectPhase,ProjectGipPart,ActionLog,WorkOrder,WorkOrderFile
 from .serializers import (ProjectSerializer,
@@ -1268,7 +1269,7 @@ class WorkOrderConfirmView(APIView):
     
     
 class CompleteOrUpdateWorkOrderView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, HasCapabilityPermission('CAN_COMPLETE_WORK_ORDER')]
     parser_classes = [MultiPartParser, FormParser]
 
     def post(self, request, wo_id):
@@ -1288,19 +1289,25 @@ class CompleteOrUpdateWorkOrderView(APIView):
         work_order.staff_confirm = True
         work_order.save()
 
+        # ✅ Delete removed files
+        try:
+            deleted_file_ids = json.loads(request.data.get('deleted_file_ids', '[]'))
+            WorkOrderFile.objects.filter(id__in=deleted_file_ids, work_order=work_order).delete()
+        except (ValueError, ValidationError):
+            pass  # Optional: handle JSON decode error
+
         # Save uploaded files
         for file in request.FILES.getlist('files'):
-            WorkOrderFile.objects.create(work_order=work_order, file=file)
+            WorkOrderFile.objects.create(work_order=work_order,
+                                         file=file,
+                                         original_name=file.name  # ✅ original name from uploaded file
+                                         )
 
         # Log action
-        full_id = work_order.full_id
-        path_type = work_order.path_type
         phase_type = PhaseType.objects.filter(key='WORK_ORDER_COMPLETED').first()
-
-
         ActionLog.objects.create(
-            full_id=full_id,
-            path_type=path_type,
+            full_id=work_order.full_id,
+            path_type=work_order.path_type,
             phase_type=phase_type,
             comment=wo_remark,
             performed_by=request.user,

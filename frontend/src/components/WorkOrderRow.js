@@ -13,7 +13,7 @@ export default function WorkOrderRow({ order, onRefuse,onConfirmed,onCompleted }
   const { returnTitle } = useI18n();
   const confirmed = order.staff_confirm;
   const refused = order.last_status?.latest_action === 'WORK_ORDER_REFUSED';
-  const hasAnswer = !!order.answer_date;
+  const hasAnswer = !!order.wo_answer;
 
 
   const [showConfirmModal, setShowConfirmModal] = useState(false);

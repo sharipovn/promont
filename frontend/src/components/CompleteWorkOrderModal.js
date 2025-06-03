@@ -8,9 +8,11 @@ import Alert from './Alert';
 import { FaTimes } from 'react-icons/fa';
 
 export default function CompleteWorkOrderModal({ show, onHide, order, onCompleted }) {
+  console.log('opened order:',order)
   const { returnTitle } = useI18n();
   const { setUser, setAccessToken } = useAuth();
   const navigate = useNavigate();
+  const MAX_FILE_SIZE_MB = 10;
 
   const axiosInstance = useMemo(() => createAxiosInstance(navigate, setUser, setAccessToken), [
     navigate, setUser, setAccessToken,
@@ -22,6 +24,8 @@ export default function CompleteWorkOrderModal({ show, onHide, order, onComplete
   const [existingFiles, setExistingFiles] = useState([]);
   const [alert, setAlert] = useState({ show: false, variant: '', message: '' });
   const [loading, setLoading] = useState(false);
+  const [removedFileIds, setRemovedFileIds] = useState([]);
+
 
   useEffect(() => {
     if (order) {
@@ -29,15 +33,36 @@ export default function CompleteWorkOrderModal({ show, onHide, order, onComplete
       setWoRemark(order.wo_remark || '');
       setExistingFiles(order.files || []);
       setNewFiles([]);
+      setRemovedFileIds([]); // ✅ reset deleted files
+      setAlert({ show: false, variant: '', message: '' }); // ✅ reset alert
     }
   }, [order, show]);
 
-  const handleFileChange = (e) => {
-    if (e.target.files?.length) {
-      setNewFiles([...newFiles, ...Array.from(e.target.files)]);
-      e.target.value = '';
-    }
-  };
+      const handleFileChange = (e) => {
+      if (e.target.files?.length) {
+        const selectedFiles = Array.from(e.target.files);
+        const validFiles = [];
+
+        selectedFiles.forEach((file) => {
+          const fileSizeMB = file.size / (1024 * 1024); // Convert bytes to MB
+          if (fileSizeMB > MAX_FILE_SIZE_MB) {
+            setAlert({
+              show: true,
+              variant: 'danger',
+              message: `${file.name} ${returnTitle('complete_wo.file_size_exceeding_from_max_size')} (${MAX_FILE_SIZE_MB}MB)`
+            });
+          } else {
+            validFiles.push(file);
+          }
+        });
+
+        if (validFiles.length > 0) {
+          setNewFiles((prev) => [...prev, ...validFiles]);
+        }
+
+        e.target.value = '';
+      }
+    };
 
   const removeNewFile = (index) => {
     const updated = [...newFiles];
@@ -45,11 +70,16 @@ export default function CompleteWorkOrderModal({ show, onHide, order, onComplete
     setNewFiles(updated);
   };
 
-  const removeExistingFile = (index) => {
-    const updated = [...existingFiles];
-    updated.splice(index, 1);
-    setExistingFiles(updated);
-  };
+    const removeExistingFile = (index) => {
+      const fileToRemove = existingFiles[index];
+      if (fileToRemove?.id) {
+        setRemovedFileIds(prev => [...prev, fileToRemove.id]);
+      }
+      const updated = [...existingFiles];
+      updated.splice(index, 1);
+      setExistingFiles(updated);
+    };
+
 
   const handleSubmit = async () => {
     if (!woAnswer.trim()) {
@@ -57,9 +87,18 @@ export default function CompleteWorkOrderModal({ show, onHide, order, onComplete
       return;
     }
 
+    if (existingFiles.length === 0 && newFiles.length === 0) {
+    setAlert({
+      show: true,
+      variant: 'danger',
+      message: returnTitle('complete_wo.answer_file_required'),
+    });
+    return;}
+
     const formData = new FormData();
     formData.append('wo_answer', woAnswer.trim());
     formData.append('wo_remark', woRemark.trim());
+    formData.append('deleted_file_ids', JSON.stringify(removedFileIds)); // ✅ Add this
     newFiles.forEach(f => formData.append('files', f));
 
     setLoading(true);
@@ -132,7 +171,7 @@ export default function CompleteWorkOrderModal({ show, onHide, order, onComplete
           <div className="mb-2">
             {existingFiles.map((f, i) => (
               <div key={i} className="bg-dark rounded px-3 py-2 mb-1 d-flex justify-content-between align-items-center">
-                <a href={f.file_url} className="text-info small text-truncate" target="_blank" rel="noopener noreferrer">{f.name || `File ${i + 1}`}</a>
+                <a href={f.file_url} className="text-info small text-truncate" target="_blank" rel="noopener noreferrer">{f.original_name || f.name || `File ${i + 1}`}</a>
                 <FaTimes className="text-danger cursor-pointer" onClick={() => removeExistingFile(i)} />
               </div>
             ))}
@@ -163,7 +202,7 @@ export default function CompleteWorkOrderModal({ show, onHide, order, onComplete
           <Button variant="success" onClick={handleSubmit} disabled={loading}>
             {loading
               ? returnTitle('complete_wo.sending')
-              : returnTitle(order?.answer_date ? 'complete_wo.update_completion' : 'complete_wo.complete')}
+              : returnTitle(order?.wo_answer ? 'complete_wo.update_complete' : 'complete_wo.complete_work_order')}
           </Button>
         </div>
       </Modal.Body>

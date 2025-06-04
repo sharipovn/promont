@@ -39,7 +39,10 @@ from .views import (StaffUserLoginView,
                     RefuseWorkOrderView,
                     WorkOrderConfirmView,
                     CompleteOrUpdateWorkOrderView)
-                    
+          
+          
+          
+from .special_views import SpecialProjectDetailAPIView          
 
 urlpatterns = [
     path('login/', StaffUserLoginView.as_view(), name='jwt_login'),
@@ -107,4 +110,8 @@ urlpatterns = [
     path('complete-work-order/<int:wo_id>/', RefuseWorkOrderView.as_view(), name='completeworkorder_refuse'),
     path('complete-work-order/<int:wo_id>/confirm/', WorkOrderConfirmView.as_view(), name='confirm_work_order'),
     path('complete-work-order/complete/<int:wo_id>/', CompleteOrUpdateWorkOrderView.as_view(), name='complete_work_order'),
+    
+    
+    #special
+    path('special-projects/<int:project_code>/', SpecialProjectDetailAPIView.as_view(), name='special_project_detail'),
 ]

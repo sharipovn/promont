@@ -183,6 +183,31 @@ class Project(models.Model):
     def __str__(self):
         return f"{self.project_code} - {self.project_name}"
 
+    @property
+    def full_id(self):
+        try:
+            return f"{self.project_code}/"
+        except Exception:
+            return None
+
+    @property
+    def last_status(self):
+        from api.models import ObjectLastStatus
+        try:
+            status = ObjectLastStatus.objects.get(full_id=self.full_id)
+            return {
+                "latest_action": status.latest_action,
+                "latest_phase_type": status.latest_phase_type.name if status.latest_phase_type else None,
+                "last_updated": status.last_updated,
+                "updated_by": status.updated_by.fio if status.updated_by else None,
+            }
+        except ObjectLastStatus.DoesNotExist:
+            return None
+    
+    @property
+    def path_type(self):
+        return "PROJECT"
+        
 
 class ProjectFinancePart(models.Model):
     fs_part_code = models.AutoField(primary_key=True)
@@ -222,6 +247,32 @@ class ProjectFinancePart(models.Model):
 
     def __str__(self):
         return f"{self.fs_part_code} - {self.fs_part_name}"
+    
+    
+    @property
+    def full_id(self):
+        try:
+            return f"{self.project_code.project_code}/{self.fs_part_code}/"
+        except Exception:
+            return None
+
+    @property
+    def last_status(self):
+        from api.models import ObjectLastStatus
+        try:
+            status = ObjectLastStatus.objects.get(full_id=self.full_id)
+            return {
+                "latest_action": status.latest_action,
+                "latest_phase_type": status.latest_phase_type.name if status.latest_phase_type else None,
+                "last_updated": status.last_updated,
+                "updated_by": status.updated_by.fio if status.updated_by else None,
+            }
+        except ObjectLastStatus.DoesNotExist:
+            return None
+        
+    @property
+    def path_type(self):
+        return "FIN_PART"
     
 
 
@@ -423,23 +474,33 @@ class ProjectGipPart(models.Model):
     def __str__(self):
         return f"{self.tch_part_no} - {self.tch_part_name}"
     
+    
+    
     @property
     def full_id(self):
         try:
-            project = self.fs_part_code.project_code  # This is the Project instance
-            project_id = project.project_code
-            finance_part_id = self.fs_part_code.fs_part_code
-            tech_part_id = self.tch_part_code
-            return f"{project_id}/{finance_part_id}/{tech_part_id}/"
+            project = self.fs_part_code.project_code
+            return f"{project.project_code}/{self.fs_part_code.fs_part_code}/{self.tch_part_code}/"
         except Exception:
-            return "N/A"
-        
+            return None
+
+    @property
+    def last_status(self):
+        from api.models import ObjectLastStatus
+        try:
+            status = ObjectLastStatus.objects.get(full_id=self.full_id)
+            return {
+                "latest_action": status.latest_action,
+                "latest_phase_type": status.latest_phase_type.name if status.latest_phase_type else None,
+                "last_updated": status.last_updated,
+                "updated_by": status.updated_by.fio if status.updated_by else None,
+            }
+        except ObjectLastStatus.DoesNotExist:
+            return None
+
     @property
     def path_type(self):
         return "TECH_PART"
-
-    def __str__(self):
-        return f"{self.tch_part_no} - {self.tch_part_name}"
 
 
 
@@ -524,12 +585,25 @@ class WorkOrder(models.Model):
             project = finance_part.project_code
             return f"{project.project_code}/{finance_part.fs_part_code}/{self.tch_part_code.tch_part_code}/{self.wo_id}/"
         except Exception:
-            return "N/A"
+            return None
+
+    @property
+    def last_status(self):
+        from api.models import ObjectLastStatus
+        try:
+            status = ObjectLastStatus.objects.get(full_id=self.full_id)
+            return {
+                "latest_action": status.latest_action,
+                "latest_phase_type": status.latest_phase_type.name if status.latest_phase_type else None,
+                "last_updated": status.last_updated,
+                "updated_by": status.updated_by.fio if status.updated_by else None,
+            }
+        except ObjectLastStatus.DoesNotExist:
+            return None
 
     @property
     def path_type(self):
         return "WORK_ORDER"
-
 
 
 

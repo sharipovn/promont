@@ -70,18 +70,29 @@ class RoleAdmin(admin.ModelAdmin):
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
     list_display = (
-        'project_code', 'project_name', 'total_price','partner',  # ✅ show partner in list
+        'project_code', 'project_name', 'total_price','partner',
         'start_date', 'end_date',
         'financier', 'financier_confirm', 'financier_confirm_date',
         'project_gip', 'gip_confirm', 'gip_confirm_date',
         'create_user', 'create_date', 'update_date',
+        'get_full_id', 'get_last_status',
     )
     list_filter = ('financier_confirm', 'gip_confirm', 'start_date', 'end_date', 'partner')
     search_fields = ('project_code', 'project_name','partner__partner_name')
+
+    @admin.display(description='Full ID')
+    def get_full_id(self, obj):
+        return obj.full_id or None
+
+    @admin.display(description='Last Status')
+    def get_last_status(self, obj):
+        try:
+            status = ObjectLastStatus.objects.get(full_id=obj.full_id)
+            return f"{status.latest_phase_type.name if status.latest_phase_type else None} | {status.latest_action}"
+        except ObjectLastStatus.DoesNotExist:
+            return None
     
-    
-    
-    
+
 @admin.register(ProjectFinancePart)
 class ProjectFinancePartAdmin(admin.ModelAdmin):
     list_display = (
@@ -91,6 +102,7 @@ class ProjectFinancePartAdmin(admin.ModelAdmin):
         'create_user_id', 'create_date',
         'send_to_tech_dir', 'send_to_tech_dir_date',
         'tech_dir_confirm', 'tech_dir_confirm_date',
+        'get_full_id', 'get_last_status',  # ✅ Qo‘shildi
     )
     list_filter = (
         'send_to_tech_dir', 'tech_dir_confirm',
@@ -108,6 +120,19 @@ class ProjectFinancePartAdmin(admin.ModelAdmin):
         for field in ['fs_part_no', 'fs_part_name', 'fs_part_price', 'fs_start_date', 'fs_finish_date']:
             form.base_fields[field].required = True
         return form
+
+    @admin.display(description='Full ID')
+    def get_full_id(self, obj):
+        return obj.full_id or None
+
+    @admin.display(description='Last Status')
+    def get_last_status(self, obj):
+        try:
+            status = ObjectLastStatus.objects.get(full_id=obj.full_id)
+            return f"{status.latest_phase_type.name if status.latest_phase_type else None} | {status.latest_action}"
+        except ObjectLastStatus.DoesNotExist:
+            return None
+
     
     
     
@@ -200,7 +225,6 @@ class ProjectGipPartAdmin(admin.ModelAdmin):
     path_type_display.short_description = "Path Type"
 
 
-    
 
 
 

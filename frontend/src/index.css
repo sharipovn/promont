@@ -268,3 +268,56 @@ code {
 
 /*------------------------------for all modals-------------------------------------------*/
 /*------------------------------for all modals-------------------------------------------*/
+
+
+.tree-node {
+  list-style: none;
+  padding-left: 1rem;
+  position: relative;
+}
+
+.tree-node ul {
+  list-style: none;
+  margin-left: 1.5rem;
+  padding-left: 1rem;
+  border-left: 2px solid #00f0ff;
+  margin-top: 0.5rem;
+}
+
+.tree-node li {
+  margin: 0.5rem 0;
+  position: relative;
+}
+
+.tree-node .tree-label {
+  padding: 6px 12px;
+  background-color: #2c2f4a;
+  border-radius: 8px;
+  font-family: monospace;
+  font-size: 14px;
+  color: #e2e8f0;
+  display: inline-block;
+  border: 1px solid #00f0ff;
+  box-shadow: 0 1px 4px rgba(0, 255, 255, 0.1);
+}
+
+
+.tree-label {
+  padding: 6px 12px;
+  border-radius: 8px;
+  margin-bottom: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  background-color: #25253a;
+}
+
+.tree-label:hover {
+  box-shadow: 0 0 6px rgba(0, 255, 255, 0.3);
+  background-color: #2e2e4d;
+}
+
+.selected-tree-label {
+  background-color: #3a3a5c !important;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.6) !important;
+  font-weight: bold;
+}

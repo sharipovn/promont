@@ -1,10 +1,10 @@
-import React from 'react';
+import React,{useState} from 'react';
 import HoverText from './HoverText';
 import ProjectStatusLine from './ProjectStatusLine';
+import ProjectTreeModal from './ProjectTreeModal';
+
 import {
-  FaCalendarAlt,
   FaUserTie,
-  FaUserEdit,
   FaExclamationTriangle,
   FaCheckCircle
 } from 'react-icons/fa';
@@ -14,6 +14,7 @@ import { FaCoins } from "react-icons/fa6";
 import { FaBusinessTime } from "react-icons/fa";
 
 export default function ProjectCard({ proj }) {
+  const [showModal, setShowModal] = useState(false);
   const {
     project_name,
     total_price,
@@ -53,7 +54,7 @@ export default function ProjectCard({ proj }) {
       }}
     >
       {/* Sarlavha */}
-      <h6 className="mb-3 fw-bold d-flex align-items-center gap-2 fs-sm" style={{ color: '#00f0ff' }}>
+      <h6 className="mb-3 fw-bold d-flex align-items-center gap-2 fs-sm" style={{ color: '#00f0ff' }} onClick={() => setShowModal(true)}>
         <FaFolderOpen  size={'1rem'}/> <HoverText>{project_name}</HoverText> {isNew && (
           <span className="badge bg-success">{current_phase.name}</span>
         )}
@@ -173,6 +174,12 @@ export default function ProjectCard({ proj }) {
           <span className="badge bg-light text-dark">{daysOld} kun oldin</span>
         </div>
       )}
+      <ProjectTreeModal
+        show={showModal}
+        onHide={() => setShowModal(false)}
+        project={proj}
+      />
     </div>
+    
   );
 }

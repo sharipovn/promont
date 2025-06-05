@@ -1,0 +1,104 @@
+{
+    "project_code": 53,
+    "project_name": "TEST PROJECT",
+    "start_date": "2025-05-01",
+    "end_date": "2025-06-05",
+    "total_price": 2500000,
+    "create_date": "2025-05-31T23:52:07.345777+05:00",
+    "create_user": 3,
+    "financier": 3,
+    "project_gip": 4,
+    "full_id": "53/",
+    "finance_parts": [
+        {
+            "fs_part_code": 39,
+            "fs_part_no": "Part 1",
+            "fs_part_name": "buying lines",
+            "fs_part_price": 2000000,
+            "fs_start_date": "2025-05-31",
+            "fs_finish_date": "2025-06-06",
+            "create_date": "2025-05-31T23:53:21.554962+05:00",
+            "send_to_tech_dir": true,
+            "tech_dir_confirm": true,
+            "full_id": "53/39/",
+            "gip_parts": [
+                {
+                    "tch_part_code": 156,
+                    "tch_part_no": "1",
+                    "tch_part_name": "draw",
+                    "tch_part_nach": 5,
+                    "tch_start_date": "2025-05-31",
+                    "tch_finish_date": "2025-06-06",
+                    "create_date": "2025-05-31T23:58:21.443232+05:00",
+                    "nach_otd_confirm": true,
+                    "nach_otd_confirm_date": null,
+                    "full_id": "53/39/156/",
+                    "work_orders": [
+                        {
+                            "wo_id": 41,
+                            "wo_no": 1,
+                            "wo_name": "dd",
+                            "wo_start_date": "2025-05-31",
+                            "wo_finish_date": "2025-06-05",
+                            "wo_staff": 6,
+                            "staff_confirm": true,
+                            "full_id": "53/39/156/41/",
+                            "files": [
+                                {
+                                    "id": 22,
+                                    "file_url": "http://localhost:8000/media/work_orders/2025/06/04/shifohiyya-1_WWF8WjS.pdf",
+                                    "name": "shifohiyya-1_WWF8WjS.pdf",
+                                    "original_name": "shifohiyya-1.pdf"
+                                },
+                                {
+                                    "id": 24,
+                                    "file_url": "http://localhost:8000/media/work_orders/2025/06/04/%D2%9A%D0%B0%D1%88%D2%9B%D0%B0%D0%B4%D0%B0%D1%80%D1%91_%D2%B2%D1%83%D0%B4%D1%83%D0%B4%D0%B8%D0%B9.docx",
+                                    "name": "Қашқадарё_Ҳудудий.docx",
+                                    "original_name": "Қашқадарё Ҳудудий.docx"
+                                }
+                            ],
+                            "last_status": {
+                                "latest_action": "UNKNOWN",
+                                "latest_phase_type": null,
+                                "last_updated": "2025-06-03T22:32:18.427549Z",
+                                "updated_by": "Mashhurbek Muxtarov"
+                            }
+                        },
+                        {
+                            "wo_id": 39,
+                            "wo_no": 5,
+                            "wo_name": "AXSSAXSAX",
+                            "wo_start_date": "2025-05-31",
+                            "wo_finish_date": "2025-06-06",
+                            "wo_staff": 6,
+                            "staff_confirm": true,
+                            "full_id": "53/39/156/39/",
+                            "files": [
+                                {
+                                    "id": 23,
+                                    "file_url": "http://localhost:8000/media/work_orders/2025/06/04/shifohiyya-1_rtQt3l9.pdf",
+                                    "name": "shifohiyya-1_rtQt3l9.pdf",
+                                    "original_name": "shifohiyya-1.pdf"
+                                }
+                            ],
+                            "last_status": {
+                                "latest_action": "UNKNOWN",
+                                "latest_phase_type": null,
+                                "last_updated": "2025-06-03T22:35:55.548169Z",
+                                "updated_by": "Mashhurbek Muxtarov"
+                            }
+                        }
+                    ],
+                    "last_status": {
+                        "latest_action": "TECH_PART_REFUSED",
+                        "latest_phase_type": "Refused by nach otdel",
+                        "last_updated": "2025-05-31T22:26:25.967434Z",
+                        "updated_by": "Javohir Usmonov"
+                    }
+                }
+            ],
+            "last_status": null
+        }
+    ],
+    "last_status": null
+}

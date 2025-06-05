@@ -42,7 +42,7 @@ from .views import (StaffUserLoginView,
           
           
           
-from .special_views import SpecialProjectDetailAPIView          
+from .special_views import SpecialProjectRetrieveView          
 
 urlpatterns = [
     path('login/', StaffUserLoginView.as_view(), name='jwt_login'),
@@ -113,5 +113,5 @@ urlpatterns = [
     
     
     #special
-    path('special-projects/<int:project_code>/', SpecialProjectDetailAPIView.as_view(), name='special_project_detail'),
+    path('projects/special/<int:project_code>/', SpecialProjectRetrieveView.as_view(), name='special_project_detail'),
 ]

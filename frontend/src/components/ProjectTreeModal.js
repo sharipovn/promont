@@ -15,6 +15,13 @@ import { SiCommerzbank } from "react-icons/si";
 import { GrTechnology } from "react-icons/gr";
 import { BiTask } from "react-icons/bi";
 
+import ChatMessaging from './ChatMessaging';
+import { FaRegCommentDots } from "react-icons/fa";
+import { SiImessage } from "react-icons/si";
+
+
+
+
 
 
 export default function ProjectTreeModal({ show, onHide, project }) {
@@ -23,6 +30,10 @@ export default function ProjectTreeModal({ show, onHide, project }) {
   const [selectedPath, setSelectedPath] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
+
+
+  const [showMessageModal, setShowMessageModal] = useState(false);
+const [selectedMessageData, setSelectedMessageData] = useState(null);
 
   const navigate = useNavigate();
   const { setUser, setAccessToken } = useAuth();
@@ -53,37 +64,76 @@ export default function ProjectTreeModal({ show, onHide, project }) {
     if (show) fetchData();
   }, [project, show]);
 
+
+
+
+
+
+  const getNodeWithMessageIcon = (label, value) => (
+  <div className="d-flex justify-content-between align-items-center gap-2">
+    <div className="text-truncate">{label}</div>
+    <div
+      onClick={(e) => {
+        e.stopPropagation(); // prevent node selection
+        setSelectedMessageData(value);
+        setShowMessageModal(true);
+      }}
+      className="position-relative text-info"
+      style={{ cursor: 'pointer' }}
+    >
+      <SiImessage />
+      {value.message_count > 0 && (
+        <span className="badge bg-danger rounded-pill position-absolute top-0 start-100 translate-middle">
+          {value.message_count}
+        </span>
+      )}
+    </div>
+  </div>
+);
+
+
+
+
+
+
+
+
+
   const transformProjectToTree = (data) => {
   return {
-    name: (
-      <>
-        <FaFolderClosed className="me-1 text-warning" /> {data.project_name}
-      </>
-    ),
+    name: getNodeWithMessageIcon(
+            <>
+              <FaFolderClosed className="me-1 text-warning" /> {data.project_name}
+            </>,
+            data
+          ),
     value: { ...data, path_type: 'PROJECT' },
     full_id: data.full_id,
     children: data.finance_parts.map((fs) => ({
-      name: (
-        <>
-          <SiCommerzbank className="me-1 text-warning" /> {fs.fs_part_no} — {fs.fs_part_name}
-        </>
-      ),
+      name: getNodeWithMessageIcon(
+                <>
+                  <SiCommerzbank className="me-1 text-warning" /> {fs.fs_part_no} — {fs.fs_part_name}
+                </>,
+                fs
+              ),
       value: { ...fs, path_type: 'FIN_PART' },
       full_id: fs.full_id,
       children: fs.gip_parts.map((tch) => ({
-        name: (
-          <>
-            <GrTechnology className="me-1 text-warning" /> {tch.tch_part_no} — {tch.tch_part_name}
-          </>
-        ),
+        name:  getNodeWithMessageIcon(
+                  <>
+                    <GrTechnology className="me-1 text-warning" /> {tch.tch_part_no} — {tch.tch_part_name}
+                  </>,
+                  tch
+                ),
         value: { ...tch, path_type: 'TECH_PART' },
         full_id: tch.full_id,
         children: tch.work_orders.map((wo) => ({
-          name: (
-            <>
-              <BiTask className="me-1 text-warning" /> {wo.wo_no} — {wo.wo_name}
-            </>
-          ),
+          name: getNodeWithMessageIcon(
+                  <>
+                    <BiTask className="me-1 text-warning" /> {wo.wo_no} — {wo.wo_name}
+                  </>,
+                  wo
+                ),
           value: { ...wo, path_type: 'WORK_ORDER' },
           full_id: wo.full_id
         }))
@@ -245,6 +295,13 @@ export default function ProjectTreeModal({ show, onHide, project }) {
             </Row>
         )}
       </Modal.Body>
+      <ChatMessaging
+        show={showMessageModal}
+        onHide={() => setShowMessageModal(false)}
+        item={selectedMessageData}
+      />
+
     </Modal>
+    
   );
 }

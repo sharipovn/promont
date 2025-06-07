@@ -56,13 +56,10 @@ class TechnicalPartSerializer(serializers.ModelSerializer):
         ]
 
     def get_tech_create_user(self, obj):
-        if obj.create_user_id:
-            return f"{obj.create_user_id.fio}"
-        return None
+        return getattr(obj.create_user_id, 'fio', None) if obj.create_user_id else None
+    
     def get_tch_part_nach(self, obj):
-        if obj.tch_part_nach:
-            return f"{obj.tch_part_nach.fio}"
-        return None
+        return getattr(obj.tch_part_nach, 'fio', None) if obj.tch_part_nach else None
 
     def get_last_status(self, obj):
         return getattr(obj, 'last_status', None)
@@ -105,9 +102,7 @@ class FinancePartSerializer(serializers.ModelSerializer):
         ]
 
     def get_fs_create_user(self, obj):
-        if obj.create_user_id:
-            return f"{obj.create_user_id.fio}"
-        return None
+        return getattr(obj.create_user_id, 'fio', None) if obj.create_user_id else None
 
     def get_message_count(self, obj):
         return Message.objects.filter(full_id=obj.full_id, path_type=obj.path_type).count()
@@ -159,23 +154,14 @@ class SpecialProjectSerializer(serializers.ModelSerializer):
         return Message.objects.filter(full_id=obj.full_id, path_type=obj.path_type).count()
 
     def get_p_create_user_fio(self, obj):
-        if obj.create_user:
-            return f"{obj.create_user.fio}"
-        return None
+        return obj.create_user.fio if obj.create_user and obj.create_user.fio else "—"
+        
     def get_p_gip_fio(self, obj):
-        if obj.create_user:
-            return f"{obj.project_gip.fio}"
-        return None
+        return obj.project_gip.fio if obj.project_gip and obj.project_gip.fio else "—"
 
     def get_p_financier_fio(self, obj):
-        if obj.financier:
-            return f"{obj.financier.fio}"
-        return None
-    def get_p_financier_fio(self, obj):
-        if obj.financier:
-            return f"{obj.financier.fio}"
-        return None
-    
+        return obj.financier.fio if obj.financier and obj.financier.fio else "—"
+        
     def get_finance_parts(self, obj):
         user = self.context['request'].user
         caps = set(user.get_capability_names())
@@ -209,7 +195,7 @@ class MessageSerializer(serializers.ModelSerializer):
         fields = ['message_id', 'content', 'create_time', 'sender_fio', 'sender_position']
 
     def get_sender_fio(self, obj):
-        return getattr(obj.sender, 'fio', str(obj.sender))
+        return getattr(obj.sender, 'fio', str(obj.sender)) if obj.sender else None
 
     def get_sender_position(self, obj):
-        return getattr(obj.sender, 'position', None)
+        return getattr(obj.sender, 'position', None) if obj.sender else None

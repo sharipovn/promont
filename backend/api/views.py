@@ -170,22 +170,32 @@ class UsersWithCapabilityAPIView(generics.ListAPIView):
             role__capabilities__capability_name=cap
         ).distinct()
         
-        
-        
-     
-
 
 
 class ProjectListAPIView(generics.ListAPIView):
     serializer_class = ProjectSerializer
-    pagination_class = ProjectsPagination  # 👈 shu yerda biriktiramiz
-    # permission_classes = [IsAuthenticated]
+    pagination_class = ProjectsPagination
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
-        qs = Project.objects.all()
+        capabilities = set(user.get_capability_names())
 
-        # 🔎 Filtrlarni olish
+        # ✅ Foydalanuvchiga ruxsat berilgan loyihalarni aniqlash
+        base_q = Q(create_user=user) | Q(project_gip=user)
+
+        if 'IS_FIN_DIR' in capabilities or 'IS_TECH_DIR' in capabilities:
+            base_q |= Q()  # barcha loyihalar
+        if 'IS_FINANCIER' in capabilities:
+            base_q |= Q(financier=user)
+        if 'IS_NACH_OTDEL' in capabilities:
+            base_q |= Q(finance_parts__gip_parts__tch_part_nach=user)
+        if 'IS_STAFF' in capabilities:
+            base_q |= Q(finance_parts__gip_parts__work_orders__wo_staff=user)
+
+        qs = Project.objects.filter(base_q).distinct()
+
+        # 🔍 Filtrlarni olish
         start_date_from = self.request.query_params.get('start_date_from')
         start_date_to = self.request.query_params.get('start_date_to')
         end_date_from = self.request.query_params.get('end_date_from')
@@ -195,9 +205,8 @@ class ProjectListAPIView(generics.ListAPIView):
         search = self.request.query_params.get('search')
         total_price_from = self.request.query_params.get('total_price_from')
         total_price_to = self.request.query_params.get('total_price_to')
-        print('total_price_from:',total_price_from)
 
-        # 📅 Sanalar bo‘yicha filter
+        # 📅 Sana bo‘yicha filter
         if start_date_from:
             qs = qs.filter(start_date__gte=parse_date(start_date_from))
         if start_date_to:
@@ -206,14 +215,18 @@ class ProjectListAPIView(generics.ListAPIView):
             qs = qs.filter(end_date__gte=parse_date(end_date_from))
         if end_date_to:
             qs = qs.filter(end_date__lte=parse_date(end_date_to))
+
+        # 💰 Narx bo‘yicha filter
         if total_price_from and total_price_from.isdigit():
             qs = qs.filter(total_price__gte=int(total_price_from))
         if total_price_to and total_price_to.isdigit():
             qs = qs.filter(total_price__lte=int(total_price_to))
+
+        # 🔎 Qidiruv
         if search:
             qs = qs.filter(project_name__icontains=search)
 
-        # ✅ Checkbox holatlari
+        # ☑️ Holat filtrlari
         if financier_confirmed == 'true':
             qs = qs.filter(financier_confirm=True)
         elif financier_confirmed == 'false':
@@ -223,10 +236,8 @@ class ProjectListAPIView(generics.ListAPIView):
             qs = qs.filter(gip_confirm=True)
         elif gip_confirmed == 'false':
             qs = qs.filter(gip_confirm=False)
-            
 
-        return qs.order_by('-create_date')  # so‘ngi loyihalar birinchi
-
+        return qs.order_by('-create_date')
 
 
 class ProjectListCreateView(ListCreateAPIView):

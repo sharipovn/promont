@@ -2,12 +2,15 @@ import React,{useState} from 'react';
 import HoverText from './HoverText';
 import ProjectStatusLine from './ProjectStatusLine';
 import ProjectTreeModal from './ProjectTreeModal';
+import { useI18n } from '../context/I18nProvider';
 
 import {
   FaUserTie,
-  FaExclamationTriangle,
-  FaCheckCircle
+  FaRegCircle,
+  FaSpinner, 
+  FaCheckCircle 
 } from 'react-icons/fa';
+import { RiProgress7Line } from "react-icons/ri";
 import { TbPercentage75 } from "react-icons/tb";
 import { FaFolderOpen } from "react-icons/fa6";
 import { FaCoins } from "react-icons/fa6";
@@ -15,22 +18,76 @@ import { FaBusinessTime } from "react-icons/fa";
 
 export default function ProjectCard({ proj }) {
   const [showModal, setShowModal] = useState(false);
-  const {
-    project_name,
-    total_price,
-    start_date,
-    end_date,
-    financier_fio,
-    create_user_fio,
-    financier_confirm,
-    gip_confirm,
-    create_date,
-    current_phase
-  } = proj;
+  console.log('projects:',proj)
 
-  const isNew = !financier_confirm;
-  const daysOld = Math.floor((new Date() - new Date(create_date)) / (1000 * 60 * 60 * 24));
+  const {returnTitle}=useI18n()
 
+   function getWorkOrderStatusAndPercent(confirmedCount, totalCount) {
+      let percent = 0;
+      let statusKey = 'project_card.not_started'; // default
+
+      if (totalCount > 0) {
+        percent = Math.round((confirmedCount / totalCount) * 100);
+
+        if (percent === 100) {
+          statusKey = 'project_card.completed';
+        } else if (percent < 50) {
+          statusKey = 'project_card.in_progress';
+        } else {
+          statusKey = 'project_card.nearly_done';
+        }
+      }
+
+      return {
+        percent,
+        statusText: returnTitle(statusKey),
+        statusKey,
+      };
+    }
+
+    const { percent, statusText, statusKey } = getWorkOrderStatusAndPercent(
+        proj.work_order_confirmed_count,
+        proj.work_order_count
+      );
+    const statusIcons = {
+      'project_card.not_started': <FaRegCircle size={'1rem'}  className="text-light" />,       // ⚪ Not started
+      'project_card.in_progress': <FaSpinner size={'1rem'} className="text-primary" />,           // 🔄 In progress
+      'project_card.nearly_done': <RiProgress7Line size={'1.5rem'} className="text-warning" />,     // ⌛ Almost done
+      'project_card.completed': <FaCheckCircle size={'1rem'} className="text-success" />,         // ✅ Completed
+    };
+
+
+
+    function getDeadlineStatus(endDateStr, percent) {
+        const now = new Date();
+        const endDate = new Date(endDateStr);
+        const diffDays = Math.floor((endDate - now) / (1000 * 60 * 60 * 24));
+        let statusKey = '';
+
+        if (diffDays > 0 && percent < 100) {
+          statusKey = 'project_card.days_left';
+        } else if (diffDays === 0 && percent < 100) {
+          statusKey = 'project_card.today_is_deadline';
+        } else if (diffDays === 0 && percent === 100) {
+          statusKey = 'project_card.completed_on_time';
+        } else if (diffDays < 0 && percent < 100) {
+          statusKey = 'project_card.not_completed_in_time';
+        } else if (diffDays < 0 && percent === 100) {
+          statusKey = 'project_card.completed_on_time'; // or add a new key if needed
+        } else {
+          return null;
+        }
+        const rawText = returnTitle(statusKey);
+        const statusText = rawText.replace('{days}', diffDays);
+        return {
+          statusText,
+          statusKey,
+          diffDays,
+        };
+      }
+
+    const deadlineInfo = getDeadlineStatus(proj.end_date, percent);
+    
   return (
     <div
       className="p-3 text-white"
@@ -55,9 +112,7 @@ export default function ProjectCard({ proj }) {
     >
       {/* Sarlavha */}
       <h6 className="mb-3 fw-bold d-flex align-items-center gap-2 fs-sm" style={{ color: '#00f0ff' }} onClick={() => setShowModal(true)}>
-        <FaFolderOpen  size={'1rem'}/> <HoverText>{project_name}</HoverText> {isNew && (
-          <span className="badge bg-success">{current_phase.name}</span>
-        )}
+        <FaFolderOpen  size={'1rem'}/> <HoverText>{proj.project_name}</HoverText>
       </h6>
 
       {/* Narxi */}
@@ -82,7 +137,7 @@ export default function ProjectCard({ proj }) {
             }}
           >
             <HoverText maxWidth="100%">
-              {Number(total_price).toLocaleString()} UZS
+              {Number(proj.total_price).toLocaleString()} UZS
             </HoverText>
           </span>
         </div>
@@ -96,37 +151,44 @@ export default function ProjectCard({ proj }) {
           <span className="d-flex align-items-center gap-2 text-light">
             <FaBusinessTime size="1rem" />
           </span>
-          <HoverText>{start_date} — {end_date}</HoverText>
+          <HoverText>{proj.start_date} — {proj.end_date}</HoverText>
         </div>
 
 
 
       {/* ✅ Completion */}
-      <div className="d-flex justify-content-between align-items-center  fs-xs small mb-3">
-        <span className="text-light d-flex align-items-center gap-2">
-        <TbPercentage75  size={'1rem'}/>Completion:
-        </span>
-        <div className="d-flex align-items-center gap-2">
-          <span className="text-info fw-semibold">60%</span>
-          <div
-            className="progress"
-            style={{
-              width: '120px',
-              height: '6px',
-              backgroundColor: '#e9ecef',
-            }}
-          >
-            <div
-              className="progress-bar bg-info"
-              role="progressbar"
-              style={{ width: '60%' }}
-              aria-valuenow="60"
-              aria-valuemin="0"
-              aria-valuemax="100"
-            ></div>
+      <div className="d-flex justify-content-between align-items-center fs-xs small mb-3 flex-wrap gap-2">
+          <span className="text-light d-flex align-items-center gap-2">
+            <TbPercentage75 size={'1rem'} /> {returnTitle('dashboard.completion')}:
+          </span>
+          <div className="d-flex align-items-center gap-2 flex-grow-1">
+            <span className="text-info fw-semibold">{proj.work_order_confirmed_count}/{proj.work_order_count}
+              ({proj.work_order_count > 0
+                ? `${percent}%`
+                : '0%'})
+            </span>
+            <div className="progress flex-grow-1" style={{ height: '6px' }}>
+              <div
+                className="progress-bar bg-info"
+                role="progressbar"
+                style={{
+                  width:
+                    proj.work_order_count > 0
+                      ? `${(proj.work_order_confirmed_count / proj.work_order_count) * 100}%`
+                      : '0%',
+                }}
+                aria-valuenow={
+                  proj.work_order_count > 0
+                    ? Math.round((proj.work_order_confirmed_count / proj.work_order_count) * 100)
+                    : 0
+                }
+                aria-valuemin="0"
+                aria-valuemax="100"
+              ></div>
+            </div>
           </div>
         </div>
-      </div>
+
       {/* ✅ Completion */}
 
       {/* Moliyachi */}
@@ -147,33 +209,22 @@ export default function ProjectCard({ proj }) {
             flexGrow: 1,
           }}
         >
-          <HoverText maxWidth="100%">{financier_fio}</HoverText>
+          <HoverText maxWidth="100%">{proj.financier_fio}</HoverText>
         </span>
       </div>
 
 
     <ProjectStatusLine currentPhaseIndex={4} />
-      {/* Tasdiqlanmagan bo‘lsa */}
-      {!financier_confirm && (
+      {/* status  */}
         <div className="d-flex align-items-center justify-content-between mt-3 small">
-          <span className="text-warning d-flex align-items-center gap-2">
-            <FaExclamationTriangle size={'1rem'}/>Tasdiqlanmagan
+          <span className="text-success d-flex align-items-center gap-1 small">
+            {statusIcons[statusKey]}{statusText}
           </span>
-          <span className="badge bg-light text-dark">
-            {daysOld === 0 ? 'Bugun' : `${daysOld} kun oldin`}
+          <span className="badge bg-light text-dark small">
+            {deadlineInfo.statusText}
           </span>
         </div>
-      )}
 
-      {/* Tasdiqlangan bo‘lsa */}
-      {financier_confirm && (
-        <div className="d-flex align-items-center justify-content-between mt-2 small">
-          <span className="text-success d-flex align-items-center gap-2">
-            <FaCheckCircle  size={'1.5rem'} /> Tasdiqlangan
-          </span>
-          <span className="badge bg-light text-dark">{daysOld} kun oldin</span>
-        </div>
-      )}
       <ProjectTreeModal
         show={showModal}
         onHide={() => setShowModal(false)}

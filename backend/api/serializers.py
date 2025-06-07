@@ -34,27 +34,30 @@ class ProjectSerializer(serializers.ModelSerializer):
     partner_name = serializers.CharField(source='partner.partner_name', read_only=True)
     partner_inn = serializers.CharField(source='partner.partner_inn', read_only=True)
     current_phase = serializers.SerializerMethodField(read_only=True)
+    full_id = serializers.CharField(read_only=True)
+    
+    work_order_count = serializers.SerializerMethodField(read_only=True)
+    work_order_confirmed_count = serializers.SerializerMethodField(read_only=True)
     
     class Meta:
         model = Project
         fields = '__all__'
         read_only_fields = [
             'project_code', 'create_user', 'create_date', 'update_date',
-            'create_user_fio', 'financier_fio','finance_parts_count','technical_parts_count','all_sent_to_tech_dir','all_tech_dir_confirmed','partner_name','partner_inn','current_phase'
+            'create_user_fio', 'financier_fio','finance_parts_count','technical_parts_count',
+            'all_sent_to_tech_dir','all_tech_dir_confirmed','partner_name','partner_inn','current_phase',
+            'work_order_count', 'work_order_confirmed_count','full_id'
         ]
         
     def get_create_user_fio(self, obj):
-        if obj.create_user:
-            return f"{obj.create_user.fio} ({obj.create_user.position or '---'})"
-        return None
+        return f"{obj.create_user.fio} ({obj.create_user.position or '---'})" if obj.create_user else None
 
     def get_financier_fio(self, obj):
-        if obj.financier:
-            return f"{obj.financier.fio} ({obj.financier.position or '---'})"
-        return None
+        return f"{obj.financier.fio} ({obj.financier.position or '---'})" if obj.financier else None
+
 
     def get_finance_parts_count(self, obj):
-        return obj.finance_parts.count()
+        return obj.finance_parts.count() if hasattr(obj, 'finance_parts') and obj.finance_parts is not None else 0
     
     def get_technical_parts_count(self, obj):
         return ProjectGipPart.objects.filter(fs_part_code__project_code=obj).count()
@@ -76,6 +79,17 @@ class ProjectSerializer(serializers.ModelSerializer):
                 "comment": latest_phase.comment,
             }
         return None
+    
+    def get_work_order_count(self, obj):
+        return WorkOrder.objects.filter(tch_part_code__fs_part_code__project_code=obj).count()
+
+    def get_work_order_confirmed_count(self, obj):
+        work_orders = WorkOrder.objects.filter(tch_part_code__fs_part_code__project_code=obj)
+        full_ids = [wo.full_id for wo in work_orders if wo.full_id]
+        return ObjectLastStatus.objects.filter(
+            full_id__in=full_ids,
+            latest_phase_type__key='WORK_ORDER_CONFIRMED'
+        ).count()
 
 class StaffUserSimpleSerializer(serializers.ModelSerializer):
     class Meta:
@@ -114,9 +128,8 @@ class ProjectFinancePartSerializer(serializers.ModelSerializer):
         fields = '__all__'
         
     def get_financier_fio(self, obj):
-        if obj.create_user_id:
-            return f"{obj.create_user_id.fio}"
-        return None
+        return getattr(obj.create_user_id, 'fio', None) if obj.create_user_id else None
+
 
 class PartnerSerializer(serializers.ModelSerializer):
     create_user_fio = serializers.CharField(source='create_user.fio', read_only=True)
@@ -146,9 +159,8 @@ class TranslationSerializer(serializers.ModelSerializer):
         read_only_fields = ['translation_id', 'translated_by', 'translated_by_fio', 'create_time', 'update_time']
 
     def get_translated_by_fio(self, obj):
-        if obj.translated_by:
-            return f"{obj.translated_by.fio} ({obj.translated_by.username})"
-        return None
+        return f"{obj.translated_by.fio} ({obj.translated_by.username})" if obj.translated_by else None
+
         
         
 class DepartmentSerializer(serializers.ModelSerializer):

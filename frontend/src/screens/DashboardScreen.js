@@ -7,7 +7,10 @@ import ProjectCard from '../components/ProjectCard';
 import CustomPagination from '../components/CustomPagination';
 import { createAxiosInstance } from '../utils/createAxiosInstance';
 import ProjectFilters from '../components/ProjectFilters';
-
+import { Spinner } from 'react-bootstrap';
+import { useI18n } from '../context/I18nProvider';
+import { VscError } from "react-icons/vsc";
+import Alert from '../components/Alert';
 
 
 
@@ -20,6 +23,10 @@ export default function DashboardScreen() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
+
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { returnTitle } = useI18n();
 
 
 
@@ -50,6 +57,7 @@ export default function DashboardScreen() {
   };
 
   const fetchProjects = useCallback(() => {
+    setLoading(true);
     const params = {
       page: currentPage,
     };
@@ -71,7 +79,11 @@ export default function DashboardScreen() {
         setProjects(res.data.results);
         setTotalPages(Math.ceil(res.data.count / 10)); // 20 = page_size
       })
-      .catch((err) => console.error('❌ Error fetching projects:', err));
+      .catch((err) => {
+          console.error('❌ Error fetching projects:', err);
+          setError(returnTitle('dashboard.failed_to_load_projects'));
+        })
+    .finally(() => setLoading(false));
   }, [axiosInstance, filters, currentPage, searchQuery]);
   
   
@@ -83,6 +95,16 @@ export default function DashboardScreen() {
 
   return (
     <div className="container-fluid">
+      {error && (
+      <Alert
+        type="danger"
+        message={
+          <span className="d-flex align-items-center gap-2">
+            <VscError /> {error}
+          </span>
+        }
+      />
+    )}
       <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '100vh' }}>
         {/* Sidebar */}
         {sidebarVisible && (
@@ -112,21 +134,23 @@ export default function DashboardScreen() {
               {/* card part here */}
               
               {/* Project Cards Grid */}
-              <div
-                className=" p-2"
-                style={{
-                  display: 'grid',
-                   gridTemplateColumns: 'repeat(5, minmax(200px, 1fr))',
-                  gap: '1rem',
-                  height:'65vh'
-                }}
-              >
-                {projects.map((proj) => (
-                  <div key={proj.project_code}>
-                    <ProjectCard proj={proj} />
-                  </div>
-                ))}
-              </div>
+                <div className="p-2" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(200px, 1fr))', gap: '1rem', height: '65vh' }}>
+                  {loading ? (
+                    <div className="text-center w-100 d-flex  flex-column  justify-content-center align-items-center" style={{ gridColumn: '1 / -1' }}>
+                      <Spinner animation="border" variant="info" />
+                      <div className="mt-2 text-info fw-semibold fs-6">
+                        {`${returnTitle('dashboard.loading_projects')}...`}
+                      </div>
+                    </div>
+                  ) : (
+                    projects.map((proj) => (
+                      <div key={proj.project_code}>
+                        <ProjectCard proj={proj} />
+                      </div>
+                    ))
+                  )}
+                </div>
+
 
               {/* ✅ Pagination centered below the grid */}
               <div className="d-flex justify-content-center mt-4">
@@ -136,11 +160,6 @@ export default function DashboardScreen() {
                   onPageChange={setCurrentPage}
                 />
               </div>
-
-
-
-
-
               {/* card part here */}
               
           </div>

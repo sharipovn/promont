@@ -326,10 +326,10 @@ const updateTreeMessageCount = useCallback((node, fullId) => {
 
   return (
     <Modal show={show} className='border-0 rounded' onHide={onHide} size="xl" centered backdrop="static">
-      <Modal.Header className='text-light' style={{ backgroundColor: '#2b2a33' }} closeButton>
+      <Modal.Header className='text-light' style={{ backgroundColor: '#3e4d67' }} closeButton>
         <Modal.Title className=''>{project?.project_name} — {returnTitle('app.project_tree')}</Modal.Title>
       </Modal.Header>
-      <Modal.Body className='tiny-scrollbar border-0 rounded' style={{ maxHeight: '80vh', overflowY: 'auto', backgroundColor: '#2b2a33', color: 'white' }}>
+      <Modal.Body className='tiny-scrollbar border-0 rounded' style={{ maxHeight: '80vh', overflowY: 'auto', backgroundColor: '#3e4d67', color: 'white' }}>
         {error && (
             <Alert
               type="danger"

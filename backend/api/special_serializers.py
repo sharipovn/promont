@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from api.models import Project, ProjectFinancePart, ProjectGipPart, WorkOrder, WorkOrderFile
+from api.models import Project, ProjectFinancePart, ProjectGipPart, WorkOrder, WorkOrderFile,Message
 
 
 class WorkOrderFileSerializer(serializers.ModelSerializer):
@@ -19,16 +19,21 @@ class WorkOrderFileSerializer(serializers.ModelSerializer):
 class WorkOrderSerializer(serializers.ModelSerializer):
     files = WorkOrderFileSerializer(many=True, read_only=True)
     wo_staff_fio = serializers.CharField(source='wo_staff.fio', read_only=True)
+    message_count = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = WorkOrder
         fields = [
             'wo_id', 'wo_no', 'wo_name', 'wo_start_date', 'wo_finish_date',
-            'wo_staff', 'staff_confirm', 'full_id', 'files', 'last_status','wo_answer','wo_remark','wo_staff_fio','staff_confirm',
+            'wo_staff', 'staff_confirm', 'full_id', 'files', 'last_status',
+            'wo_answer','wo_remark','wo_staff_fio','staff_confirm','path_type','message_count',
         ]
 
     def get_last_status(self, obj):
         return getattr(obj, 'last_status', None)
+    
+    def get_message_count(self, obj):
+        return Message.objects.filter(full_id=obj.full_id, path_type=obj.path_type).count()
 
 
 class TechnicalPartSerializer(serializers.ModelSerializer):
@@ -38,6 +43,7 @@ class TechnicalPartSerializer(serializers.ModelSerializer):
     last_status = serializers.SerializerMethodField()
     tech_create_user=serializers.SerializerMethodField(read_only=True)
     tch_part_nach=serializers.SerializerMethodField(read_only=True)
+    message_count = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = ProjectGipPart
@@ -45,7 +51,8 @@ class TechnicalPartSerializer(serializers.ModelSerializer):
              'tch_part_code', 'tch_part_no', 'tch_part_name',
             'tch_part_nach', 'tch_start_date', 'tch_finish_date',
             'create_date', 'nach_otd_confirm', 'nach_otd_confirm_date',
-            'full_id', 'work_orders', 'last_status','path_type','tech_create_user'
+            'full_id', 'work_orders', 'last_status','path_type','tech_create_user',
+            'message_count'
         ]
 
     def get_tech_create_user(self, obj):
@@ -59,6 +66,9 @@ class TechnicalPartSerializer(serializers.ModelSerializer):
 
     def get_last_status(self, obj):
         return getattr(obj, 'last_status', None)
+
+    def get_message_count(self, obj):
+        return Message.objects.filter(full_id=obj.full_id, path_type=obj.path_type).count()
 
     def get_work_orders(self, obj):
         user = self.context['request'].user
@@ -82,6 +92,7 @@ class FinancePartSerializer(serializers.ModelSerializer):
     last_status = serializers.SerializerMethodField()
     path_type = serializers.CharField(read_only=True)
     fs_create_user = serializers.SerializerMethodField(read_only=True)
+    message_count = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = ProjectFinancePart
@@ -90,12 +101,16 @@ class FinancePartSerializer(serializers.ModelSerializer):
             'fs_part_price', 'fs_start_date', 'fs_finish_date',
             'create_date', 'send_to_tech_dir', 'tech_dir_confirm',
             'full_id', 'gip_parts', 'last_status','path_type','fs_create_user',
+            'message_count',
         ]
 
     def get_fs_create_user(self, obj):
         if obj.create_user_id:
             return f"{obj.create_user_id.fio}"
         return None
+
+    def get_message_count(self, obj):
+        return Message.objects.filter(full_id=obj.full_id, path_type=obj.path_type).count()
 
     def get_last_status(self, obj):
         return getattr(obj, 'last_status', None)
@@ -127,16 +142,21 @@ class SpecialProjectSerializer(serializers.ModelSerializer):
     p_create_user_fio = serializers.SerializerMethodField(read_only=True)
     p_financier_fio = serializers.SerializerMethodField(read_only=True)
     p_gip_fio = serializers.SerializerMethodField(read_only=True)
+    message_count = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Project
         fields = [
             'project_code', 'project_name', 'start_date', 'end_date', 'total_price',
-            'create_date', 'create_user', 'financier', 
-            'full_id', 'finance_parts', 'last_status','path_type','p_create_user_fio','p_financier_fio','p_gip_fio'
+            'create_date', 'create_user', 'financier','message_count',
+            'full_id', 'finance_parts', 'last_status','path_type','p_create_user_fio',
+            'p_financier_fio','p_gip_fio'
         ]
     def get_last_status(self, obj):
         return getattr(obj, 'last_status', None)
+
+    def get_message_count(self, obj):
+        return Message.objects.filter(full_id=obj.full_id, path_type=obj.path_type).count()
 
     def get_p_create_user_fio(self, obj):
         if obj.create_user:
@@ -173,3 +193,23 @@ class SpecialProjectSerializer(serializers.ModelSerializer):
             return FinancePartSerializer(filtered, many=True, context=self.context).data
 
         return []
+
+
+
+
+
+
+
+class MessageSerializer(serializers.ModelSerializer):
+    sender_fio = serializers.SerializerMethodField()
+    sender_position = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Message
+        fields = ['message_id', 'content', 'create_time', 'sender_fio', 'sender_position']
+
+    def get_sender_fio(self, obj):
+        return getattr(obj.sender, 'fio', str(obj.sender))
+
+    def get_sender_position(self, obj):
+        return getattr(obj.sender, 'position', None)

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo,useCallback } from 'react';
 import { Modal, Spinner, Row, Col, Card } from 'react-bootstrap';
 import { createAxiosInstance } from '../utils/createAxiosInstance';
 import { useAuth } from '../context/AuthProvider';
@@ -9,15 +9,14 @@ import { FaDownload } from "react-icons/fa6";
 import HoverCountText from './HoverCountText'
 import { CiCircleInfo } from "react-icons/ci";
 import {formatDateTime} from '../utils/formatDateTime'
-import {  FaMoneyBill, FaCubes, FaFileAlt } from 'react-icons/fa';
 import { FaFolderClosed } from "react-icons/fa6";
 import { SiCommerzbank } from "react-icons/si";
 import { GrTechnology } from "react-icons/gr";
 import { BiTask } from "react-icons/bi";
+import { VscError } from "react-icons/vsc";
 
 import ChatMessaging from './ChatMessaging';
-import { FaRegCommentDots } from "react-icons/fa";
-import { SiImessage } from "react-icons/si";
+import { MdOutlineMarkEmailUnread } from "react-icons/md";
 
 
 
@@ -25,15 +24,16 @@ import { SiImessage } from "react-icons/si";
 
 
 export default function ProjectTreeModal({ show, onHide, project }) {
+
+
   const [treeData, setTreeData] = useState(null);
   const [selectedInfo, setSelectedInfo] = useState(null);
   const [selectedPath, setSelectedPath] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
 
-
   const [showMessageModal, setShowMessageModal] = useState(false);
-const [selectedMessageData, setSelectedMessageData] = useState(null);
+
 
   const navigate = useNavigate();
   const { setUser, setAccessToken } = useAuth();
@@ -44,44 +44,45 @@ const [selectedMessageData, setSelectedMessageData] = useState(null);
     [navigate, setUser, setAccessToken]
   );
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!project || !project.project_code) return;
-      setLoading(true);
-      try {
-        const res = await axiosInstance.get(`/projects/special/${project.project_code}/`);
-        setTreeData(transformProjectToTree(res.data));
-        setSelectedInfo(res.data);
-        setSelectedPath(res.data.full_id);
-        setError('');
-      } catch (err) {
-        setError('❌ Failed to fetch project data.');
-      } finally {
-        setLoading(false);
+const fetchProjectTreeData = useCallback(async () => {
+  if (!project || !project.project_code) return;
+  setLoading(true);
+  try {
+    const res = await axiosInstance.get(`/projects/special/${project.project_code}/`);
+    setTreeData(transformProjectToTree(res.data));
+    setSelectedInfo(res.data);
+    setSelectedPath(res.data.full_id);
+    setError('');
+  } catch (err) {
+    setError(returnTitle('tree.fetch_project_failed'));
+  } finally {
+    setLoading(false);
+  }
+}, [project, axiosInstance]);
+
+
+    useEffect(() => {
+      if (show) {
+        fetchProjectTreeData();
       }
-    };
-
-    if (show) fetchData();
-  }, [project, show]);
+    }, [show, fetchProjectTreeData]);
 
 
 
-
-
-
-  const getNodeWithMessageIcon = (label, value) => (
-  <div className="d-flex justify-content-between align-items-center gap-2">
+const getNodeWithMessageIcon = useCallback((label, value) => (
+  <div className="d-flex justify-content-between align-items-center gap-2 w-100">
     <div className="text-truncate">{label}</div>
     <div
       onClick={(e) => {
-        e.stopPropagation(); // prevent node selection
-        setSelectedMessageData(value);
+        e.stopPropagation();
+        setSelectedInfo(value);
+        setSelectedPath(value.full_id);
         setShowMessageModal(true);
       }}
       className="position-relative text-info"
       style={{ cursor: 'pointer' }}
     >
-      <SiImessage />
+      <MdOutlineMarkEmailUnread className="ms-4 text-primary shadow" size="1.2rem" />
       {value.message_count > 0 && (
         <span className="badge bg-danger rounded-pill position-absolute top-0 start-100 translate-middle">
           {value.message_count}
@@ -89,64 +90,112 @@ const [selectedMessageData, setSelectedMessageData] = useState(null);
       )}
     </div>
   </div>
-);
+), []);
 
 
 
-
-
-
-
-
-
-  const transformProjectToTree = (data) => {
+const transformProjectToTree = useCallback((data) => {
   return {
     name: getNodeWithMessageIcon(
-            <>
-              <FaFolderClosed className="me-1 text-warning" /> {data.project_name}
-            </>,
-            data
-          ),
+      <>
+        <FaFolderClosed className="me-1 text-warning" /> {data.project_name}
+      </>,
+      data
+    ),
     value: { ...data, path_type: 'PROJECT' },
     full_id: data.full_id,
     children: data.finance_parts.map((fs) => ({
       name: getNodeWithMessageIcon(
-                <>
-                  <SiCommerzbank className="me-1 text-warning" /> {fs.fs_part_no} — {fs.fs_part_name}
-                </>,
-                fs
-              ),
+        <>
+          <SiCommerzbank className="me-1 text-warning" /> {fs.fs_part_no} — {fs.fs_part_name}
+        </>,
+        fs
+      ),
       value: { ...fs, path_type: 'FIN_PART' },
       full_id: fs.full_id,
       children: fs.gip_parts.map((tch) => ({
-        name:  getNodeWithMessageIcon(
-                  <>
-                    <GrTechnology className="me-1 text-warning" /> {tch.tch_part_no} — {tch.tch_part_name}
-                  </>,
-                  tch
-                ),
+        name: getNodeWithMessageIcon(
+          <>
+            <GrTechnology className="me-1 text-warning" /> {tch.tch_part_no} — {tch.tch_part_name}
+          </>,
+          tch
+        ),
         value: { ...tch, path_type: 'TECH_PART' },
         full_id: tch.full_id,
         children: tch.work_orders.map((wo) => ({
           name: getNodeWithMessageIcon(
-                  <>
-                    <BiTask className="me-1 text-warning" /> {wo.wo_no} — {wo.wo_name}
-                  </>,
-                  wo
-                ),
+            <>
+              <BiTask className="me-1 text-warning" /> {wo.wo_no} — {wo.wo_name}
+            </>,
+            wo
+          ),
           value: { ...wo, path_type: 'WORK_ORDER' },
           full_id: wo.full_id
         }))
       }))
     }))
   };
-};
+}, [getNodeWithMessageIcon]);
+
+
+const updateTreeMessageCount = useCallback((node, fullId) => {
+  if (!node) return node;
+
+  if (node.full_id === fullId) {
+    const updatedValue = {
+      ...node.value,
+      message_count: (node.value.message_count || 0) + 1,
+    };
+    return {
+      ...node,
+      value: updatedValue,
+      name: getNodeWithMessageIcon(
+        <>
+          {updatedValue.path_type === 'PROJECT' && (
+            <>
+              <FaFolderClosed className="me-1 text-warning" /> {updatedValue.project_name}
+            </>
+          )}
+          {updatedValue.path_type === 'FIN_PART' && (
+            <>
+              <SiCommerzbank className="me-1 text-warning" /> {updatedValue.fs_part_no} — {updatedValue.fs_part_name}
+            </>
+          )}
+          {updatedValue.path_type === 'TECH_PART' && (
+            <>
+              <GrTechnology className="me-1 text-warning" /> {updatedValue.tch_part_no} — {updatedValue.tch_part_name}
+            </>
+          )}
+          {updatedValue.path_type === 'WORK_ORDER' && (
+            <>
+              <BiTask className="me-1 text-warning" /> {updatedValue.wo_no} — {updatedValue.wo_name}
+            </>
+          )}
+        </>,
+        updatedValue
+      )
+
+    };
+  }
+
+  if (node.children) {
+    return {
+      ...node,
+      children: node.children.map((child) =>
+        updateTreeMessageCount(child, fullId)
+      ),
+    };
+  }
+
+  return node;
+}, [getNodeWithMessageIcon]);
+
 
 
   const renderTree = (node, level = 0) => {
     const isActive = selectedPath === node.full_id;
     return (
-      <ul className="tree-node">
+      <ul className="tree-node mt-1">
         <li>
           <div
             className={`tree-label ${isActive ? 'selected-tree-label' : ''}`}
@@ -220,10 +269,9 @@ const [selectedMessageData, setSelectedMessageData] = useState(null);
     return (
       <Card style={{ backgroundColor: '#292940' }} className="text-light p-3">
         <Card.Title className="text-info"><CiCircleInfo/>{' '}{returnTitle('app.details')}</Card.Title>
-        <div className="small">
+        <div className="small mt-4">
           {fields.map((key) => {
             const value = info[key];
-
             if (key === 'files' && Array.isArray(value)) {
               return (
                 <div key={key} className="d-flex border-bottom py-1">
@@ -277,13 +325,29 @@ const [selectedMessageData, setSelectedMessageData] = useState(null);
   };
 
   return (
-    <Modal show={show} onHide={onHide} size="xl" centered backdrop="static">
-      <Modal.Header closeButton>
-        <Modal.Title>{project?.project_name} — {returnTitle('app.project_tree')}</Modal.Title>
+    <Modal show={show} className='border-0 rounded' onHide={onHide} size="xl" centered backdrop="static">
+      <Modal.Header className='text-light' style={{ backgroundColor: '#2b2a33' }} closeButton>
+        <Modal.Title className=''>{project?.project_name} — {returnTitle('app.project_tree')}</Modal.Title>
       </Modal.Header>
-      <Modal.Body style={{ maxHeight: '80vh', overflowY: 'auto', backgroundColor: '#1e1e2f', color: 'white' }}>
-        {error && <Alert type="danger" message={error} />}
-        {loading && <div className="text-center"><Spinner animation="border" variant="info" /></div>}
+      <Modal.Body className='tiny-scrollbar border-0 rounded' style={{ maxHeight: '80vh', overflowY: 'auto', backgroundColor: '#2b2a33', color: 'white' }}>
+        {error && (
+            <Alert
+              type="danger"
+              message={
+                <span className="d-flex align-items-center gap-2">
+                  <VscError /> {error}
+                </span>
+              }
+            />
+          )}
+        {loading && (
+            <div className="text-center py-3">
+              <Spinner animation="border" variant="info" />
+              <div className="text-light mt-2 small">
+                {returnTitle('tree.loading_project')}...
+              </div>
+            </div>
+          )}
         {!loading && !error && treeData && (
           <Row className="h-100">
             <Col md={6} style={{ fontFamily: 'monospace', lineHeight: 1.5 }}>
@@ -296,10 +360,20 @@ const [selectedMessageData, setSelectedMessageData] = useState(null);
         )}
       </Modal.Body>
       <ChatMessaging
-        show={showMessageModal}
-        onHide={() => setShowMessageModal(false)}
-        item={selectedMessageData}
-      />
+          show={showMessageModal}
+          onHide={() => {
+            setShowMessageModal(false);
+            if (selectedInfo) {
+              setSelectedInfo((prev) =>
+                prev ? { ...prev, message_count: (prev.message_count || 0) + 1 } : prev
+              );
+              setTreeData((prevTree) =>
+                updateTreeMessageCount(prevTree, selectedInfo.full_id)
+              );
+            }
+          }}
+          item={selectedInfo}
+        />
 
     </Modal>
     

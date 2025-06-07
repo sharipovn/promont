@@ -13,7 +13,8 @@ from .models import (Capability,
                      WorkOrder, 
                      WorkOrderFile,
                      ActionLog,
-                     ObjectLastStatus)
+                     ObjectLastStatus,
+                     Message)
 from django.contrib.auth.admin import UserAdmin
 
 
@@ -310,3 +311,13 @@ class ObjectLastStatusAdmin(admin.ModelAdmin):
     search_fields = ('full_id', 'latest_action', 'latest_phase_type__name')
     list_filter = ('path_type', 'latest_phase_type')
     readonly_fields = ('last_updated',)
+
+
+@admin.register(Message)
+class MessageAdmin(admin.ModelAdmin):
+    list_display = ('message_id', 'sender', 'path_type', 'full_id', 'create_time')
+    list_filter = ('path_type', 'create_time')
+    search_fields = ('content', 'full_id', 'sender__fio')
+    readonly_fields = ('create_time', 'update_time')
+
+    ordering = ('-create_time',)

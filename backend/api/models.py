@@ -679,3 +679,28 @@ class ObjectLastStatus(models.Model):
 
     def __str__(self):
         return f"{self.full_id} → {self.latest_action}"
+    
+    
+    
+    
+class Message(models.Model):
+    message_id = models.AutoField(primary_key=True)
+    content = models.TextField()
+    sender = models.ForeignKey(
+        StaffUser,
+        on_delete=models.CASCADE,
+        related_name='sent_messages'
+    )
+    full_id = models.CharField(max_length=255, db_index=True)
+    path_type = models.CharField(max_length=30)
+    create_time = models.DateTimeField(auto_now_add=True)
+    update_time = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'messages'
+        ordering = ['-create_time']
+        verbose_name = "Message"
+        verbose_name_plural = "Messages"
+
+    def __str__(self):
+        return f"Message #{self.message_id} by {self.sender} on {self.path_type}:{self.full_id}"

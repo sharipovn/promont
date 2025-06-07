@@ -1,9 +1,12 @@
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
-
-from api.models import Project
-from api.special_serializers import SpecialProjectSerializer
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
+from api.models import Project,Message
+from api.special_serializers import SpecialProjectSerializer,MessageSerializer
 
 
 class SpecialProjectRetrieveView(RetrieveAPIView):
@@ -48,3 +51,47 @@ class SpecialProjectRetrieveView(RetrieveAPIView):
             return project
 
         raise PermissionDenied("You do not have permission to view this project.")
+
+
+
+
+
+class SendMessageView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        content = request.data.get('content')
+        full_id = request.data.get('full_id')
+        path_type = request.data.get('path_type')
+
+        if not all([content, full_id, path_type]):
+            return Response({"detail": "Missing fields."}, status=status.HTTP_400_BAD_REQUEST)
+
+        msg = Message.objects.create(
+            content=content,
+            full_id=full_id,
+            path_type=path_type,
+            sender=request.user
+        )
+        return Response({"detail": "Message sent.", "message_id": msg.message_id}, status=status.HTTP_201_CREATED)
+
+
+class MessageListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        full_id = request.query_params.get('full_id')
+        path_type = request.query_params.get('path_type')
+
+        if not full_id or not path_type:
+            return Response({"detail": "Missing parameters."}, status=status.HTTP_400_BAD_REQUEST)
+
+        messages = (
+            Message.objects
+            .filter(full_id=full_id, path_type=path_type)
+            .select_related('sender')
+            .order_by('create_time')
+        )
+
+        serializer = MessageSerializer(messages, many=True)
+        return Response(serializer.data)

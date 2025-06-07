@@ -321,3 +321,24 @@ code {
   box-shadow: 0 0 10px rgba(0, 255, 255, 0.6) !important;
   font-weight: bold;
 }
+
+
+/*------------------------------for all modals tiny scrallbar-------------------------------------------*/
+/* Tiny custom scrollbar */
+.tiny-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #292940 #1e1e2f; /* thumb and track */
+}
+
+/* WebKit (Chrome, Edge, Safari) */
+.tiny-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.tiny-scrollbar::-webkit-scrollbar-track {
+  background: #1e1e2f;
+}
+.tiny-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #002b36;
+  border-radius: 2px;
+}
+/*------------------------------for all modals tiny scrallbar-------------------------------------------*/

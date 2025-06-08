@@ -94,26 +94,38 @@ class ProjectCreateAPIView(generics.CreateAPIView):
         IsAuthenticated,
         HasCapabilityPermission('CAN_CREATE_PROJECT'),
     ]
-
+    
+    @transaction.atomic
     def perform_create(self, serializer):
-        project = serializer.save(create_user=self.request.user)
+        try:
+            project = serializer.save(create_user=self.request.user)
+            print('project:',project)
 
-        created_phase_type = PhaseType.objects.get(key='CREATED')
-        sent_to_financier_phase_type = PhaseType.objects.get(key='SENT_TO_FINANCIER')
+            created_phase = PhaseType.objects.get(key='CREATED')
+            sent_phase = PhaseType.objects.get(key='SENT_TO_FINANCIER')
 
-        ProjectPhase.objects.bulk_create([
-            ProjectPhase(
-                project=project,
-                phase_type=created_phase_type,
-                performed_by=self.request.user
-            ),
-            ProjectPhase(
-                project=project,
-                phase_type=sent_to_financier_phase_type,
+            ActionLog.objects.create(
+                full_id=project.full_id,
+                path_type=project.path_type,
+                phase_type=created_phase,
+                comment="Проект создан.",
+                performed_by=self.request.user,
+            )
+            ActionLog.objects.create(
+                full_id=project.full_id,
+                path_type=project.path_type,
+                phase_type=sent_phase,
+                comment="Проект отправлен финансисту.",
                 performed_by=self.request.user,
                 notify_to=project.financier
             )
-        ])
+        except Exception as e:
+            print('❌ Ошибка при создании ActionLog:', e)
+            raise
+        
+        
+        
+        
 
 #for financier confirm project
 class ProjectListNotificationFinancierView(generics.ListAPIView):
@@ -181,19 +193,20 @@ class ProjectListAPIView(generics.ListAPIView):
         user = self.request.user
         capabilities = set(user.get_capability_names())
 
-        # ✅ Foydalanuvchiga ruxsat berilgan loyihalarni aniqlash
-        base_q = Q(create_user=user) | Q(project_gip=user)
+        # ✅ If user is Tech Director or Fin Director — see all projects
+        if 'IS_TECH_DIR' in capabilities or 'IS_FIN_DIR' in capabilities:
+            qs = Project.objects.all()
+        else:
+            base_q = Q(create_user=user) | Q(project_gip=user)
 
-        if 'IS_FIN_DIR' in capabilities or 'IS_TECH_DIR' in capabilities:
-            base_q |= Q()  # barcha loyihalar
-        if 'IS_FINANCIER' in capabilities:
-            base_q |= Q(financier=user)
-        if 'IS_NACH_OTDEL' in capabilities:
-            base_q |= Q(finance_parts__gip_parts__tch_part_nach=user)
-        if 'IS_STAFF' in capabilities:
-            base_q |= Q(finance_parts__gip_parts__work_orders__wo_staff=user)
+            if 'IS_FINANCIER' in capabilities:
+                base_q |= Q(financier=user)
+            if 'IS_NACH_OTDEL' in capabilities:
+                base_q |= Q(finance_parts__gip_parts__tch_part_nach=user)
+            if 'IS_STAFF' in capabilities:
+                base_q |= Q(finance_parts__gip_parts__work_orders__wo_staff=user)
 
-        qs = Project.objects.filter(base_q).distinct()
+            qs = Project.objects.filter(base_q).distinct()
 
         # 🔍 Filtrlarni olish
         start_date_from = self.request.query_params.get('start_date_from')
@@ -255,33 +268,37 @@ class ProjectListCreateView(ListCreateAPIView):
             queryset = queryset.filter(Q(project_name__icontains=search))
         return queryset
 
+    @transaction.atomic
     def perform_create(self, serializer):
         start_date = serializer.validated_data.get('start_date')
         end_date = serializer.validated_data.get('end_date')
 
         if start_date >= end_date:
-            raise ValidationError({'end_date': 'Дата окончания должна быть позже даты начала'})#End date must be after start date.
+            raise ValidationError({'end_date': 'Дата окончания должна быть позже даты начала.'})
         if date.today() > end_date:
-            raise ValidationError({'end_date': 'Дата окончания должна быть сегодня или в будущем.'})#End date must be today or in the future.
+            raise ValidationError({'end_date': 'Дата окончания должна быть сегодня или в будущем.'})
 
         project = serializer.save(create_user=self.request.user)
 
-        created_phase_type = PhaseType.objects.get(key='CREATED')
-        sent_to_financier_phase_type = PhaseType.objects.get(key='SENT_TO_FINANCIER')
+        created_phase = PhaseType.objects.get(key='CREATED')
+        sent_phase = PhaseType.objects.get(key='SENT_TO_FINANCIER')
 
-        ProjectPhase.objects.bulk_create([
-            ProjectPhase(
-                project=project,
-                phase_type=created_phase_type,
-                performed_by=self.request.user
-            ),
-            ProjectPhase(
-                project=project,
-                phase_type=sent_to_financier_phase_type,
-                performed_by=self.request.user,
-                notify_to=project.financier
-            )
-        ])
+        ActionLog.objects.create(
+            full_id=project.full_id,
+            path_type=project.path_type,
+            phase_type=created_phase,
+            comment="Проект создан.",
+            performed_by=self.request.user,
+        )
+
+        ActionLog.objects.create(
+            full_id=project.full_id,
+            path_type=project.path_type,
+            phase_type=sent_phase,
+            comment="Проект отправлен финансисту.",
+            performed_by=self.request.user,
+            notify_to=project.financier
+        )
 
 
 
@@ -294,6 +311,7 @@ class ProjectRetrieveUpdateView(RetrieveUpdateAPIView):
     ]
     lookup_field = 'project_code'
 
+    @transaction.atomic
     def perform_update(self, serializer):
         project = serializer.instance
         start_date = serializer.validated_data.get('start_date')
@@ -305,6 +323,19 @@ class ProjectRetrieveUpdateView(RetrieveUpdateAPIView):
             raise ValidationError({'end_date': 'Дата окончания должна быть сегодня или в будущем.'})#End date must be today or in the future.
 
         serializer.save()
+        
+        try:
+            update_phase = PhaseType.objects.get(key='PROJECT_UPDATED')
+            ActionLog.objects.create(
+                full_id=project.full_id,
+                path_type=project.path_type,
+                phase_type=update_phase,
+                performed_by=self.request.user,
+                notify_to=project.financier,  # ✅ Notify financier
+                comment='Проект отредактирован'
+            )
+        except Exception as e:
+            print(f"❌ Ошибка при создании ActionLog: {e}")
 
 
 
@@ -314,34 +345,39 @@ class ConfirmProjectByFinancierView(APIView):
         HasCapabilityPermission('CAN_CONFIRM_PROJECT_FINANCIER'),
     ]
 
+    @transaction.atomic
     def post(self, request):
         project_code = request.data.get('project_code')
         if not project_code:
-            return Response({"error": "Project CODE is required."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Код проекта обязателен"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             project = Project.objects.get(project_code=project_code)
         except Project.DoesNotExist:
-            return Response({"error": "Project not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"error": "Проект не найден"}, status=status.HTTP_404_NOT_FOUND)
 
         # Update project fields
         project.financier_confirm = True
         project.financier_confirm_date = timezone.now()
         project.save()
 
-        # Log project phase
+        # ✅ Log ActionLog and notify project creator
         try:
             phase_type = PhaseType.objects.get(key='FINANCIER_CONFIRMED')
-        except PhaseType.DoesNotExist:
-            return Response({"error": "PhaseType 'FINANCIER_CONFIRMED' not found."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            ActionLog.objects.create(
+                full_id=project.full_id,
+                path_type=project.path_type,
+                phase_type=phase_type,
+                performed_by=request.user,
+                notify_to=project.create_user,
+                comment="Проект подтвержден финансистом"  # Project confirmed by financier
+            )
+        except Exception as e:
+            print(f"❌ Ошибка при создании ActionLog: {e}")  # Error creating ActionLog
 
-        ProjectPhase.objects.create(
-            project=project,
-            phase_type=phase_type,
-            performed_by=request.user
-        )
-
-        return Response({"message": "Project confirmed successfully."}, status=status.HTTP_200_OK)
+        return Response({
+            "message": "Проект успешно подтвержден"  # Project confirmed successfully
+        }, status=status.HTTP_200_OK)
     
     
     
@@ -352,18 +388,20 @@ class CreateFinancialPartsView(APIView):
         HasCapabilityPermission('CAN_DIVIDE_FS_PARTS')
     ]
 
+
+    @transaction.atomic
     def post(self, request):
         project_code = request.data.get('project_code')
         parts_data = request.data.get('parts', [])
         user = request.user
 
         if not project_code or not parts_data:
-            return Response({'error': 'project_code and parts are required'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Код проекта и список частей обязательны'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             project = Project.objects.get(project_code=project_code)
         except Project.DoesNotExist:
-            return Response({'error': 'Project not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error': 'Проект не найден'}, status=status.HTTP_404_NOT_FOUND)
 
         serialized_parts = []
         errors = []
@@ -377,28 +415,34 @@ class CreateFinancialPartsView(APIView):
             if serializer.is_valid():
                 serialized_parts.append(serializer)
             else:
-                errors.append({f"part_{idx + 1}": serializer.errors})
+                errors.append({f"{idx + 1}": serializer.errors})
 
         if errors:
             return Response({'errors': errors}, status=status.HTTP_400_BAD_REQUEST)
-
-        with transaction.atomic():
-            created = [s.save() for s in serialized_parts]
-            
-            # 🔥 Add a ProjectPhase row after creation
-            try:
-                phase_type = PhaseType.objects.get(key='FIN_PARTS_CREATED')  # ✅ make sure this key exists
-            except PhaseType.DoesNotExist:
-                return Response({'error': 'PhaseType FIN_PARTS_CREATED not found'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-            ProjectPhase.objects.create(
-                project=project,
+        
+        created = [s.save() for s in serialized_parts]
+        
+        try:
+            phase_type = PhaseType.objects.get(key='FIN_PARTS_CREATED')
+            ActionLog.objects.create(
+                full_id=project.full_id,
+                path_type=project.path_type,
                 phase_type=phase_type,
-                performed_by=user
+                performed_by=user,
+                notify_to=None,  # No notification
+                comment="Финансовые части успешно созданы"  # Financial parts created
             )
+        except PhaseType.DoesNotExist:
+            return Response({'error': "Тип этапа 'FIN_PARTS_CREATED' не найден"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)  # PhaseType not found
+        except Exception as e:
+            print(f"❌ Ошибка при создании ActionLog: {e}")  # Error creating ActionLog
 
-        return Response({'created': [ProjectFinancePartCreateSerializer(p).data for p in created]}, status=status.HTTP_201_CREATED)
-    
+        return Response({'created': [ProjectFinancePartCreateSerializer(p).data for p in created]},
+                        status=status.HTTP_201_CREATED)
+        
+        
+        
+        
     
 class ProjectFinancePartsListAPIView(generics.ListAPIView):
     serializer_class = ProjectFinancePartSerializer
@@ -416,9 +460,18 @@ class ProjectFinancePartsListAPIView(generics.ListAPIView):
 
 
 class ProjectFinancePartsUpdateAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    @transaction.atomic
     def put(self, request, project_code):
         parts_data = request.data  # expect list
         updated_parts = []
+
+
+        try:
+            project = Project.objects.get(project_code=project_code)
+        except Project.DoesNotExist:
+            return Response({'error': 'Проект не найден'}, status=status.HTTP_404_NOT_FOUND)  # Project not found
 
         # Collect existing part codes to delete removed ones later (optional)
         existing_parts = ProjectFinancePart.objects.filter(project_code=project_code)
@@ -447,17 +500,41 @@ class ProjectFinancePartsUpdateAPIView(APIView):
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+                # Уведомить пользователей с правом CAN_CHECK_AND_GIP_ATTACH (notify users with CAN_CHECK_AND_GIP_ATTACH)
+        try:
+            phase_type = PhaseType.objects.get(key='FIN_PARTS_UPDATED')
+            notify_users = StaffUser.objects.filter(
+                role__capabilities__capability_name='CAN_CHECK_AND_GIP_ATTACH'
+            ).distinct()
+
+            for user in notify_users:
+                ActionLog.objects.create(
+                    full_id=project.full_id,
+                    path_type=project.path_type,
+                    phase_type=phase_type,
+                    performed_by=request.user,
+                    notify_to=user,
+                    comment='Финансовые части обновлены'  # Financial parts updated
+                )
+        except PhaseType.DoesNotExist:
+            return Response({'error': "Тип этапа 'FIN_PARTS_UPDATED' не найден"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)  # PhaseType not found
+        except Exception as e:
+            print(f"❌ Ошибка при создании ActionLog: {e}")  # Error creating ActionLog
+        
         return Response(ProjectFinancePartSerializer(updated_parts, many=True).data, status=200)
     
     
     
 
 class SendToTechDirAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    @transaction.atomic
     def put(self, request, project_code):
         try:
             project = Project.objects.get(project_code=project_code)
         except Project.DoesNotExist:
-            return Response({'error': 'Project not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error': 'Проект не найден'}, status=status.HTTP_404_NOT_FOUND)
         # Only parts that are not already sent
         parts = ProjectFinancePart.objects.filter(
             project_code=project_code,
@@ -465,20 +542,34 @@ class SendToTechDirAPIView(APIView):
         )
         count = parts.count()
         if count == 0:
-            return Response({'message': "No new parts to send."}, status=status.HTTP_200_OK)
-        with transaction.atomic():
-            parts.update(send_to_tech_dir=True, send_to_tech_dir_date=now())
-            # 🔥 Add ProjectPhase
+            return Response({'message': "Новых частей для отправки нет"}, status=status.HTTP_200_OK)
+        parts.update(send_to_tech_dir=True, send_to_tech_dir_date=now())
+        
+        try:
+            phase_type = PhaseType.objects.get(key='SENT_TO_TECH_DIR')
+        except PhaseType.DoesNotExist:
+            return Response({'error': "Тип этапа 'SENT_TO_TECH_DIR' не найден"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)  # PhaseType not found
+        
+        
+        # Уведомить всех, у кого есть право CAN_CHECK_AND_GIP_ATTACH (Notify all with CAN_CHECK_AND_GIP_ATTACH)
+        notify_users = StaffUser.objects.filter(
+            role__capabilities__capability_name='CAN_CHECK_AND_GIP_ATTACH'
+        ).distinct()
+        
+        for user in notify_users:
             try:
-                phase_type = PhaseType.objects.get(key='SENT_TO_TECH_DIR')
-            except PhaseType.DoesNotExist:
-                return Response({'error': 'PhaseType SENT_TO_TECH_DIR not found.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-            ProjectPhase.objects.create(
-                project=project,
-                phase_type=phase_type,
-                performed_by=request.user
-            )
-        return Response({'message': f"{count} parts sent to Tech Director."}, status=status.HTTP_200_OK)
+                ActionLog.objects.create(
+                    full_id=project.full_id,
+                    path_type=project.path_type,
+                    phase_type=phase_type,
+                    performed_by=request.user,
+                    notify_to=user,
+                    comment="Финансовые части отправлены техническому директору"  # Financial parts sent to Tech Director
+                )
+            except Exception as e:
+                print(f"❌ Ошибка при создании ActionLog для {user.fio}: {e}")  # Error creating ActionLog
+
+        return Response({'message': f"{count} частей отправлено техническому директору"}, status=status.HTTP_200_OK)  # parts sent to Tech Director
     
     
 class ProjectListTechDirConfirmView(generics.ListAPIView):
@@ -519,85 +610,136 @@ class TechDirVerifyAPIView(APIView):
         IsAuthenticated,
         HasCapabilityPermission('CAN_CHECK_AND_GIP_ATTACH')
     ]
-
+    
+    @transaction.atomic
     def post(self, request):
         project_code = request.data.get('project_code')
         gip_user_id = request.data.get('gip_user_id')
 
         if not project_code or not gip_user_id:
-            return Response({'error': 'Project code and GIP user are required.'}, status=400)
+            return Response(
+                {'error': 'Код проекта и ГИП обязательны'},  # Project code and GIP are required
+                status=400
+            )
+
 
         try:
             project = Project.objects.get(project_code=project_code)
         except Project.DoesNotExist:
-            return Response({'error': 'Project not found'}, status=404)
-
-        with transaction.atomic():
-            # ✅ Attach GIP
-            project.project_gip_id = gip_user_id
-            project.save()
-
-            # ✅ Confirm all finance parts
-            parts = ProjectFinancePart.objects.filter(project_code=project, send_to_tech_dir=True)
-            parts.update(
-                tech_dir_confirm=True,
-                tech_dir_confirm_date=timezone.now()
+            return Response(
+                {'error': 'Проект не найден'},  # Project not found
+                status=404
             )
+            # ✅ Attach GIP
+        project.project_gip_id = gip_user_id
+        project.save()
 
-            # ✅ Phase 1: TECH_DIR_CONFIRMED_AND_ATTACHED_GIP
+        # ✅ Confirm all finance parts
+        parts = ProjectFinancePart.objects.filter(project_code=project, send_to_tech_dir=True)
+        parts.update(
+            tech_dir_confirm=True,
+            tech_dir_confirm_date=timezone.now()
+        )
+
+        # ✅ Лог №1: TECH_DIR_CONFIRMED_AND_ATTACHED_GIP (Tech dir confirmed and attached GIP)
+        try:
             phase_1 = PhaseType.objects.get(key='TECH_DIR_CONFIRMED_AND_ATTACHED_GIP')
-            ProjectPhase.objects.create(
-                project=project,
+            ActionLog.objects.create(
+                full_id=project.full_id,
+                path_type=project.path_type,
                 phase_type=phase_1,
                 performed_by=request.user,
-                notify_to=project.project_gip
+                notify_to=project.project_gip,
+                comment="Тех. директор подтвердил и прикрепил ГИПа"  # Tech director confirmed and attached GIP
+            )
+        except PhaseType.DoesNotExist:
+            return Response(
+                {'error': "Тип этапа 'TECH_DIR_CONFIRMED_AND_ATTACHED_GIP' не найден"},  # Phase type not found
+                status=500
+            )
+        except Exception as e:
+            return Response(
+                {'error': f"Ошибка при создании ActionLog (1): {str(e)}"},  # Error creating ActionLog (1)
+                status=500
             )
 
-            # ✅ Phase 2: SENT_TO_GIP
+        # ✅ Лог №2: SENT_TO_GIP (Project sent to GIP)
+        try:
             phase_2 = PhaseType.objects.get(key='SENT_TO_GIP')
-            ProjectPhase.objects.create(
-                project=project,
+            ActionLog.objects.create(
+                full_id=project.full_id,
+                path_type=project.path_type,
                 phase_type=phase_2,
                 performed_by=request.user,
-                notify_to=project.project_gip
+                notify_to=project.project_gip,
+                comment="Проект отправлен ГИПу"  # Project sent to GIP
+            )
+        except PhaseType.DoesNotExist:
+            return Response(
+                {'error': "Тип этапа 'SENT_TO_GIP' не найден"},  # Phase type not found
+                status=500
+            )
+        except Exception as e:
+            return Response(
+                {'error': f"Ошибка при создании ActionLog (2): {str(e)}"},  # Error creating ActionLog (2)
+                status=500
             )
 
-        return Response({'message': 'Project confirmed and sent to GIP.'}, status=status.HTTP_200_OK)
+        return Response(
+            {'message': 'Проект подтвержден и отправлен ГИПу'},  # Project confirmed and sent to GIP
+            status=200
+        )
     
     
 class TechDirRefuseAPIView(APIView):
     permission_classes = [IsAuthenticated, HasCapabilityPermission('CAN_CHECK_AND_GIP_ATTACH')]
 
+    @transaction.atomic
     def post(self, request):
         project_code = request.data.get('project_code')
         comment = request.data.get('comment')
 
         if not project_code or not comment:
-            return Response({'error': 'Project code and comment are required.'}, status=400)
+            return Response(
+                {'error': 'Код проекта и комментарий обязательны'},  # Project code and comment are required
+                status=400
+            )
 
         try:
             project = Project.objects.get(project_code=project_code)
         except Project.DoesNotExist:
-            return Response({'error': 'Project not found'}, status=404)
+            return Response(
+                {'error': 'Проект не найден'},  # Project not found
+                status=404
+            )
 
-        # PhaseType with key='TECH_DIR_REFUSED' must exist
         try:
             phase_type = PhaseType.objects.get(key='TECH_DIR_REFUSED')
         except PhaseType.DoesNotExist:
-            return Response({'error': 'Phase type not found'}, status=500)
+            return Response(
+                {'error': "Тип этапа 'TECH_DIR_REFUSED' не найден"},  # Phase type not found
+                status=500
+            )
 
-        ProjectPhase.objects.create(
-            project=project,
-            phase_type=phase_type,
-            comment=comment,
-            performed_by=request.user,
-            notify_to=project.financier  # example: notify financier
+        try:
+            ActionLog.objects.create(
+                full_id=project.full_id,
+                path_type=project.path_type,
+                phase_type=phase_type,
+                comment=comment,
+                performed_by=request.user,
+                notify_to=project.financier  # 🔔 Notify financier
+            )
+        except Exception as e:
+            return Response(
+                {'error': f"Ошибка при создании ActionLog: {str(e)}"},  # Error creating ActionLog
+                status=500
+            )
+
+        return Response(
+            {'message': 'Отказ зарегистрирован'},  # Refusal recorded
+            status=200
         )
-
-        return Response({'message': 'Refusal recorded.'}, status=200)
-
-
-
 
 
 
@@ -662,37 +804,39 @@ class RefuseProjectByFinancierView(APIView):
         HasCapabilityPermission('CAN_CONFIRM_PROJECT_FINANCIER'),
     ]
 
+    @transaction.atomic
     def post(self, request):
         project_code = request.data.get('project_code')
         comment = request.data.get('comment')
 
         if not project_code or not comment:
-            return Response({"error": "Project code and comment are required."},
+            return Response({"error": "Код проекта и комментарий обязательны"},
                             status=status.HTTP_400_BAD_REQUEST)
 
         try:
             project = Project.objects.get(project_code=project_code)
         except Project.DoesNotExist:
-            return Response({"error": "Project not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"error": "Проект не найден"}, status=status.HTTP_404_NOT_FOUND)
 
         try:
             phase_type = PhaseType.objects.get(key='FINANCIER_REFUSED')
         except PhaseType.DoesNotExist:
-            return Response({"error": "PhaseType 'FINANCIER_REFUSED' not found."},
+            return Response({"error": "Тип этапа 'FINANCIER_REFUSED' не найден"},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        # Log refusal as project phase
-        ProjectPhase.objects.create(
-            project=project,
-            phase_type=phase_type,
-            performed_by=request.user,
-            notify_to=project.create_user,
-            comment=comment,
-            is_acknowledged=False,
-        )
+        try:
+            ActionLog.objects.create(
+                full_id=project.full_id,
+                path_type=project.path_type,
+                phase_type=phase_type,
+                performed_by=request.user,
+                notify_to=project.create_user,
+                comment=comment
+            )
+        except Exception as e:
+            print(f"❌ Ошибка при создании ActionLog: {e}")  # Error creating ActionLog
 
-        return Response({"message": "Project refusal logged successfully."},
-                        status=status.HTTP_200_OK)
+        return Response({"message": "Отказ по проекту успешно зафиксирован"}, status=status.HTTP_200_OK)  # Project refusal logged successfully
         
         
 class TranslationListCreateAPIView(ListCreateAPIView):
@@ -751,32 +895,61 @@ class GIPProjectListView(generics.ListAPIView):
 class GIPConfirmAPIView(APIView):
     permission_classes = [IsAuthenticated, HasCapabilityPermission('CAN_CREATE_TECH_PARTS')]
 
+    @transaction.atomic
     def post(self, request):
         project_code = request.data.get('project_code')
         if not project_code:
-            return Response({'error': 'Project code is required.'}, status=400)
+            return Response(
+                {'error': 'Код проекта обязателен'},  # Project code is required
+                status=400
+            )
 
         try:
             project = Project.objects.get(project_code=project_code)
         except Project.DoesNotExist:
-            return Response({'error': 'Project not found'}, status=404)
-
-        with transaction.atomic():
-            # ✅ Confirm GIP
-            project.gip_confirm = True
-            project.gip_confirm_date = timezone.now()
-            project.save(update_fields=['gip_confirm', 'gip_confirm_date'])
-
-            # ✅ Add phase: GIP_CONFIRMED
-            phase_type = PhaseType.objects.get(key='GIP_CONFIRMED')
-            ProjectPhase.objects.create(
-                project=project,
-                phase_type=phase_type,
-                performed_by=request.user,
-                notify_to=None  # or project.create_user, or whoever should be notified
+            return Response(
+                {'error': 'Проект не найден'},  # Project not found
+                status=404
             )
 
-        return Response({'message': 'GIP confirmed the project and phase updated.'}, status=status.HTTP_200_OK)
+        # ✅ Подтвердить ГИПом (Confirm by GIP)
+        project.gip_confirm = True
+        project.gip_confirm_date = timezone.now()
+        project.save(update_fields=['gip_confirm', 'gip_confirm_date'])
+
+        try:
+            phase_type = PhaseType.objects.get(key='GIP_CONFIRMED')
+        except PhaseType.DoesNotExist:
+            return Response(
+                {'error': "Тип этапа 'GIP_CONFIRMED' не найден"},  # Phase type not found
+                status=500
+            )
+
+        # 🔔 Уведомить всех с правом 'CAN_CHECK_AND_GIP_ATTACH' (Notify users with capability)
+        notify_users = StaffUser.objects.filter(
+                role__capabilities__capability_name='CAN_CHECK_AND_GIP_ATTACH'
+            ).distinct()
+        for user in notify_users:
+            try:
+                ActionLog.objects.create(
+                    full_id=project.full_id,
+                    path_type=project.path_type,
+                    phase_type=phase_type,
+                    performed_by=request.user,
+                    notify_to=user,
+                    comment="ГИП подтвердил проект"  # GIP confirmed the project
+                )
+            except Exception as e:
+                return Response(
+                    {'error': f"Ошибка при создании ActionLog для пользователя {user.fio}: {str(e)}"},  # Error creating ActionLog for user
+                    status=500
+                )
+
+        return Response(
+            {'message': 'Проект подтвержден ГИПом и уведомления отправлены'},  # Project confirmed by GIP and notifications sent
+            status=200
+        )
+
     
     
 class GipFinancePartsListAPIView(generics.ListAPIView):
@@ -802,41 +975,83 @@ class GipFinancePartsListAPIView(generics.ListAPIView):
 class GipCreateTechnicalPartsView(APIView):
     permission_classes = [IsAuthenticated, HasCapabilityPermission('CAN_CREATE_TECH_PARTS')]
 
+    @transaction.atomic
     def post(self, request):
         fs_part_code = request.data.get('fs_part_code')
         parts_data = request.data.get('parts', [])
+
+        if not fs_part_code or not parts_data:
+            return Response(
+                {'error': 'Код финансовой части и список частей обязательны'},  # fs_part_code and parts are required
+                status=400
+            )
+
         try:
             finance_part = ProjectFinancePart.objects.select_related('project_code').get(fs_part_code=fs_part_code)
         except ProjectFinancePart.DoesNotExist:
-            return Response({'error': 'Finance part not found.'}, status=404)
+            return Response(
+                {'error': 'Финансовая часть не найдена'},  # Finance part not found
+                status=404
+            )
 
         try:
-            with transaction.atomic():
-                created_parts = []
-                for part in parts_data:
-                    obj = ProjectGipPart.objects.create(
-                        fs_part_code=finance_part,
-                        tch_part_no=part['tch_part_no'],
-                        tch_part_name=part['tch_part_name'],
-                        tch_part_nach=StaffUser.objects.get(pk=part['tch_part_nach']),
-                        tch_start_date=part['tch_start_date'],
-                        tch_finish_date=part['tch_finish_date'],
-                        create_user_id=request.user
-                    )
-                    created_parts.append(obj)
+            phase_type = PhaseType.objects.get(key='GIP_CREATED_TECHNICAL_PARTS')
+            tech_phase_type = PhaseType.objects.get(key='TECH_PART_CREATED')
+        except PhaseType.DoesNotExist:
+            return Response(
+                {'error': "Тип этапа 'GIP_CREATED_TECHNICAL_PARTS' or 'TECH_PART_CREATED' не найден"},  # Phase type not found
+                status=500
+            )
 
-                phase_type = PhaseType.objects.get(key='GIP_CREATED_TECHNICAL_PARTS')
-                ProjectPhase.objects.create(
-                    project=finance_part.project_code,
-                    phase_type=phase_type,
-                    performed_by=request.user
+        try:
+            created_parts = []
+
+            for part in parts_data:
+                tch_user = StaffUser.objects.get(pk=part['tch_part_nach'])
+
+                obj = ProjectGipPart.objects.create(
+                    fs_part_code=finance_part,
+                    tch_part_no=part['tch_part_no'],
+                    tch_part_name=part['tch_part_name'],
+                    tch_part_nach=tch_user,
+                    tch_start_date=part['tch_start_date'],
+                    tch_finish_date=part['tch_finish_date'],
+                    create_user_id=request.user
+                )
+                created_parts.append(obj)
+
+                # 🔔 Create ActionLog for each technical part to notify tch_part_nach
+                ActionLog.objects.create(
+                    full_id=obj.full_id,
+                    path_type=obj.path_type,
+                    phase_type=tech_phase_type,
+                    comment="ГИП создал техническую часть",  # GIP created technical part
+                    performed_by=request.user,
+                    notify_to=tch_user
                 )
 
+            # 🧾 General ActionLog for the project (no notification)
+            ActionLog.objects.create(
+                full_id=finance_part.project_code.full_id,
+                path_type=finance_part.project_code.path_type,
+                phase_type=phase_type,
+                comment="ГИП создал все технические части",  # GIP created all technical parts
+                performed_by=request.user
+            )
+
         except Exception as e:
-            return Response({'error': f'Failed to create technical parts: {str(e)}'}, status=400)
+            return Response(
+                {'error': f'Ошибка при создании технических частей: {str(e)}'},  # Error creating technical parts
+                status=400
+            )
 
-        return Response({'message': '✅ Technical parts created and phase updated.', 'count': len(created_parts)}, status=status.HTTP_201_CREATED)
-
+        return Response(
+            {
+                'message': '✅ Технические части созданы и действия зарегистрированы',  # Technical parts created and logs recorded
+                'count': len(created_parts)
+            },
+            status=status.HTTP_201_CREATED
+        )
 
 
 class GipUpdateTechnicalPartsView(APIView):
@@ -846,18 +1061,24 @@ class GipUpdateTechnicalPartsView(APIView):
         fs_part_code = request.data.get('fs_part_code')
         parts_data = request.data.get('parts', [])
 
-        print('fs_part_code:', fs_part_code)
-        print('parts_data:', parts_data)
+        if not fs_part_code or not parts_data:
+            return Response({'error': 'Код финансовой части и список частей обязательны'}, status=400)  # Finance part code and parts list are required
 
         try:
             finance_part = ProjectFinancePart.objects.get(fs_part_code=fs_part_code)
         except ProjectFinancePart.DoesNotExist:
-            return Response({'error': 'Finance part not found.'}, status=404)
+            return Response({'error': 'Финансовая часть не найдена'}, status=404)  # Finance part not found
 
         fs_start = finance_part.fs_start_date
         fs_finish = finance_part.fs_finish_date
 
         incoming_codes = set()
+
+        try:
+            phase_type = PhaseType.objects.get(key='GIP_UPDATED_TECHNICAL_PARTS')
+            tech_phase_type = PhaseType.objects.get(key='TECH_PART_UPDATED')
+        except PhaseType.DoesNotExist:
+            return Response({'error': "Тип этапа 'GIP_UPDATED_TECHNICAL_PARTS'/'TECH_PART_UPDATED' не найден"}, status=500)  # PhaseType not found
 
         try:
             with transaction.atomic():
@@ -866,9 +1087,13 @@ class GipUpdateTechnicalPartsView(APIView):
                     end = datetime.strptime(part['tch_finish_date'], "%Y-%m-%d").date()
 
                     if start < fs_start or end > fs_finish:
-                        raise ValidationError(f"❌ Dates for part #{part.get('tch_part_no')} must be between {fs_start} and {fs_finish}")
+                        return Response({
+                            'error': f"❌ Даты для части #{part.get('tch_part_no')} должны быть между {fs_start} и {fs_finish}"  # Dates must be within finance part range
+                        }, status=400)
                     if start > end:
-                        raise ValidationError(f"❌ Start date must not be after end date in part #{part.get('tch_part_no')}")
+                        return Response({
+                            'error': f"❌ Начальная дата не может быть позже конечной в части #{part.get('tch_part_no')}"  # Start must not be after end
+                        }, status=400)
 
                     part_code = part.get('tch_part_code')
                     if part_code:
@@ -881,9 +1106,9 @@ class GipUpdateTechnicalPartsView(APIView):
                             obj.tch_start_date = part['tch_start_date']
                             obj.tch_finish_date = part['tch_finish_date']
                             obj.save()
+                            part_obj = obj
                         except ProjectGipPart.DoesNotExist:
-                            # If somehow code is passed but not found, treat as create
-                            ProjectGipPart.objects.create(
+                            part_obj = ProjectGipPart.objects.create(
                                 fs_part_code=finance_part,
                                 tch_part_no=part['tch_part_no'],
                                 tch_part_name=part['tch_part_name'],
@@ -893,8 +1118,7 @@ class GipUpdateTechnicalPartsView(APIView):
                                 create_user_id=request.user
                             )
                     else:
-                        # Newly created part (no part_code)
-                        new_part = ProjectGipPart.objects.create(
+                        part_obj = ProjectGipPart.objects.create(
                             fs_part_code=finance_part,
                             tch_part_no=part['tch_part_no'],
                             tch_part_name=part['tch_part_name'],
@@ -903,19 +1127,37 @@ class GipUpdateTechnicalPartsView(APIView):
                             tch_finish_date=part['tch_finish_date'],
                             create_user_id=request.user
                         )
-                        incoming_codes.add(new_part.tch_part_code)
+                        incoming_codes.add(part_obj.tch_part_code)
 
-                # ✅ Delete only parts that were NOT included in update
+                    # 🔔 Log for each technical part update
+                    ActionLog.objects.create(
+                        full_id=part_obj.full_id,
+                        path_type=part_obj.path_type,
+                        phase_type=tech_phase_type,
+                        comment="ГИП обновил техническую часть",  # GIP updated technical part
+                        performed_by=request.user,
+                        notify_to=part_obj.tch_part_nach
+                    )
+
+                # 🗑️ Delete removed parts
                 ProjectGipPart.objects.filter(
                     fs_part_code=finance_part
                 ).exclude(tch_part_code__in=incoming_codes).delete()
 
-        except ValidationError as ve:
-            return Response({'error': str(ve)}, status=400)
-        except Exception as e:
-            return Response({'error': f'❌ Failed to update technical parts: {str(e)}'}, status=400)
+                # 📘 Log project level update
+                ActionLog.objects.create(
+                    full_id=finance_part.project_code.full_id,
+                    path_type=finance_part.project_code.path_type,
+                    phase_type=phase_type,
+                    comment="ГИП обновил технические части проекта",  # GIP updated project technical parts
+                    performed_by=request.user
+                )
 
-        return Response({'message': '✅ Technical parts updated successfully.'}, status=200)
+        except Exception as e:
+            return Response({'error': f'❌ Ошибка при обновлении технических частей: {str(e)}'}, status=400)  # Failed to update technical parts
+
+        return Response({'message': '✅ Технические части успешно обновлены'}, status=200)  # Technical parts updated successfully
+
 
 
 
@@ -1009,30 +1251,34 @@ class ConfirmTechPartView(APIView):
         part = get_object_or_404(ProjectGipPart, pk=tch_part_code)
 
         if part.nach_otd_confirm:
-            return Response({'detail': 'Часть уже подтверждена.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'detail': 'Часть уже подтверждена.'}, status=status.HTTP_400_BAD_REQUEST)  # Part already confirmed
 
         try:
             confirm_phase = PhaseType.objects.get(key='TECH_PART_CONFIRMED')
         except PhaseType.DoesNotExist:
-            return Response({'detail': 'Тип этапа TECH_PART_CONFIRMED не найден.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-        part.nach_otd_confirm = True
-        part.nach_otd_confirm_date = timezone.now()
-        part.save()
+            return Response({'detail': 'Тип этапа TECH_PART_CONFIRMED не найден.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)  # PhaseType not found
 
         try:
-            ActionLog.objects.create(
-                full_id=part.full_id,
-                path_type=part.path_type,
-                phase_type=confirm_phase,
-                performed_by=request.user,
-                notify_to=part.create_user_id,
-                comment='Часть подтверждена'
-            )
-        except Exception as e:
-            return Response({'detail': f'Ошибка при сохранении лога: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            with transaction.atomic():
+                part.nach_otd_confirm = True
+                part.nach_otd_confirm_date = timezone.now()
+                part.save()
 
-        return Response({'detail': 'Часть успешно подтверждена.'}, status=status.HTTP_200_OK)
+                # 🔔 Log for the technical part (notifies creator)
+                ActionLog.objects.create(
+                    full_id=part.full_id,
+                    path_type=part.path_type,
+                    phase_type=confirm_phase,
+                    performed_by=request.user,
+                    notify_to=part.create_user_id,
+                    comment='Часть подтверждена'  # Part confirmed
+                )
+
+        except Exception as e:
+            return Response({'detail': f'Ошибка при подтверждении: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)  # Error during confirmation
+
+        return Response({'detail': 'Часть успешно подтверждена.'}, status=status.HTTP_200_OK)  # Part confirmed successfully
+
     
     
     
@@ -1075,6 +1321,14 @@ class CreateWorkOrderView(APIView):
                 notify_to=work_order.wo_staff,  # 👈 Notify the assigned staff
                 comment=f"Наряд №{work_order.wo_no} создан"
             )
+         # 🧾 Project-level ActionLog (no notify)
+        ActionLog.objects.create(
+            full_id=tech_part.fs_part_code.project_code.full_id,
+            path_type=tech_part.fs_part_code.project_code.path_type,
+            phase_type=phase_type,
+            performed_by=request.user,
+            comment='Созданы наряды по технической части'  # Work orders created for technical part
+        )
 
 
         return Response({'detail': '✅ Наряды успешно созданы'}, status=status.HTTP_201_CREATED)

@@ -35,6 +35,7 @@ class ProjectSerializer(serializers.ModelSerializer):
     partner_inn = serializers.CharField(source='partner.partner_inn', read_only=True)
     current_phase = serializers.SerializerMethodField(read_only=True)
     full_id = serializers.CharField(read_only=True)
+    path_type = serializers.CharField(read_only=True)
     
     work_order_count = serializers.SerializerMethodField(read_only=True)
     work_order_confirmed_count = serializers.SerializerMethodField(read_only=True)
@@ -46,7 +47,7 @@ class ProjectSerializer(serializers.ModelSerializer):
             'project_code', 'create_user', 'create_date', 'update_date',
             'create_user_fio', 'financier_fio','finance_parts_count','technical_parts_count',
             'all_sent_to_tech_dir','all_tech_dir_confirmed','partner_name','partner_inn','current_phase',
-            'work_order_count', 'work_order_confirmed_count','full_id'
+            'work_order_count', 'work_order_confirmed_count','full_id','path_type',
         ]
         
     def get_create_user_fio(self, obj):
@@ -88,7 +89,7 @@ class ProjectSerializer(serializers.ModelSerializer):
         full_ids = [wo.full_id for wo in work_orders if wo.full_id]
         return ObjectLastStatus.objects.filter(
             full_id__in=full_ids,
-            latest_phase_type__key='WORK_ORDER_CONFIRMED'
+            latest_phase_type__key='WORK_ORDER_COMPLETED'
         ).count()
 
 class StaffUserSimpleSerializer(serializers.ModelSerializer):

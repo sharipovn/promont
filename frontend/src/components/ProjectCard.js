@@ -22,30 +22,40 @@ export default function ProjectCard({ proj }) {
 
   const {returnTitle}=useI18n()
 
-   function getWorkOrderStatusAndPercent(confirmedCount, totalCount) {
-      let percent = 0;
-      let statusKey = 'project_card.not_started'; // default
+  function getWorkOrderStatusAndPercent(confirmedCount, totalCount) {
+    let percent = 0;
+    let statusKey = 'project_card.not_started';  // По умолчанию – не начато (default: not started)
 
-      if (totalCount > 0) {
-        percent = Math.round((confirmedCount / totalCount) * 100);
+    const confirmed = Number(confirmedCount) || 0;
+    const total = Number(totalCount) || 0;
 
-        if (percent === 100) {
-          statusKey = 'project_card.completed';
-        } else if (percent < 50) {
-          statusKey = 'project_card.in_progress';
-        } else {
-          statusKey = 'project_card.nearly_done';
-        }
+    if (total === 0 && confirmed === 0) {
+      // Оба значения равны 0 (Both 0 → not started)
+      percent = 0;
+      statusKey = 'project_card.not_started';
+    } else if (total > 0) {
+      percent = Math.round((confirmed / total) * 100);
+
+      if (percent === 100) {
+        statusKey = 'project_card.completed';  // Завершено
+      } else if (percent < 50) {
+        statusKey = 'project_card.in_progress';  // В процессе
+      } else {
+        statusKey = 'project_card.nearly_done';  // Почти завершено
       }
-
-      return {
-        percent,
-        statusText: returnTitle(statusKey),
-        statusKey,
-      };
     }
 
-    const { percent, statusText, statusKey } = getWorkOrderStatusAndPercent(
+    return {
+      percent,
+      statusTextWo: returnTitle(statusKey),
+      statusKey,
+    };
+  }
+
+
+
+
+    const { percent, statusTextWo, statusKey } = getWorkOrderStatusAndPercent(
         proj.work_order_confirmed_count,
         proj.work_order_count
       );
@@ -59,32 +69,47 @@ export default function ProjectCard({ proj }) {
 
 
     function getDeadlineStatus(endDateStr, percent) {
-        const now = new Date();
-        const endDate = new Date(endDateStr);
-        const diffDays = Math.floor((endDate - now) / (1000 * 60 * 60 * 24));
-        let statusKey = '';
+      const now = new Date();
+      const endDate = new Date(endDateStr);
 
-        if (diffDays > 0 && percent < 100) {
-          statusKey = 'project_card.days_left';
-        } else if (diffDays === 0 && percent < 100) {
-          statusKey = 'project_card.today_is_deadline';
-        } else if (diffDays === 0 && percent === 100) {
-          statusKey = 'project_card.completed_on_time';
-        } else if (diffDays < 0 && percent < 100) {
-          statusKey = 'project_card.not_completed_in_time';
-        } else if (diffDays < 0 && percent === 100) {
-          statusKey = 'project_card.completed_on_time'; // or add a new key if needed
-        } else {
-          return null;
-        }
-        const rawText = returnTitle(statusKey);
-        const statusText = rawText.replace('{days}', diffDays);
-        return {
-          statusText,
-          statusKey,
-          diffDays,
-        };
+      if (isNaN(endDate.getTime())) {
+        console.log('Invalid date:', endDateStr);
+        return null;
       }
+
+      const diffDays = Math.floor((endDate - now) / (1000 * 60 * 60 * 24));
+      percent = Number(percent) || 0;
+
+      let statusKey = '';
+
+      if (diffDays > 0 && percent < 100) {
+        statusKey = 'project_card.days_left';  // Срок впереди, не завершено
+      } else if (diffDays === 0 && percent < 100) {
+        statusKey = 'project_card.today_is_deadline';  // Сегодня крайний срок
+      } else if (diffDays === 0 && percent === 100) {
+        statusKey = 'project_card.completed_on_time';  // Завершено в срок
+      } else if (diffDays < 0 && percent < 100) {
+        statusKey = 'project_card.not_completed_in_time';  // Не завершено в срок
+      } else if (diffDays < 0 && percent === 100) {
+        statusKey = 'project_card.completed_on_time';  // Завершено после срока
+      } else if (diffDays > 0 && percent === 100) {
+        statusKey = 'project_card.completed_early';  // Завершено досрочно
+      } else {
+        console.log('Unmatched condition:', endDateStr, percent);
+        return null;
+      }
+
+      const rawText = returnTitle(statusKey) || '';
+      const statusText = rawText.replace('{days}', diffDays);
+
+      return {
+        statusText,
+        statusKey,
+        diffDays,
+      };
+    }
+
+
 
     const deadlineInfo = getDeadlineStatus(proj.end_date, percent);
     
@@ -218,7 +243,7 @@ export default function ProjectCard({ proj }) {
       {/* status  */}
         <div className="d-flex align-items-center justify-content-between mt-3 small">
           <span className="text-success d-flex align-items-center gap-1 small">
-            {statusIcons[statusKey]}{statusText}
+            {statusIcons[statusKey]}{statusTextWo}
           </span>
           <span className="badge bg-light text-dark small">
             {deadlineInfo.statusText}

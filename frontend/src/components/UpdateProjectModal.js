@@ -25,8 +25,10 @@ export default function UpdateProjectModal({ show, onHide, project, onUpdated })
   const [financierOptions, setFinancierOptions] = useState([]);
   const [partnerOptions, setPartnerOptions] = useState([]);
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [alertMsg, setAlertMsg] = useState('');;
+  useEffect(() => {
+  if (show) setAlertMsg('');
+  }, [show]); // ✅ Clears message on open
 
   const { setUser, setAccessToken } = useAuth();
   const navigate = useNavigate();
@@ -87,7 +89,7 @@ export default function UpdateProjectModal({ show, onHide, project, onUpdated })
     const { project_name, total_price, start_date, end_date, financier, partner } = form;
 
     if (!project_name || !total_price || !start_date || !end_date || !financier || !partner) {
-      setError(returnTitle('create_proj.all_fields_required'));
+      setAlertMsg(returnTitle('create_proj.all_fields_required'));
       return;
     }
 
@@ -97,12 +99,12 @@ export default function UpdateProjectModal({ show, onHide, project, onUpdated })
     today.setHours(0, 0, 0, 0);
 
     if (start >= end) {
-      setError(returnTitle('create_proj.start_date_less_than_end_date'));
+      setAlertMsg(returnTitle('create_proj.start_date_less_than_end_date'));
       return;
     }
 
     if (end < today) {
-      setError(returnTitle('create_proj.end_date_must_be_greater_than_today'));
+      setAlertMsg(returnTitle('create_proj.end_date_must_be_greater_than_today'));
       return;
     }
 
@@ -114,18 +116,18 @@ export default function UpdateProjectModal({ show, onHide, project, onUpdated })
     };
 
     setSubmitting(true);
-    setError('');
+    setAlertMsg('');
     try {
       await axiosInstance.put(`/project-list-create/${project.project_code}/`, payload);
-      setSuccess(returnTitle('app.updated_successfully'));
+      setAlertMsg(returnTitle('app.updated_successfully'));
       onUpdated?.();
       setTimeout(() => {
         onHide();
-        setSuccess('');
+        setAlertMsg('');
         setSubmitting(false);
       }, 1200);
     } catch (err) {
-      setError('❌ ' + returnTitle('create_proj.update_project_failed'));
+      setAlertMsg('❌ ' + returnTitle('create_proj.update_project_failed'));
       setSubmitting(false);
     }
   };
@@ -171,8 +173,7 @@ export default function UpdateProjectModal({ show, onHide, project, onUpdated })
           {returnTitle('create_proj.update_project')}
         </h5>
 
-        {error && <Alert type="danger" message={error} />}
-        {success && <Alert type="info" message={success} />}
+        {alertMsg && <Alert type="info" message={alertMsg} />}
 
         <Form>
           <Form.Group className="mb-3">

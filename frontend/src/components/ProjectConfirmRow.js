@@ -8,6 +8,7 @@ import { CONSTANTS } from '../constants/app_constants'; // or wherever your cons
 export default function ProjectConfirmRow({ proj, onConfirm, onRefuse }) {
 
     const {returnTitle}=useI18n()
+    console.log('proj:',proj)
 
   return (
     <div
@@ -36,9 +37,9 @@ export default function ProjectConfirmRow({ proj, onConfirm, onRefuse }) {
         </button>
         
 
-        {proj.current_phase?.key === CONSTANTS.FINANCIER_REFUSED ? (
+        {proj.last_status?.latest_action === CONSTANTS.FINANCIER_REFUSED ? (
           <button className="btn-icon-red rounded-1 border disabled bg-dark">
-            {returnTitle(`project_phase.${proj.current_phase?.key.toLowerCase()}`)}
+            {returnTitle(`project_phase.${proj.last_status?.latest_action.toLowerCase()}`)}
           </button>
         ) : (
           <button className="btn-icon-red  rounded-3" onClick={() => onRefuse(proj)}>

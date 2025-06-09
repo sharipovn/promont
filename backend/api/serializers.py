@@ -33,7 +33,7 @@ class ProjectSerializer(serializers.ModelSerializer):
     all_tech_dir_confirmed = serializers.SerializerMethodField()
     partner_name = serializers.CharField(source='partner.partner_name', read_only=True)
     partner_inn = serializers.CharField(source='partner.partner_inn', read_only=True)
-    current_phase = serializers.SerializerMethodField(read_only=True)
+    last_status = serializers.SerializerMethodField(read_only=True)
     full_id = serializers.CharField(read_only=True)
     path_type = serializers.CharField(read_only=True)
     
@@ -46,8 +46,8 @@ class ProjectSerializer(serializers.ModelSerializer):
         read_only_fields = [
             'project_code', 'create_user', 'create_date', 'update_date',
             'create_user_fio', 'financier_fio','finance_parts_count','technical_parts_count',
-            'all_sent_to_tech_dir','all_tech_dir_confirmed','partner_name','partner_inn','current_phase',
-            'work_order_count', 'work_order_confirmed_count','full_id','path_type',
+            'all_sent_to_tech_dir','all_tech_dir_confirmed','partner_name','partner_inn',
+            'work_order_count', 'work_order_confirmed_count','full_id','path_type','last_status',
         ]
         
     def get_create_user_fio(self, obj):
@@ -56,7 +56,9 @@ class ProjectSerializer(serializers.ModelSerializer):
     def get_financier_fio(self, obj):
         return f"{obj.financier.fio} ({obj.financier.position or '---'})" if obj.financier else None
 
-
+    def get_last_status(self, obj):
+        return getattr(obj, 'last_status', None)
+    
     def get_finance_parts_count(self, obj):
         return obj.finance_parts.count() if hasattr(obj, 'finance_parts') and obj.finance_parts is not None else 0
     
@@ -67,19 +69,7 @@ class ProjectSerializer(serializers.ModelSerializer):
         return obj.finance_parts.filter(send_to_tech_dir=False).count() == 0
     
     def get_all_tech_dir_confirmed(self, obj):
-        return all(part.tech_dir_confirm for part in obj.finance_parts.all())
-
-    def get_current_phase(self, obj):
-        latest_phase = obj.phases.order_by('-performed_at').first()
-        if latest_phase and latest_phase.phase_type:
-            return {
-                "key": latest_phase.phase_type.key,
-                "name": latest_phase.phase_type.name,
-                "is_refusal": latest_phase.phase_type.is_refusal,
-                "date": latest_phase.performed_at,
-                "comment": latest_phase.comment,
-            }
-        return None
+        return all(part.tech_dir_confirm for part in obj.finance_parts.all())        
     
     def get_work_order_count(self, obj):
         return WorkOrder.objects.filter(tch_part_code__fs_part_code__project_code=obj).count()

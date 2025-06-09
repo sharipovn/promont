@@ -71,7 +71,7 @@ export default function GipPartRow({ part, onConfirmed, onRefuse }) {
               </span>
             )}
 
-            {/* ✅ Status */}
+            {/* ✅ Status 
             <span
               className={`financial-action-btn fw-bold send-btn ${
                 confirmed
@@ -86,7 +86,7 @@ export default function GipPartRow({ part, onConfirmed, onRefuse }) {
                 : part?.last_status?.latest_action === 'TECH_PART_REFUSED'
                 ? returnTitle('create_wo.refused')
                 : returnTitle('create_wo.not_confirmed')}
-            </span>
+            </span>*/}
 
 
         {confirmed ? (

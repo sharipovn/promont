@@ -15,6 +15,7 @@ import CustomPagination from '../components/CustomPagination';
 import ProjectRow from '../components/ProjectRow';
 import './CreateProjectScreen.css';
 import { CiSearch } from "react-icons/ci";
+import {clearAndClose} from '../utils/clearAndClose'
 
 
 
@@ -26,8 +27,7 @@ export default function CreateProjectScreen() {
   const axiosInstance = useMemo(() => createAxiosInstance(navigate, setUser, setAccessToken), [navigate, setUser, setAccessToken]);
 
   const [projects, setProjects] = useState([]);
-  const [message, setMessage] = useState('');
-  const [messageType, setMessageType] = useState('');
+  const [alertMsg, setAlertMsg] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
@@ -49,8 +49,7 @@ export default function CreateProjectScreen() {
       })
       .catch((err) => {
         console.error('❌ Failed to load projects:', err);
-        setMessage('❌ Failed to load projects.');
-        setMessageType('danger');
+        setAlertMsg('❌ Failed to load projects.');
       });
   }, [axiosInstance, currentPage, searchQuery]);
 
@@ -106,7 +105,7 @@ export default function CreateProjectScreen() {
             </div>
 
 
-            {message && <Alert type={messageType} message={message} />}
+            {alertMsg && <Alert type='info' message={alertMsg} />}
 
             <div className="custom-scroll d-flex flex-column gap-2 px-1" style={{ height: '70vh', overflowY: 'auto' }}>
               {projects.map((project) => (
@@ -127,14 +126,14 @@ export default function CreateProjectScreen() {
 
       <CreateProjectModal
         show={showCreateModal}
-        onHide={() => setShowCreateModal(false)}
+        onHide={() => setShowCreateModal(false)}  // ✅ No shared alertMsg
         onCreated={fetchProjects}
       />
 
       {selectedProject && (
         <UpdateProjectModal
           show={showUpdateModal}
-          onHide={() => setShowUpdateModal(false)}
+          onHide={() => setShowUpdateModal(false)} // ✅ Same here
           project={selectedProject}
           onUpdated={fetchProjects}
         />

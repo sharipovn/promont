@@ -57,7 +57,7 @@ export default function FinancialPartsModal({ show, onHide, project, onCreated }
     const payload = {
       project_code: project.project_code,
       parts: parts.map((p, idx) => ({
-        fs_part_no: `Part ${idx + 1}`,
+        fs_part_no: `${idx + 1}`,
         fs_part_name: p.fs_part_name,
         fs_part_price: Number(p.fs_part_price.replace(/\D/g, '')),
         fs_start_date: p.fs_start_date,
@@ -108,7 +108,7 @@ export default function FinancialPartsModal({ show, onHide, project, onCreated }
             >
               <Row className="align-items-end g-3">
                 <Col md={2}>
-                  <strong className="text-white">N: Part {index + 1}</strong>
+                  <strong className="text-white">N:{index + 1}</strong>
                 </Col>
                 <Col md>
                   <Form.Label>Financial Part Name</Form.Label>

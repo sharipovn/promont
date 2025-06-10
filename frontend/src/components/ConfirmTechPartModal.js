@@ -18,8 +18,12 @@ export default function ConfirmTechPartModal({ show, onHide, part, onConfirmed }
 
   const [loading, setLoading] = useState(false);
   const [alert, setAlert] = useState({ show: false, variant: '', message: '' });
+  const [lock, setLock] = useState(false); // ✅ Lock after success
+
+
 
   const handleConfirm = async () => {
+     if (lock) return; // ✅ Prevent duplicate confirmation
     setLoading(true);
     try {
       await axiosInstance.post(`/work-order/tech-parts/${part.tch_part_code}/confirm/`);
@@ -28,6 +32,7 @@ export default function ConfirmTechPartModal({ show, onHide, part, onConfirmed }
         variant: 'success',
         message: returnTitle('create_wo.confirm_success'),
       });
+      setLock(true); // ✅ Lock the confirm button
       setTimeout(() => {
         setAlert({ show: false, variant: '', message: '' });
         onHide();
@@ -43,6 +48,15 @@ export default function ConfirmTechPartModal({ show, onHide, part, onConfirmed }
       setLoading(false);
     }
   };
+
+
+  useMemo(() => {
+  if (show) {
+    setLock(false); // ✅ Reset when modal opens
+    setAlert({ show: false, variant: '', message: '' });
+  }
+}, [show]);
+
 
   return (
     <Modal show={show} onHide={onHide} centered contentClassName="custom-modal-content">
@@ -108,7 +122,7 @@ export default function ConfirmTechPartModal({ show, onHide, part, onConfirmed }
             variant="success"
             className="rounded-2 px-4"
             onClick={handleConfirm}
-            disabled={loading}
+            disabled={loading || lock}
           >
             {loading ? returnTitle('create_wo.sending') : returnTitle('create_wo.confirm')}
           </Button>

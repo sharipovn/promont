@@ -19,6 +19,14 @@ export default function RefuseWorkOrderModal({ show, onHide, order, onRefuse }) 
   const [comment, setComment] = useState('');
   const [loading, setLoading] = useState(false);
   const [alert, setAlert] = useState({ show: false, variant: '', message: '' });
+  const [locked, setLocked] = useState(false);
+
+  useEffect(() => {
+    if (show) {
+      setLocked(false);
+    }
+  }, [show]);
+
 
   useEffect(() => {
     if (order?.last_status?.latest_action === 'WORK_ORDER_REFUSED') {
@@ -52,6 +60,8 @@ export default function RefuseWorkOrderModal({ show, onHide, order, onRefuse }) 
       await axiosInstance[method](`/complete-work-order/${order.wo_id}/`, {
         comment: comment.trim(),
       });
+
+      setLocked(true); // ✅ UI lock
       setAlert({
         show: true,
         variant: 'success',
@@ -123,7 +133,7 @@ export default function RefuseWorkOrderModal({ show, onHide, order, onRefuse }) 
             variant="danger"
             onClick={handleSubmit}
             className="rounded-2 px-4"
-            disabled={loading || !comment.trim()}
+            disabled={loading || locked || !comment.trim()}
           >
             {loading ? returnTitle('complete_wo.sending') : returnTitle('complete_wo.confirm_refusal')}
           </Button>

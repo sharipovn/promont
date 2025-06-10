@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo,useEffect } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
 import Alert from './Alert';
 import { useNavigate } from 'react-router-dom';
@@ -18,11 +18,20 @@ export default function WorkOrderConfirmModal({ show, onHide, order, onConfirmed
 
   const [loading, setLoading] = useState(false);
   const [alert, setAlert] = useState({ show: false, variant: '', message: '' });
+  const [locked, setLocked] = useState(false);
+
+
+  useEffect(() => {
+    if (show) {
+      setLocked(false);
+    }
+  }, [show]);
 
   const handleConfirm = async () => {
     setLoading(true);
     try {
       await axiosInstance.post(`/complete-work-order/${order.wo_id}/confirm/`);
+      setLocked(true); // ✅ Lock UI after success
       setAlert({
         show: true,
         variant: 'success',
@@ -97,7 +106,7 @@ export default function WorkOrderConfirmModal({ show, onHide, order, onConfirmed
           <Button variant="outline-secondary" onClick={onHide} disabled={loading} className="rounded-2 px-4">
             {returnTitle('cancel')}
           </Button>
-          <Button variant="success" onClick={handleConfirm} disabled={loading} className="rounded-2 px-4">
+          <Button variant="success" onClick={handleConfirm} disabled={loading || locked} className="rounded-2 px-4">
             {loading ? returnTitle('create_wo.sending') : returnTitle('complete_wo.confirm')}
           </Button>
         </div>

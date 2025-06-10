@@ -17,22 +17,30 @@ const axiosInstance = useMemo(() => {return createAxiosInstance(navigate, setUse
   const [comment, setComment] = useState('');
   const [loading, setLoading] = useState(false);
   const [alert, setAlert] = useState({ show: false, variant: '', message: '' });
+  const [lock, setLock] = useState(false); // ✅ prevent resubmission after success
+
+
 
   // Load existing comment if already refused
   useEffect(() => {
-    if (part?.last_status?.latest_action === 'TECH_PART_REFUSED') {
-      axiosInstance
-        .get(`/work-order/tech-parts/${part.tch_part_code}/`)
-        .then((res) => {
-          setComment(res.data.comment || '');
-        })
-        .catch(() => {
-          setComment('');
-        });
-    } else {
+    if (show) {
       setComment('');
+      setLock(false); // ✅ reset on modal open
+      setAlert({ show: false, variant: '', message: '' });
+
+      if (part?.last_status?.latest_action === 'TECH_PART_REFUSED') {
+        axiosInstance
+          .get(`/work-order/tech-parts/${part.tch_part_code}/`)
+          .then((res) => {
+            setComment(res.data.comment || '');
+          })
+          .catch(() => {
+            setComment('');
+          });
+      }
     }
-  }, [part,show,axiosInstance]);
+  }, [part, show, axiosInstance]);
+
 
   const handleClose = () => {
     setComment('');
@@ -41,10 +49,7 @@ const axiosInstance = useMemo(() => {return createAxiosInstance(navigate, setUse
   };
 
   const handleSubmit = async () => {
-    if (!comment.trim()) {
-      setAlert({ show: true, variant: 'info', message: returnTitle('create_wo.empty_reason') });
-      return;
-    }
+    if (!comment.trim() || lock) return; // ✅ prevent resubmission
 
     setLoading(true);
     const method = part?.last_status?.latest_action === 'TECH_PART_REFUSED' ? 'put' : 'post';
@@ -61,6 +66,7 @@ const axiosInstance = useMemo(() => {return createAxiosInstance(navigate, setUse
         ),
       });
 
+      setLock(true); // ✅ lock after success
       setTimeout(() => {
         handleClose();
         onRefuse(); // refresh list
@@ -130,7 +136,7 @@ const axiosInstance = useMemo(() => {return createAxiosInstance(navigate, setUse
             variant="danger"
             onClick={handleSubmit}
             className="rounded-2 px-4"
-            disabled={loading || !comment.trim()}
+            disabled={loading || lock || !comment.trim()} // ✅ lock after success
           >
             {loading ? returnTitle('create_wo.sending') : returnTitle('create_wo.confirm_refusal')}
           </Button>

@@ -26,9 +26,16 @@ export default function CreateProjectModal({ show, onHide, onCreated }) {
   const [partnerOptions, setPartnerOptions] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const [alertMsg, setAlertMsg] = useState('');
-  useEffect(() => {
-  if (show) setAlertMsg('');
-  }, [show]); // ✅ Clears message on open
+  const [locked, setLocked] = useState(false);
+
+
+    useEffect(() => {
+      if (show) {
+        setAlertMsg('');
+        setLocked(false); // ✅ Reset lock on open
+      }
+    }, [show]);
+
 
   const { setUser, setAccessToken } = useAuth();
   const navigate = useNavigate();
@@ -104,6 +111,7 @@ export default function CreateProjectModal({ show, onHide, onCreated }) {
     try {
       await axiosInstance.post('/project-list-create/', payload);
       setAlertMsg(returnTitle('app.created_successfully'));
+      setLocked(true); // ✅ Lock UI
       onCreated?.();
       setTimeout(() => {
         onHide();
@@ -258,7 +266,7 @@ export default function CreateProjectModal({ show, onHide, onCreated }) {
             <Button variant="outline-light" onClick={onHide} disabled={submitting}>
               {submitting ? returnTitle('app.closing') + '...' : returnTitle('app.cancel')}
             </Button>
-            <Button variant="success" onClick={handleSubmit} disabled={submitting}>
+            <Button variant="success" onClick={handleSubmit} disabled={submitting || locked}>
               {submitting ? (
                 <>
                   <span className="spinner-border spinner-border-sm me-2" role="status" />

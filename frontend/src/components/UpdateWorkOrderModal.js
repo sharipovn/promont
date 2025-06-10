@@ -19,15 +19,37 @@ export default function UpdateWorkOrderModal({ show, onHide, part, onUpdated }) 
   const [submitting, setSubmitting] = useState(false);
   const [alert, setAlert] = useState({ show: false, message: '', variant: '' });
 
+  const [locked, setLocked] = useState(false);
   useEffect(() => {
-    axiosInstance.get(`/work-order/by-part/${part.tch_part_code}/`).then(res => setOrders(res.data));
-    axiosInstance.get('/users-with-capability/', { params: { capability: 'CAN_COMPLETE_WORK_ORDER' } })
-      .then((res) => {
-        const options = res.data.map(user => ({ label: user.fio, value: user.user_id }));
-        setStaffOptions(options);
-      })
-      .catch((err) => console.error("❌ Failed to fetch staff:", err));
-  }, [axiosInstance, part.tch_part_code]);
+    if (show) {
+      setLocked(false);  // ✅ reset UI lock on open
+      setAlert({ show: false, message: '', variant: '' })
+    }
+  }, [show]);
+
+
+
+ useEffect(() => {
+  if (!show || !part?.tch_part_code) return;
+
+  // Fetch work orders
+  axiosInstance.get(`/work-order/by-part/${part.tch_part_code}/`)
+    .then(res => setOrders(res.data));
+
+  // Fetch staff
+  axiosInstance.get('/users-with-capability/', {
+    params: { capability: 'CAN_COMPLETE_WORK_ORDER' },
+  })
+    .then(res => {
+      const options = res.data.map(user => ({
+        label: user.fio,
+        value: user.user_id,
+      }));
+      setStaffOptions(options);
+    })
+    .catch(err => console.error("❌ Failed to fetch staff:", err));
+}, [show, part?.tch_part_code, axiosInstance]);
+
 
   const handleChange = (index, field, value) => {
     const updated = [...orders];
@@ -79,6 +101,7 @@ export default function UpdateWorkOrderModal({ show, onHide, part, onUpdated }) 
     try {
       await axiosInstance.put('/work-order/update/', { tch_part_code: part.tch_part_code, orders: validated });
       setAlert({ show: true, variant: 'success', message: returnTitle('create_wo. work_order_updated_successfully') });
+      setLocked(true);
       setTimeout(() => {
         setAlert({ show: false, variant: '', message: '' });
         onHide();
@@ -217,7 +240,7 @@ export default function UpdateWorkOrderModal({ show, onHide, part, onUpdated }) 
               variant="success"
               className="px-4 rounded"
               onClick={handleSubmit}
-              disabled={submitting}
+              disabled={submitting || locked}
             >
               {submitting ? (
                 <>

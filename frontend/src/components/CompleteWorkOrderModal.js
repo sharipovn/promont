@@ -17,6 +17,7 @@ export default function CompleteWorkOrderModal({ show, onHide, order, onComplete
   const axiosInstance = useMemo(() => createAxiosInstance(navigate, setUser, setAccessToken), [
     navigate, setUser, setAccessToken,
   ]);
+  
 
   const [woAnswer, setWoAnswer] = useState('');
   const [woRemark, setWoRemark] = useState('');
@@ -25,6 +26,15 @@ export default function CompleteWorkOrderModal({ show, onHide, order, onComplete
   const [alert, setAlert] = useState({ show: false, variant: '', message: '' });
   const [loading, setLoading] = useState(false);
   const [removedFileIds, setRemovedFileIds] = useState([]);
+
+  const [locked, setLocked] = useState(false);
+
+  useEffect(() => {
+    if (show) {
+      setLocked(false); // ✅ Reset lock when modal opens
+    }
+  }, [show]);
+
 
 
   useEffect(() => {
@@ -106,7 +116,7 @@ export default function CompleteWorkOrderModal({ show, onHide, order, onComplete
       await axiosInstance.post(`/complete-work-order/complete/${order.wo_id}/`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-
+      setLocked(true); // ✅ Lock after success
       setAlert({ show: true, variant: 'success', message: returnTitle('complete_wo.confirm_success') });
       setTimeout(() => {
         onHide();
@@ -199,7 +209,7 @@ export default function CompleteWorkOrderModal({ show, onHide, order, onComplete
           <Button variant="outline-secondary" onClick={onHide} disabled={loading}>
             {returnTitle('app.cancel')}
           </Button>
-          <Button variant="success" onClick={handleSubmit} disabled={loading}>
+          <Button variant="success" onClick={handleSubmit} disabled={loading || locked}>
             {loading
               ? returnTitle('complete_wo.sending')
               : returnTitle(order?.wo_answer ? 'complete_wo.update_complete' : 'complete_wo.complete_work_order')}

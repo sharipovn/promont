@@ -8,6 +8,9 @@ import { useI18n } from '../context/I18nProvider';
 import Alert from './Alert';
 import Select from 'react-select';
 
+
+
+
 export default function CreateWorkOrderModal({ show, onHide, part, onCreated }) {
   const { returnTitle } = useI18n();
   const { setUser, setAccessToken } = useAuth();
@@ -20,6 +23,9 @@ export default function CreateWorkOrderModal({ show, onHide, part, onCreated }) 
   const [staffOptions, setStaffOptions] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const [alert, setAlert] = useState({ show: false, message: '', variant: '' });
+  const [locked, setLocked] = useState(false);
+
+
 
   useEffect(() => {
     axiosInstance.get('/users-with-capability/', { params: { capability: 'CAN_COMPLETE_WORK_ORDER' } })
@@ -93,6 +99,7 @@ export default function CreateWorkOrderModal({ show, onHide, part, onCreated }) 
     try {
       await axiosInstance.post('/work-order/create/', payload);
       setAlert({ show: true, variant: 'success', message: returnTitle('create_wo.work_order_created_successfully') });
+      setLocked(true); // ✅ lock the UI after success
       setTimeout(() => {
         setAlert({ show: false, variant: '', message: '' });
         onHide();
@@ -238,7 +245,7 @@ export default function CreateWorkOrderModal({ show, onHide, part, onCreated }) 
               variant="success"
               className="px-4 rounded"
               onClick={handleSubmit}
-              disabled={submitting}
+              disabled={submitting || locked}
             >
               {submitting ? (
                 <>

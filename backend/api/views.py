@@ -1180,7 +1180,7 @@ class ProjectGipPartListView(ListAPIView):
     pagination_class=ProjectGipPartPagination
 
     def get_queryset(self):
-        return ProjectGipPart.objects.filter(tch_part_nach=self.request.user)
+        return ProjectGipPart.objects.filter(tch_part_nach=self.request.user).order_by('-create_date')
     
     
     

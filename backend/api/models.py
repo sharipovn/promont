@@ -200,6 +200,7 @@ class Project(models.Model):
                 "latest_phase_type": status.latest_phase_type.name if status.latest_phase_type else None,
                 "last_updated": status.last_updated,
                 "updated_by": status.updated_by.fio if status.updated_by else None,
+                'comment':status.comment
             }
         except ObjectLastStatus.DoesNotExist:
             return None
@@ -244,6 +245,7 @@ class ProjectFinancePart(models.Model):
         db_table = 'pro_fin_part'
         verbose_name = "Project Finance Part"
         verbose_name_plural = "Project Finance Parts"
+        unique_together = ('project_code', 'fs_part_name')  # ✅ Enforce uniqueness
 
     def __str__(self):
         return f"{self.fs_part_code} - {self.fs_part_name}"
@@ -266,6 +268,7 @@ class ProjectFinancePart(models.Model):
                 "latest_phase_type": status.latest_phase_type.name if status.latest_phase_type else None,
                 "last_updated": status.last_updated,
                 "updated_by": status.updated_by.fio if status.updated_by else None,
+                'comment':status.comment
             }
         except ObjectLastStatus.DoesNotExist:
             return None
@@ -494,6 +497,7 @@ class ProjectGipPart(models.Model):
                 "latest_phase_type": status.latest_phase_type.name if status.latest_phase_type else None,
                 "last_updated": status.last_updated,
                 "updated_by": status.updated_by.fio if status.updated_by else None,
+                'comment':status.comment
             }
         except ObjectLastStatus.DoesNotExist:
             return None
@@ -597,6 +601,7 @@ class WorkOrder(models.Model):
                 "latest_phase_type": status.latest_phase_type.name if status.latest_phase_type else None,
                 "last_updated": status.last_updated,
                 "updated_by": status.updated_by.fio if status.updated_by else None,
+                'comment':status.comment
             }
         except ObjectLastStatus.DoesNotExist:
             return None
@@ -671,6 +676,7 @@ class ObjectLastStatus(models.Model):
         blank=True,
         related_name='updated_last_statuses'
     )
+    comment = models.TextField(null=True, blank=True)  # ✅ Add this field
 
     class Meta:
         db_table = 'object_last_status'

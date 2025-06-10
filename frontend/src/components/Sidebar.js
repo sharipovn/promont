@@ -100,7 +100,7 @@ export default function Sidebar() {
                     fontSize: 'clamp(0.85rem, 1vw + 0.4rem, 0.9rem)',
                   }}>
                 <IoShieldCheckmarkOutline style={{ fontSize: 'clamp(1rem, 1vw + 0.5rem, 1.4rem)' }}/>
-                <span>Verify project (Tech Dir)</span>
+                <span>{returnTitle('menu.verify_tech')}</span>
               </NavLink>
             </li>
          )}

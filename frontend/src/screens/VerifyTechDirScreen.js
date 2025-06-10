@@ -50,7 +50,7 @@ export default function VerifyTechDirScreen() {
       })
       .catch((err) => {
         console.error('❌ Error fetching projects for tech dir:', err);
-        setMessage('❌ Failed to load projects for technical director verification.');
+        setMessage(`❌ ${returnTitle('tec_verify.load_error')}`);
         setTimeout(() => setMessage(null), 3000);
       });
   }, [axiosInstance, currentPage,filter]);

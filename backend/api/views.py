@@ -466,6 +466,7 @@ class ProjectFinancePartsUpdateAPIView(APIView):
     def put(self, request, project_code):
         parts_data = request.data  # expect list
         updated_parts = []
+        print('parts_data:',parts_data)
 
 
         try:
@@ -488,12 +489,12 @@ class ProjectFinancePartsUpdateAPIView(APIView):
             if part_data.get('fs_part_code'):
                 try:
                     part = ProjectFinancePart.objects.get(fs_part_code=part_data['fs_part_code'], project_code=project_code)
-                    serializer = ProjectFinancePartSerializer(part, data=part_data)
+                    serializer = ProjectFinancePartSerializer(part, data=part_data, context={'request': request})
                 except ProjectFinancePart.DoesNotExist:
                     continue
             else:
                 # Create new part
-                serializer = ProjectFinancePartSerializer(data=part_data)
+                serializer = ProjectFinancePartSerializer(data=part_data, context={'request': request})
 
             if serializer.is_valid():
                 updated_parts.append(serializer.save())
@@ -630,7 +631,7 @@ class TechDirVerifyAPIView(APIView):
                 {'error': 'Проект не найден'},  # Project not found
                 status=404
             )
-            # ✅ Attach GIP
+        # ✅ Attach GIP
         project.project_gip_id = gip_user_id
         project.save()
 
@@ -712,7 +713,18 @@ class TechDirRefuseAPIView(APIView):
                 {'error': 'Проект не найден'},  # Project not found
                 status=404
             )
+        
+        # ✅ Attach GIP
+        project.project_gip_id = None
+        project.save()
 
+        # ✅ Confirm all finance parts
+        parts = ProjectFinancePart.objects.filter(project_code=project, send_to_tech_dir=True)
+        parts.update(
+            tech_dir_confirm=False,
+            tech_dir_confirm_date=None
+        )
+        
         try:
             phase_type = PhaseType.objects.get(key='TECH_DIR_REFUSED')
         except PhaseType.DoesNotExist:

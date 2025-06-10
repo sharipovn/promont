@@ -117,9 +117,16 @@ class ProjectFinancePartSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProjectFinancePart
         fields = '__all__'
+        read_only_fields = ['create_user_id', 'create_date']  # Prevent overriding in update
         
     def get_financier_fio(self, obj):
         return getattr(obj.create_user_id, 'fio', None) if obj.create_user_id else None
+    
+    def create(self, validated_data):
+        request = self.context.get('request')
+        if request and hasattr(request, 'user'):
+            validated_data['create_user_id'] = request.user
+        return super().create(validated_data)
 
 
 class PartnerSerializer(serializers.ModelSerializer):

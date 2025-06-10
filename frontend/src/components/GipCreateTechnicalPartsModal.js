@@ -18,7 +18,7 @@ export default function GipCreateTechnicalPartsModal({ show, onHide, financialPa
     const { returnTitle } = useI18n();
   const navigate = useNavigate();
   const axiosInstance = useMemo(() => createAxiosInstance(navigate, setUser, setAccessToken), [navigate, setUser, setAccessToken]);
-
+  const [created, setCreated] = useState(false);
 
 
   const [parts, setParts] = useState([{ tch_part_code: null, tch_part_no: '', tch_part_name: '', tch_part_nach: null, tch_start_date: '', tch_finish_date: '', error: '' }]);
@@ -28,6 +28,18 @@ export default function GipCreateTechnicalPartsModal({ show, onHide, financialPa
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [isUpdate, setIsUpdate] = useState(false);
+
+
+    // [4] Reset when modal shows
+    useEffect(() => {
+      if (show) {
+        setCreated(false);
+        setSuccessMessage('');
+        setShowSuccessAlert(false);
+      }
+    }, [show]);
+
+
 
   useEffect(() => {
     axiosInstance.get('/users-with-capability/', { params: { capability: 'CAN_CREATE_WORK_ORDER' } })
@@ -77,6 +89,7 @@ export default function GipCreateTechnicalPartsModal({ show, onHide, financialPa
   const handleSubmit = async () => {
         if (submitting) return;
         setSubmitting(true);
+
         setSuccessMessage('');
         setShowSuccessAlert(false);
     const fsStart = new Date(financialPart.fs_start_date);
@@ -121,6 +134,8 @@ export default function GipCreateTechnicalPartsModal({ show, onHide, financialPa
       const url = isUpdate ? '/gip-projects/update-technical-parts/' : '/gip-projects/create-technical-parts/';
       await axiosInstance.post(url, payload);
       setSuccessMessage(`✅ ${returnTitle(isUpdate ? 'gip_form.parts_successfully_updated' : 'gip_form.parts_successfully_created')}`);
+      // [2] On success
+      setCreated(true);
       setShowSuccessAlert(true);
 
         // Wait for 2 full seconds (disable submit during this)
@@ -131,7 +146,7 @@ export default function GipCreateTechnicalPartsModal({ show, onHide, financialPa
         setSuccessMessage('');
         setShowSuccessAlert(false);
         setSubmitting(false);         // ✅ re-enable UI
-      }, 1200);
+      }, 500);
 
     } catch (err) {
       console.error(`❌ Error ${isUpdate ? 'updating' : 'creating'} tech parts:`, err);
@@ -250,7 +265,7 @@ export default function GipCreateTechnicalPartsModal({ show, onHide, financialPa
               variant="success"
               className="px-4 rounded"
               onClick={handleSubmit}
-              disabled={submitting}
+              disabled={submitting || created}
             >
                {submitting ? (
                   <>

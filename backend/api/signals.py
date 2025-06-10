@@ -16,5 +16,6 @@ def update_object_last_status(sender, instance, created, **kwargs):
             'latest_action': latest_action,
             'latest_phase_type': instance.phase_type,
             'updated_by': instance.performed_by,
+            'comment': instance.comment,  # ✅ moved here
         }
     )

@@ -8,6 +8,10 @@ import { useAuth } from '../context/AuthProvider';
 import { useNavigate } from 'react-router-dom';
 import Alert from './Alert';
 
+
+
+
+
 export default function FinancialPartsModal({ show, onHide, project, onCreated }) {
   const { returnTitle } = useI18n();
   const { setUser, setAccessToken } = useAuth();
@@ -21,6 +25,9 @@ export default function FinancialPartsModal({ show, onHide, project, onCreated }
   const [successMessage, setSuccessMessage] = useState('');
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  const [created, setCreated] = useState(false);
+
 
   useEffect(() => {
     if (show) {
@@ -55,6 +62,7 @@ export default function FinancialPartsModal({ show, onHide, project, onCreated }
   };
 
   const handleSubmit = async () => {
+    if (submitting) return; // ✅ Prevent double submission immediately
     setSubmitting(true);
     setWarning('');
     setSuccessMessage('');
@@ -101,6 +109,7 @@ export default function FinancialPartsModal({ show, onHide, project, onCreated }
     try {
       const res = await axiosInstance.post('/projects-financial-parts/create/', payload);
       setSuccessMessage('✅ Financial parts created successfully.');
+      setCreated(true); // 🔒 Lock button after success
       setShowSuccessAlert(true);
       setTimeout(() => {
         setSuccessMessage('');
@@ -181,9 +190,17 @@ export default function FinancialPartsModal({ show, onHide, project, onCreated }
             <Button variant="outline-secondary" onClick={onHide} className="px-4 rounded" disabled={submitting}>
               {returnTitle('app.cancel')}
             </Button>
-            <Button variant="success" className="px-4 rounded" onClick={handleSubmit} disabled={submitting}>
-              {returnTitle('app.create')}
+            <Button
+              variant="success"
+              className="px-4 rounded"
+              onClick={handleSubmit}
+              disabled={submitting || created}
+            >
+              {submitting
+                ? returnTitle('app.creating')
+                : returnTitle('app.create')}
             </Button>
+
           </div>
         </Modal.Body>
       </Modal>

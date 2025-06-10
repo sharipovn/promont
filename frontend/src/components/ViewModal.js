@@ -7,9 +7,11 @@ import { useAuth } from '../context/AuthProvider';
 import { createAxiosInstance } from '../utils/createAxiosInstance';
 import { useNavigate } from 'react-router-dom';
 import { useI18n } from '../context/I18nProvider';
+import {CONSTANTS} from '../constants/app_constants'
 import './ViewModal.css';
 
 export default function ViewModal({ show, onHide, project, onVerified }) {
+  console.log('project:',project)
 
   const { returnTitle } = useI18n()
 
@@ -32,13 +34,15 @@ export default function ViewModal({ show, onHide, project, onVerified }) {
 
 
   useEffect(() => {
-  if (show && project?.current_phase?.key === 'TECH_DIR_REFUSED') {
-    setComment(project.current_phase.comment || '');
-    onVerified?.(); // 🔥 optional refresh or callback
+  if (show && project?.last_status?.latest_action === CONSTANTS.TECH_DIR_REFUSED) {
+    setComment(project.last_status.comment || '');
+    setShowRefuse(true); // 🔥 Auto-expand refusal section
+    setSelectedGip(null)
   } else {
     setComment('');
+    setShowRefuse(false); // 🧹 Reset on modal close or other status
   }
-}, [show, project,onVerified]);
+}, [show, project]);
 
 
 

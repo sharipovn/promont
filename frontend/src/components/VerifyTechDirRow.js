@@ -34,14 +34,14 @@ export default function VerifyTechDirRow({ proj,onVerified}) {
         <div className="d-flex flex-row align-items-center gap-3">
           <span
             className={`fw-semibold d-flex align-items-center gap-2 ${
-              proj.current_phase?.key === 'TECH_DIR_REFUSED'
+              proj.last_status?.latest_action === 'TECH_DIR_REFUSED'
                 ? 'financial-action-btn send-btn'
                 : isVerified
                 ? 'text-success financial-action-btn send-btn'
                 : 'text-warning financial-action-btn send-btn'
             }`}
           >
-            {proj.current_phase?.key === 'TECH_DIR_REFUSED' ? (
+            {proj.last_status?.latest_action === 'TECH_DIR_REFUSED' ? (
               <>
                 <VscSyncIgnored size={14} /> {returnTitle('verify_tech_fin.refused').toUpperCase()}
               </>

@@ -14,6 +14,8 @@ from datetime import datetime,date
 from decimal import Decimal
 from django.shortcuts import get_object_or_404
 from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.exceptions import APIException
+from django.db import IntegrityError
 import json
 
 from api.models import StaffUser,Project,ProjectFinancePart,Partner,Translation,Department,PhaseType, ProjectPhase,ProjectGipPart,ActionLog,WorkOrder,WorkOrderFile
@@ -97,7 +99,7 @@ class ProjectCreateAPIView(generics.CreateAPIView):
     
     @transaction.atomic
     def perform_create(self, serializer):
-        try:
+        try:    
             project = serializer.save(create_user=self.request.user)
             print('project:',project)
 
@@ -120,9 +122,7 @@ class ProjectCreateAPIView(generics.CreateAPIView):
                 notify_to=project.financier
             )
         except Exception as e:
-            print('❌ Ошибка при создании ActionLog:', e)
-            raise
-        
+            print(e)
         
         
         
@@ -268,37 +268,52 @@ class ProjectListCreateView(ListCreateAPIView):
             queryset = queryset.filter(Q(project_name__icontains=search))
         return queryset
 
+
     @transaction.atomic
     def perform_create(self, serializer):
-        start_date = serializer.validated_data.get('start_date')
-        end_date = serializer.validated_data.get('end_date')
+        try:
+            start_date = serializer.validated_data.get('start_date')
+            end_date = serializer.validated_data.get('end_date')
 
-        if start_date >= end_date:
-            raise ValidationError({'end_date': 'Дата окончания должна быть позже даты начала.'})
-        if date.today() > end_date:
-            raise ValidationError({'end_date': 'Дата окончания должна быть сегодня или в будущем.'})
+            if start_date >= end_date:
+                return Response({
+                    "key": "create_proj.end_date_before_start_date",
+                    "detail": "Дата окончания должна быть позже даты начала."
+                })
 
-        project = serializer.save(create_user=self.request.user)
+            if date.today() > end_date:
+                return Response({
+                    "key": "create_proj.end_date_before_today",
+                    "detail": "Дата окончания должна быть сегодня или в будущем."
+                })
 
-        created_phase = PhaseType.objects.get(key='CREATED')
-        sent_phase = PhaseType.objects.get(key='SENT_TO_FINANCIER')
+            project = serializer.save(create_user=self.request.user)
 
-        ActionLog.objects.create(
-            full_id=project.full_id,
-            path_type=project.path_type,
-            phase_type=created_phase,
-            comment="Проект создан.",
-            performed_by=self.request.user,
-        )
+            created_phase = PhaseType.objects.get(key='CREATED')
+            sent_phase = PhaseType.objects.get(key='SENT_TO_FINANCIER')
 
-        ActionLog.objects.create(
-            full_id=project.full_id,
-            path_type=project.path_type,
-            phase_type=sent_phase,
-            comment="Проект отправлен финансисту.",
-            performed_by=self.request.user,
-            notify_to=project.financier
-        )
+            ActionLog.objects.create(
+                full_id=project.full_id,
+                path_type=project.path_type,
+                phase_type=created_phase,
+                comment="Проект создан.",
+                performed_by=self.request.user,
+            )
+
+            ActionLog.objects.create(
+                full_id=project.full_id,
+                path_type=project.path_type,
+                phase_type=sent_phase,
+                comment="Проект отправлен финансисту.",
+                performed_by=self.request.user,
+                notify_to=project.financier
+            )
+
+        except Exception as e:
+            return Response({
+                "key": "create_proj.unknown_error",
+                "detail": str(e)
+            })
 
 
 
@@ -396,12 +411,12 @@ class CreateFinancialPartsView(APIView):
         user = request.user
 
         if not project_code or not parts_data:
-            return Response({'error': 'Код проекта и список частей обязательны'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"key": "create_fpart.missing_data", "detail": "Код проекта и список частей обязательны"}, status=400)
 
         try:
             project = Project.objects.get(project_code=project_code)
         except Project.DoesNotExist:
-            return Response({'error': 'Проект не найден'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"key": "create_fpart.project_not_found", "detail": "Проект не найден"}, status=404)
 
         serialized_parts = []
         errors = []
@@ -418,9 +433,16 @@ class CreateFinancialPartsView(APIView):
                 errors.append({f"{idx + 1}": serializer.errors})
 
         if errors:
-            return Response({'errors': errors}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"key": "create_fpart.validation_error", "detail": errors}, status=400)
         
-        created = [s.save() for s in serialized_parts]
+        try:
+            created = [s.save() for s in serialized_parts]
+            
+        except IntegrityError:
+            return Response({
+                "key": "create_fpart.duplicate_fs_part_name_or_fs_part_no_for_the_same_project",
+                "detail": "Duplicate fs_part_name or fs_part_no for the same project."
+            }, status=400)
         
         try:
             phase_type = PhaseType.objects.get(key='FIN_PARTS_CREATED')
@@ -433,12 +455,12 @@ class CreateFinancialPartsView(APIView):
                 comment="Финансовые части успешно созданы"  # Financial parts created
             )
         except PhaseType.DoesNotExist:
-            return Response({'error': "Тип этапа 'FIN_PARTS_CREATED' не найден"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)  # PhaseType not found
+            return Response({"detail": "Тип этапа 'FIN_PARTS_CREATED' не найден"}, status=500)
         except Exception as e:
-            print(f"❌ Ошибка при создании ActionLog: {e}")  # Error creating ActionLog
+            # print(f"❌ Ошибка при создании ActionLog: {e}")  # Error creating ActionLog
+            return Response({"detail":e}, status=500)
 
-        return Response({'created': [ProjectFinancePartCreateSerializer(p).data for p in created]},
-                        status=status.HTTP_201_CREATED)
+        return Response({'created': [ProjectFinancePartCreateSerializer(p).data for p in created]}, status=201)
         
         
         

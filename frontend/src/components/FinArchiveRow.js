@@ -11,8 +11,14 @@ import { useNavigate } from 'react-router-dom';
 import { FaPlusCircle, FaEdit, FaPaperPlane } from 'react-icons/fa';
 import { ImCheckboxChecked } from "react-icons/im";
 import { BsFillSendCheckFill } from "react-icons/bs";
+import { useI18n } from '../context/I18nProvider';
+
+
+
+
 
 export default function FinArchiveRow({ proj, onCreated }) {
+  const { returnTitle } = useI18n();
   const { setUser, setAccessToken } = useAuth();
   const navigate = useNavigate();
   const axiosInstance = useMemo(() => createAxiosInstance(navigate, setUser, setAccessToken), [navigate, setUser, setAccessToken]);
@@ -62,7 +68,7 @@ export default function FinArchiveRow({ proj, onCreated }) {
             </h6>
           </div>
           <div className="small text-light">
-            <strong>Created by:</strong> {proj.create_user_fio}{' '}
+            <strong>{returnTitle('create_fpart.created_by')}:</strong> {proj.create_user_fio}{' '}
             <span className="normal-style">({formatDateTime(proj.create_date)})</span>
           </div>
         </div>
@@ -76,31 +82,31 @@ export default function FinArchiveRow({ proj, onCreated }) {
 
           {hasFinancialParts ? (
             <>
-              <button className="financial-action-btn edit-btn" onClick={handleClick}>
-                <FaEdit size={14} /> Edit Parts
+              <button className="financial-action-btn edit-btn   rounded" onClick={handleClick}>
+                <FaEdit size={14} /> {returnTitle('create_fpart.edit_parts')}
               </button>
 
               <button
-                className="financial-action-btn send-btn"
+                className="financial-action-btn send-btn  rounded"
                 onClick={handleSendToTechDir}
                 disabled={sended || isSending}
               >
                 {sended ? (
                   <>
-                    <BsFillSendCheckFill size={14} /> <ImCheckboxChecked style={{color:'yellow'}}/> SENDED TO TECH DIR
+                    <BsFillSendCheckFill size={14} /> <ImCheckboxChecked style={{color:'yellow'}}/> {returnTitle('create_fpart.sent_to_tech_dir')}
                   </>
                 ) : isSending ? (
                   'Sending...'
                 ) : (
                   <>
-                    <FaPaperPlane size={14} /> Send to Tech Dir
+                    <FaPaperPlane size={14} /> {returnTitle('create_fpart.send_to_tech_dir')}
                   </>
                 )}
               </button>
             </>
           ) : (
-            <button className="financial-action-btn create-btn" onClick={handleClick}>
-              <FaPlusCircle size={14} /> Make Financial Parts
+            <button className="financial-action-btn create-btn rounded" onClick={handleClick}>
+              <FaPlusCircle size={14} /> {returnTitle('create_fpart.make_financial_parts')}
             </button>
           )}
         </div>

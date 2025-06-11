@@ -12,6 +12,8 @@ import Alert from './Alert';
 
 
 
+
+
 export default function FinancialPartsModal({ show, onHide, project, onCreated }) {
   const { returnTitle } = useI18n();
   const { setUser, setAccessToken } = useAuth();
@@ -119,8 +121,11 @@ export default function FinancialPartsModal({ show, onHide, project, onCreated }
         onCreated?.();
       }, 2000);
     } catch (err) {
-      console.error('❌ Error creating parts:', err);
-      setWarning('❌ Failed to create parts. Please try again.');
+        const d = err?.response?.data || {};
+        const msg = d.key
+          ? `${returnTitle(d.key)}`
+          : Object.values(d).flat().join(', ') || returnTitle('create_fpart.creation_failed');
+        setWarning(`❌ ${msg}`);
     } finally {
       setSubmitting(false);
     }
@@ -191,15 +196,15 @@ export default function FinancialPartsModal({ show, onHide, project, onCreated }
               {returnTitle('app.cancel')}
             </Button>
             <Button
-              variant="success"
-              className="px-4 rounded"
-              onClick={handleSubmit}
-              disabled={submitting || created}
-            >
-              {submitting
-                ? returnTitle('app.creating')
-                : returnTitle('app.create')}
-            </Button>
+            variant="success"
+            className="px-4 rounded"
+            onClick={handleSubmit}
+            disabled={submitting || created}
+          >
+            {submitting
+              ? returnTitle('app.creating')
+              : returnTitle('app.create')}
+          </Button>
 
           </div>
         </Modal.Body>

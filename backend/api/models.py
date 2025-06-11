@@ -245,7 +245,10 @@ class ProjectFinancePart(models.Model):
         db_table = 'pro_fin_part'
         verbose_name = "Project Finance Part"
         verbose_name_plural = "Project Finance Parts"
-        unique_together = ('project_code', 'fs_part_name')  # ✅ Enforce uniqueness
+        unique_together = [
+            ('project_code', 'fs_part_no'),
+            ('project_code', 'fs_part_name'),
+        ]
 
     def __str__(self):
         return f"{self.fs_part_code} - {self.fs_part_name}"

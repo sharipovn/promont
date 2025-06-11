@@ -126,10 +126,13 @@ export default function CreateProjectModal({ show, onHide, onCreated }) {
         setAlertMsg('');
         setSubmitting(false);
       }, 1200);
-    } catch (err) {
-      setAlertMsg('❌ ' + returnTitle('create_proj.create_project_failed'));
-      setSubmitting(false);
-    }
+   } catch (err) {
+        const d = err?.response?.data;
+        const msg = d?.key ? returnTitle(d.key) : Object.values(d || {}).flat().join(', ');
+        console.log('e:',err)
+        setAlertMsg('❌ ' + msg);
+        setSubmitting(false);
+      }
   };
 
   const customSelectStyles = {

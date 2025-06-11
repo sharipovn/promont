@@ -127,9 +127,16 @@ export default function UpdateProjectModal({ show, onHide, project, onUpdated })
         setSubmitting(false);
       }, 1200);
     } catch (err) {
-      setAlertMsg('❌ ' + returnTitle('create_proj.update_project_failed'));
-      setSubmitting(false);
-    }
+        const d = err?.response?.data;
+        const key =
+          d?.detail?.key ||          // optional structured error
+          d?.detail ||               // generic DRF exception
+          Object.values(d || {})[0]?.[0] || // first validation error message (e.g., project_name[0])
+          'create_proj.update_project_failed';
+
+        setAlertMsg('❌ ' + returnTitle(key));
+        setSubmitting(false);
+      }
   };
 
   const customSelectStyles = {

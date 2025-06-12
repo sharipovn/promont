@@ -29,7 +29,7 @@ export default function SettingsDropdown() {
 
   const langOptions = [
     { code: 'en', label: 'Eng' },
-    { code: 'ru', label: 'Rus' },
+    { code: 'ru', label: 'Рус' },
     { code: 'uz', label: "O'zb" }
   ];
 

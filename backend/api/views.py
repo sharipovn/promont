@@ -31,13 +31,14 @@ from .serializers import (ProjectSerializer,
                           ProjectGipPartSerializer,
                           ActionLogSerializer,
                           WorkOrderSerializer,
-                          CompleteWorkOrderSerializer)
+                          CompleteWorkOrderSerializer,
+                          ActionLogNotificationSerializer)
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateAPIView,ListAPIView,UpdateAPIView
 from api.serializers import StaffUserTokenSerializer
 from django.utils.dateparse import parse_date
 from django.db.models import Count, Q,Subquery,OuterRef,F
 from django.db import transaction
-from .pagination import ProjectsPagination,ProjectsFiancierConfirmPagination,PartnersPagination,CompleteWorkOrderPagination,TranslationsPagination,GipConfirmPagination,ProjectListCreatePagination,ProjectGipPartPagination
+from .pagination import ProjectsPagination,ProjectsFiancierConfirmPagination,PartnersPagination,CompleteWorkOrderPagination,TranslationsPagination,GipConfirmPagination,ProjectListCreatePagination,ProjectGipPartPagination,NotificationsPagination
 from django.utils import timezone
 from rest_framework.views import APIView
 from rest_framework.exceptions import ValidationError
@@ -1615,3 +1616,80 @@ class CompleteOrUpdateWorkOrderView(APIView):
 
         return Response({'success': True}, status=status.HTTP_200_OK)
 
+
+
+
+#notifications
+class MyNotificationLogsView(ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = ActionLogNotificationSerializer
+    pagination_class = NotificationsPagination
+
+    def get_queryset(self):
+        user = self.request.user
+        identified_param = self.request.query_params.get('identified')
+
+        queryset = ActionLog.objects.filter(notify_to=user).order_by('-performed_at')
+
+        # Optional: apply filtering based on 'identified' query param
+        if identified_param is not None:
+            if identified_param.lower() == 'true':
+                queryset = queryset.filter(identified=True)
+            elif identified_param.lower() == 'false':
+                queryset = queryset.filter(identified=False)
+
+        # Filter out logs with missing related objects
+        valid_logs = []
+        for log in queryset:
+            try:
+                parts = log.full_id.strip('/').split('/')
+                if log.path_type == "PROJECT" and Project.objects.filter(project_code=int(parts[0])).exists():
+                    valid_logs.append(log)
+                elif log.path_type == "FIN_PART" and ProjectFinancePart.objects.filter(fs_part_code=int(parts[1])).exists():
+                    valid_logs.append(log)
+                elif log.path_type == "TECH_PART" and ProjectGipPart.objects.filter(tch_part_code=int(parts[2])).exists():
+                    valid_logs.append(log)
+                elif log.path_type == "WORK_ORDER" and WorkOrder.objects.filter(wo_id=int(parts[3])).exists():
+                    valid_logs.append(log)
+            except Exception:
+                continue
+
+        return valid_logs
+
+
+class MarkActionLogIdentifiedView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, action_id):
+        log = get_object_or_404(ActionLog, pk=action_id)
+        log.identified = True
+        log.identified_time = timezone.now()
+        log.save()
+        return Response({'success': True})
+
+
+
+class NotificationCountView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        queryset = ActionLog.objects.filter(notify_to=user,identified=False)
+                # Filter out logs with missing related objects
+        valid_logs = []
+        for log in queryset:
+            try:
+                parts = log.full_id.strip('/').split('/')
+                if log.path_type == "PROJECT" and Project.objects.filter(project_code=int(parts[0])).exists():
+                    valid_logs.append(log)
+                elif log.path_type == "FIN_PART" and ProjectFinancePart.objects.filter(fs_part_code=int(parts[1])).exists():
+                    valid_logs.append(log)
+                elif log.path_type == "TECH_PART" and ProjectGipPart.objects.filter(tch_part_code=int(parts[2])).exists():
+                    valid_logs.append(log)
+                elif log.path_type == "WORK_ORDER" and WorkOrder.objects.filter(wo_id=int(parts[3])).exists():
+                    valid_logs.append(log)
+            except Exception:
+                continue
+        count=len(valid_logs)
+        print('count:',count)
+        return Response({"count": count})

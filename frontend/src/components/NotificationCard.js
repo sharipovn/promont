@@ -1,28 +1,54 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { FaBell } from 'react-icons/fa';
+import { FaBell, FaClock, FaHistory } from 'react-icons/fa';
 import { useAuth } from '../context/AuthProvider';
 import { useNavigate } from 'react-router-dom';
-import Alert from './Alert'; // adjust path if needed
+import Notification from './Notification';
+import TinyPagination from './TinyPagination';
 import { createAxiosInstance } from '../utils/createAxiosInstance';
-import { FaProjectDiagram } from "react-icons/fa";
-import { FaCheckCircle } from "react-icons/fa";
-import { FaHourglassHalf } from 'react-icons/fa';
-
-
-
+import { useI18n } from '../context/I18nProvider';
+import { MdCircleNotifications } from "react-icons/md";
 
 export default function NotificationCard() {
+  const [loading, setLoading] = useState(false);
   const [show, setShow] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [activeTab, setActiveTab] = useState('new');
+  const [tabFade, setTabFade] = useState(true);
   const ref = useRef();
 
-  const { setUser, setAccessToken,hasCapability  } = useAuth();
+  const { setUser, setAccessToken } = useAuth();
+  const { returnTitle } = useI18n();
   const navigate = useNavigate();
 
-  const axiosInstance = useMemo(() => {
-    return createAxiosInstance(navigate, setUser, setAccessToken);
-  }, [navigate, setUser, setAccessToken]);
+  const axiosInstance = useMemo(
+    () => createAxiosInstance(navigate, setUser, setAccessToken),
+    [navigate, setUser, setAccessToken]
+  );
+
+  const fetchNotifications = (page = 1) => {
+    setLoading(true);
+    axiosInstance
+      .get('/action-logs/my-notifications/', {
+        params: {
+          page,
+          identified: activeTab === 'history' ? 'true' : 'false',
+        },
+      })
+      .then((res) => {
+        setNotifications(res.data.results || []);
+        setTotalPages(Math.ceil(res.data.count / 10));
+        setError(null);
+      })
+      .catch((err) => {
+        console.error('❌ Failed to load notifications:', err);
+        setError('❌ ' + returnTitle('notifications.load_failed'));
+        setNotifications([]);
+      })
+      .finally(() => setLoading(false));
+  };
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -30,141 +56,132 @@ export default function NotificationCard() {
         setShow(false);
       }
     };
-    window.addEventListener("mousedown", handleClickOutside);
-    return () => window.removeEventListener("mousedown", handleClickOutside);
+    window.addEventListener('mousedown', handleClickOutside);
+    return () => window.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   useEffect(() => {
-    if (show && hasCapability('CAN_CONFIRM_PROJECT_FINANCIER')) {
-      axiosInstance
-        .get("/projects-notifications/financier/")
-        .then((res) => {
-          setNotifications(res.data);
-          setError(null);
-        })
-        .catch((err) => {
-          console.error("❌ Failed to load notifications:", err);
-          setError("❌ Failed to load notifications."+err);
-          setNotifications([]);
-        });
+    if (show) {
+      fetchNotifications(currentPage);
     }
-  }, [show, axiosInstance]);
+  }, [show, currentPage, activeTab]);
+
+  const handleTabChange = (tabKey) => {
+    setTabFade(false);
+    setTimeout(() => {
+      setActiveTab(tabKey);
+      setCurrentPage(1);
+      setTabFade(true);
+    }, 150);
+  };
 
   return (
     <div className="position-relative" ref={ref}>
-      <FaBell
-        size={18}
-        style={{ cursor: "pointer" }}
-        onClick={() => setShow(!show)}
-      />
+      <FaBell size={18} style={{ cursor: 'pointer' }} onClick={() => setShow(!show)} />
 
-{show && (
-  <div
-    className="position-absolute end-0 mt-2 p-3 shadow rounded"
-    style={{
-      width: "400px",
-      zIndex: 999,
-      background: "rgba(255, 255, 255, 0.04)",
-      backdropFilter: "blur(10px)",
-      WebkitBackdropFilter: "blur(10px)",
-      border: "1px solid rgba(255, 255, 255, 0.1)",
-      color: "#f1f1f1"
-    }}
-  >
-    <h6 className="mb-3">Notifications</h6>
-
-    {error && <Alert type="danger" message={error} />}
-
-    {!error && notifications.length === 0 && (
+      {show && (
         <div
-          className="d-flex align-items-center gap-3 small rounded-4 px-3 py-2"
+          className="position-absolute end-0 mt-2 p-3 shadow rounded"
           style={{
-            background: 'linear-gradient(135deg, rgba(255,255,255,0.03), rgba(0,0,0,0.2))',
-            border: '1px dashed rgba(255,255,255,0.12)',
-            color: '#dee2e6',
-            fontStyle: 'italic',
-            boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
-            transition: 'all 0.3s ease',
+            width: '17vw',
+            zIndex: 999,
+            background: '#004052',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            color: '#f1f1f1',
           }}
         >
-          <FaCheckCircle className="fs-5 text-warning" />
-          <span className="text-light">
-            Sizda hozircha <strong>yangi bildirishnoma yo‘q</strong>
-          </span>
+          {/* Title */}
+          <div className="d-flex align-items-center gap-2 mb-3">
+            <MdCircleNotifications size={'1.5rem'} />
+            <h4 className="mb-0">{returnTitle('notifications.title')}</h4>
+          </div>
+
+          {/* Tabs */}
+          <div className="d-flex mb-3 border-0 shadow rounded-1 overflow-hidden" style={{ backgroundColor: '#222b3a' }}>
+            {['new', 'history'].map((tabKey, idx) => {
+              const isActive = activeTab === tabKey;
+              const Icon = tabKey === 'new' ? FaClock : FaHistory;
+
+              return (
+                <button
+                  key={tabKey}
+                  onClick={() => handleTabChange(tabKey)}
+                  className={`w-50 py-2 fw-semibold border-0 text-capitalize d-flex align-items-center justify-content-center gap-2 ${
+                    isActive ? 'bg-success text-white' : 'bg-transparent text-light'
+                  }`}
+                  style={{
+                    fontSize: '1rem',
+                    letterSpacing: '0.03em',
+                    borderRight: idx === 0 ? '1px solid rgba(255,255,255,0.1)' : 'none',
+                    transition: 'all 0.3s ease',
+                    opacity: isActive ? 1 : 0.85,
+                  }}
+                >
+                  <Icon style={{ transition: 'transform 0.3s ease', transform: isActive ? 'scale(1.15)' : 'scale(1)' }} />
+                  {returnTitle(`notifications.${tabKey}`)}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Loading */}
+          {loading ? (
+            <div className="d-flex justify-content-center align-items-center py-3 flex-column">
+              <div className="spinner-border text-info" style={{ width: '3rem', height: '3rem' }} role="status">
+                
+              </div>
+              <span className="text-light mt-2">{returnTitle('app.loading')}...</span>
+            </div>
+          ) : (
+            <>
+              {/* Error */}
+              {error && <div className="text-danger">{error}</div>}
+
+              {/* Empty State */}
+              {!error && notifications.length === 0 && (
+                <div
+                  className="d-flex align-items-center gap-2 small rounded-4 px-3 py-2 text-muted"
+                  style={{
+                    background: 'rgba(255,255,255,0.03)',
+                    border: '1px dashed rgba(255,255,255,0.2)',
+                    fontStyle: 'italic',
+                  }}
+                >
+                  <FaClock className="fs-5 text-warning" />
+                  <span>{returnTitle('notifications.no_new')}</span>
+                </div>
+              )}
+
+              {/* Notification list */}
+              <div
+                style={{
+                  maxHeight: '50vh',
+                  overflowY: 'auto',
+                  opacity: tabFade ? 1 : 0,
+                  transform: tabFade ? 'translateY(0)' : 'translateY(5px)',
+                  transition: 'opacity 0.3s ease, transform 0.3s ease',
+                }}
+                className="notification-card-scrollbar pe-1"
+              >
+                {notifications.map((n) => (
+                  <Notification
+                    key={n.full_id + n.performed_at}
+                    log={n}
+                    hideAction={activeTab === 'history'}
+                    onIdentified={() => fetchNotifications(currentPage)}
+                  />
+                ))}
+              </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <TinyPagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+              )}
+            </>
+          )}
         </div>
       )}
-
-
-<div style={{ maxHeight: '300px', overflowY: 'auto' }} className="notification-card-scrollbar pe-1">
-{notifications.map((n, i) => {
-  // console.log('notifications:',notifications)
-  const createdAt = new Date(n.create_date);
-  const daysOld = Math.floor((new Date() - createdAt) / (1000 * 60 * 60 * 24));
-  return (
-    <div
-      key={i}
-      className="mb-2 p-3 rounded"
-      style={{
-        background: "linear-gradient(145deg, #1e2430, #151a26)",
-        border: "1px solid rgba(255,255,255,0.08)",
-        cursor: "pointer",
-        transition: "all 0.3s ease",
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.background = "#222b3a";
-        e.currentTarget.style.transform = "translateY(-2px)";
-        e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.3)";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.background = "linear-gradient(145deg, #1e2430, #151a26)";
-        e.currentTarget.style.transform = "translateY(0)";
-        e.currentTarget.style.boxShadow = "none";
-      }}
-    >
-      <div className="d-flex align-items-center gap-2 mb-1">
-        <FaProjectDiagram className="text-info" />
-        <div className="fw-semibold text-info">{n.project_name}</div>
-        <span className="badge bg-success-subtle text-success ms-auto">New Project</span>
-      </div>
-      <div className="text-secondary mb-2" style={{ fontSize: '0.85rem', fontWeight: 'normal',fontFamily:'Exo2Variable' }}>
-        {n.start_date} → {n.end_date}
-      </div>
-      <div
-        title={`Created by: ${n.create_user_fio}`}
-        className="small mb-1"
-        style={{
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          fontWeight: 500,
-          color: '#adb5bd'  // 🔹 soft muted gray-blue
-        }}
-      >
-        <span style={{ color: '#f8f9fa' }}>Created by:</span>{' '}
-        <span style={{ color: '#ffffff' }}>{n.create_user_fio}</span>
-      </div>
-
-      <div className="d-flex align-items-center justify-content-between">
-      <span className="text-warning small d-flex align-items-center gap-1">
-          <FaHourglassHalf className="text-warning" />
-          Tasdiqlanmagan (siz tomonidan)
-        </span>
-
-        <span
-          className="badge rounded-pill bg-light text-dark-emphasis"
-          style={{ fontSize: '0.75rem' }}
-        >
-          {daysOld} days ago
-        </span>
-      </div>
-    </div>
-  );
-})}
-</div>
-
-  </div>
-)}
-
     </div>
   );
 }

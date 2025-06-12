@@ -1,16 +1,33 @@
-import React from 'react';
+import React,{useState,useEffect,useMemo} from 'react';
 import { FaSearch, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import NotificationCard from './NotificationCard'; // 👈 Qo‘shing
 import { useAuth } from '../context/AuthProvider';
 import SettingsDropdown from './SettingsDropdown'; // joyini to‘g‘rilang
 import { useI18n } from '../context/I18nProvider';
+import { createAxiosInstance } from '../utils/createAxiosInstance';
+import { useNavigate } from 'react-router-dom';
 
 
 export default function Topbar({ sidebarVisible, toggleSidebar,searchQuery, setSearchQuery }) {
 
+  const { user,setUser, setAccessToken } = useAuth();
+  const [unreadCount, setUnreadCount] = useState(0);
   const { returnTitle } = useI18n();
-  const { user } = useAuth(); // 👈 access user info here
-  console.log('user:',user)
+  const navigate = useNavigate();
+
+  const axiosInstance = useMemo(
+    () => createAxiosInstance(navigate, setUser, setAccessToken),
+    [navigate, setUser, setAccessToken]
+  );
+  
+  
+  useEffect(() => {
+    axiosInstance.get('/action-logs/unread-count/')
+      .then(res => setUnreadCount(res.data.count || 0))
+      .catch(() => setUnreadCount(0));
+    }, []);
+
+
   return (
     <div className="d-flex justify-content-between align-items-center px-3 py-2 mt-1 border-0" style={{ color: 'white',minHeight:'6vh' }}>
       
@@ -50,7 +67,17 @@ export default function Topbar({ sidebarVisible, toggleSidebar,searchQuery, setS
           <strong className="text-white">{user?.fio}</strong>
           <small className="text-muted text-white-50 fs-8" style={{ fontSize: '0.7rem' }}>{user?.position}</small>
         </div>
-        <NotificationCard />
+            <div className="position-relative">
+            <NotificationCard />
+            {unreadCount > 0 && (
+              <span
+                className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                style={{ fontSize: '0.6rem' }}
+              >
+                {unreadCount}
+              </span>
+            )}
+          </div>
         <SettingsDropdown />
       </div>
 

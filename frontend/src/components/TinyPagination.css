@@ -1,0 +1,39 @@
+/* TinyPagination.css */
+.tiny-pagination {
+  background: transparent;
+  border: none;
+  gap: 6px;
+}
+
+.tiny-pagination .page-item .page-link {
+  background-color: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #cfd8dc;
+  transition: all 0.3s ease;
+  padding: 3px 10px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 6px;
+}
+
+.tiny-pagination .page-item .page-link:hover {
+  background-color: rgba(0, 183, 255, 0.1);
+  color: #00bfff;
+  border-color: rgba(0, 183, 255, 0.3);
+  box-shadow: 0 0 6px rgba(0, 183, 255, 0.3);
+}
+
+.tiny-pagination .page-item.active .page-link {
+  background-color: #004c78;
+  color: #ffffff;
+  font-weight: 600;
+  border-color: rgba(0, 183, 255, 0.4);
+  box-shadow: 0 0 6px rgba(0, 183, 255, 0.5);
+}
+
+.tiny-pagination .page-item.disabled .page-link {
+  color: #777;
+  background-color: transparent;
+  border-color: rgba(255, 255, 255, 0.05);
+  cursor: not-allowed;
+}

@@ -1,7 +1,7 @@
 # api/serializers.py
 
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from api.models import StaffUser,Project,ProjectFinancePart,Partner,Translation,Department,ProjectGipPart,ObjectLastStatus,ActionLog,WorkOrder,WorkOrderFile
+from api.models import StaffUser,Project,ProjectFinancePart,Partner,Translation,Department,ProjectGipPart,ObjectLastStatus,ActionLog,WorkOrder,WorkOrderFile,PhaseType
 from rest_framework import serializers
 
 
@@ -358,4 +358,55 @@ class CompleteWorkOrderSerializer(serializers.ModelSerializer):
                 "last_updated": status.last_updated
             }
         except ObjectLastStatus.DoesNotExist:
+            return None
+
+
+class PhaseTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PhaseType
+        fields = ['key', 'name', 'description', 'is_refusal']
+
+
+
+class ActionLogNotificationSerializer(serializers.ModelSerializer):
+    performed_by_fio = serializers.CharField(source='performed_by.fio', read_only=True)
+    object_data = serializers.SerializerMethodField()
+    phase_type = PhaseTypeSerializer(read_only=True)  # nested serializer here
+
+    class Meta:
+        model = ActionLog
+        fields = [
+            'action_id',
+            'full_id',
+            'path_type',
+            'phase_type',
+            'comment',
+            'performed_at',
+            'performed_by_fio',
+            'object_data',
+        ]
+
+    def get_object_data(self, obj):
+        try:
+            parts = obj.full_id.strip('/').split('/')
+            if obj.path_type == "PROJECT":
+                project_code = int(parts[0])
+                project = Project.objects.get(project_code=project_code)
+                return {"name": project.project_name}
+
+            elif obj.path_type == "FIN_PART":
+                project_code, fs_part_code = map(int, parts[:2])
+                part = ProjectFinancePart.objects.get(fs_part_code=fs_part_code)
+                return {"name": part.fs_part_name}
+
+            elif obj.path_type == "TECH_PART":
+                project_code, fs_part_code, tch_part_code = map(int, parts[:3])
+                tech = ProjectGipPart.objects.get(tch_part_code=tch_part_code)
+                return {"name": tech.tch_part_name}
+
+            elif obj.path_type == "WORK_ORDER":
+                project_code, fs_part_code, tch_part_code, wo_id = map(int, parts[:4])
+                wo = WorkOrder.objects.get(wo_id=wo_id)
+                return {"name": wo.wo_name}
+        except Exception as e:
             return None

@@ -154,7 +154,7 @@ export default function ProjectCard({ proj }) {
             className="d-flex align-items-center gap-2 text-warning"
             style={{ whiteSpace: 'nowrap' }}
           >
-            <FaCoins size="1rem" />
+            <FaCoins size="1rem" /><span className='text-light fw-semibold'>{returnTitle('project_card.allocated_budget')}</span>
           </span>
 
           <span
@@ -179,7 +179,7 @@ export default function ProjectCard({ proj }) {
           style={{ minWidth: 0 }}
         >
           <span className="d-flex align-items-center gap-2 text-light">
-            <FaBusinessTime size="1rem" />
+            <FaBusinessTime size="1rem" /><span className='text-light fw-semibold'>{returnTitle('project_card.given_period')}</span>
           </span>
           <HoverText>{proj.start_date} — {proj.end_date}</HoverText>
         </div>
@@ -244,8 +244,8 @@ export default function ProjectCard({ proj }) {
       </div>
 
       {/* Phases */}
-      <div>
-        <ProjectStatusLine currentPhaseIndex={4} />
+      <div className='d-flex justify-content-center align-items-center flex-row' style={{ width: '100%' }}>
+        <ProjectStatusLine project={proj} />
       </div>
       {/* Status */}
       <div className="d-flex align-items-center justify-content-between mt-3 small">

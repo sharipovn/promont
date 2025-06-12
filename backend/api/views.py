@@ -1693,3 +1693,54 @@ class NotificationCountView(APIView):
         count=len(valid_logs)
         print('count:',count)
         return Response({"count": count})
+
+
+# 🔢 Define your custom phase order
+PHASE_ORDER_MAP = {
+    'CREATED': 1,
+    'SENT_TO_FINANCIER': 2,
+    'FINANCIER_CONFIRMED': 3,
+    'FIN_PARTS_CREATED': 4,
+    'SENT_TO_TECH_DIR': 5,
+    'TECH_DIR_CONFIRMED_AND_ATTACHED_GIP': 6,
+    'SENT_TO_GIP': 7,
+    'GIP_CONFIRMED': 8,
+    'GIP_CREATED_TECHNICAL_PARTS': 9,
+    'WORK_ORDER_CREATED': 10,
+}
+
+class ProjectPhaseProgressView(APIView):
+    # permission_classes = [IsAuthenticated]
+
+    def get(self, request, project_code):
+        project = get_object_or_404(Project, project_code=project_code)
+        full_id_prefix = f"{project.project_code}/"
+
+        # Fetch all project-level actions sorted by latest first
+        actions = (
+            ActionLog.objects
+            .filter(full_id__startswith=full_id_prefix, path_type='PROJECT')
+            .select_related('phase_type', 'performed_by')
+            .order_by('-performed_at')  # latest first
+        )
+
+        seen_phases = set()
+        result = []
+
+        for action in actions:
+            phase_key = action.phase_type.key if action.phase_type else None
+            order = PHASE_ORDER_MAP.get(phase_key)
+
+            if phase_key and order and phase_key not in seen_phases:
+                result.append({
+                    'action_id': action.action_id,
+                    'phase_key': phase_key,
+                    'order': order,
+                    'performed_at': action.performed_at,
+                })
+                seen_phases.add(phase_key)
+
+        # Sort result by the defined phase order
+        result.sort(key=lambda x: x['order'])
+
+        return Response(result)

@@ -41,7 +41,8 @@ from .views import (StaffUserLoginView,
                     CompleteOrUpdateWorkOrderView,
                     MyNotificationLogsView,
                     MarkActionLogIdentifiedView,
-                    NotificationCountView)
+                    NotificationCountView,
+                    ProjectPhaseProgressView)
           
           
           
@@ -128,4 +129,7 @@ urlpatterns = [
     path('action-logs/my-notifications/', MyNotificationLogsView.as_view(), name='my_action_notifications'),
     path('action-logs/<int:action_id>/mark-identified/', MarkActionLogIdentifiedView.as_view(), name='mark_action_identified'),
     path('action-logs/unread-count/', NotificationCountView.as_view(), name='notification-count'),
+    
+    #phase progress
+    path('projects/<int:project_code>/phase-progress/', ProjectPhaseProgressView.as_view()),
 ]

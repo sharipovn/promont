@@ -115,15 +115,18 @@ export default function ProjectCard({ proj }) {
     
   return (
     <div
-      className="p-3 text-white"
+      className="p-3 text-white  border-4 shadow"
       style={{
+        display: 'grid',
+        gridTemplateRows: 'repeat(7, 1fr)', // divide into 7 equal sections
         background: 'linear-gradient(145deg, #2e3548, #1e2330)',
         border: '1px solid rgba(255, 255, 255, 0.08)',
         borderRadius: '1rem',
         boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
         transition: 'all 0.3s ease',
         cursor: 'pointer',
-        maxHeight : '33vh',
+        width: '100%', // ✅ fills its parent cell
+        height: '100%',
         fontFamily:'Exo2Variable',
       }}
       onMouseEnter={(e) => {
@@ -136,9 +139,11 @@ export default function ProjectCard({ proj }) {
       }}
     >
       {/* Sarlavha */}
-      <h6 className="mb-3 fw-bold d-flex align-items-center gap-2 fs-sm" style={{ color: '#00f0ff' }} onClick={() => setShowModal(true)}>
-        <FaFolderOpen  size={'1rem'}/> <HoverText>{proj.project_name}</HoverText>
-      </h6>
+      <div>
+          <h6 className="mb-3 fw-bold d-flex align-items-center gap-2 fs-sm" style={{ color: '#00f0ff' }} onClick={() => setShowModal(true)}>
+            <FaFolderOpen  size={'1rem'}/> <HoverText>{proj.project_name}</HoverText>
+          </h6>
+      </div>
 
       {/* Narxi */}
       <div
@@ -238,17 +243,19 @@ export default function ProjectCard({ proj }) {
         </span>
       </div>
 
-
-    <ProjectStatusLine currentPhaseIndex={4} />
-      {/* status  */}
-        <div className="d-flex align-items-center justify-content-between mt-3 small">
-          <span className="text-success d-flex align-items-center gap-1 small">
-            {statusIcons[statusKey]}{statusTextWo}
-          </span>
-          <span className="badge bg-light text-dark small">
-            {deadlineInfo.statusText}
-          </span>
-        </div>
+      {/* Phases */}
+      <div>
+        <ProjectStatusLine currentPhaseIndex={4} />
+      </div>
+      {/* Status */}
+      <div className="d-flex align-items-center justify-content-between mt-3 small">
+        <span className="text-success d-flex align-items-center gap-1 small">
+          {statusIcons[statusKey]}{statusTextWo}
+        </span>
+        <span className="badge bg-light text-dark small">
+          {deadlineInfo.statusText}
+        </span>
+      </div>
 
       <ProjectTreeModal
         show={showModal}

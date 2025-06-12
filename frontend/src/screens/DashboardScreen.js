@@ -134,26 +134,32 @@ export default function DashboardScreen() {
               {/* card part here */}
               
               {/* Project Cards Grid */}
-                <div className="p-2" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(200px, 1fr))', gap: '1rem', height: '65vh' }}>
-                  {loading ? (
-                    <div className="text-center w-100 d-flex  flex-column  justify-content-center align-items-center" style={{ gridColumn: '1 / -1' }}>
-                      <Spinner animation="border" variant="info" />
-                      <div className="mt-2 text-info fw-semibold fs-6">
-                        {`${returnTitle('dashboard.loading_projects')}...`}
-                      </div>
+                <div
+                  className="p-2"
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(5, 1fr)',
+                    gridTemplateRows: 'repeat(2, 1fr)',
+                    columnGap: '1.5rem', // horizontal spacing
+                    rowGap: '1rem',    // vertical spacing
+                    height: '68vh',
+                    width: '100%', // full width of container
+                  }}
+                >
+                  {projects.map((proj) => (
+                    <div key={proj.project_code} style={{ height: '100%' }}>
+                      <ProjectCard proj={proj} />
                     </div>
-                  ) : (
-                    projects.map((proj) => (
-                      <div key={proj.project_code}>
-                        <ProjectCard proj={proj} />
-                      </div>
-                    ))
-                  )}
+                  ))}
+
+                  {/* Fill empty grid spots */}
+                  {Array.from({ length: 10 - projects.length }).map((_, idx) => (
+                    <div key={`empty-${idx}`} />
+                  ))}
                 </div>
 
-
               {/* ✅ Pagination centered below the grid */}
-              <div className="d-flex justify-content-center mt-4">
+              <div className="d-flex justify-content-center mt-4 p-1">
                 <CustomPagination
                   currentPage={currentPage}
                   totalPages={totalPages}

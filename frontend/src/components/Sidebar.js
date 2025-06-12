@@ -38,14 +38,14 @@ export default function Sidebar() {
           alt="Logo"
           className="img-fluid mx-auto mb-2"
           style={{
-            width: '15vw',
-            height: '15vw',
-            maxWidth: '80px',
-            maxHeight: '80px',
+            // width: '8vw',
+            // height: '7vw',
+            maxWidth: '200px',
+            maxHeight: '200px',
             objectFit: 'contain',
           }}
         />
-        <h5 className="text-info fw-bold mb-4">Promont</h5>
+        {/* <h5 className="text-info fw-bold mb-4">Promont</h5> */}
       </div>
 
 

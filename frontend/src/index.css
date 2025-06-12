@@ -361,3 +361,10 @@ code {
     transform: scale(0.85); /* Final smaller size */
   }
 }
+
+
+.project-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}

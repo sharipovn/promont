@@ -34,7 +34,7 @@ export default function Topbar({ sidebarVisible, toggleSidebar,searchQuery, setS
   }, [fetchUnreadCount]);
 
   return (
-    <div className="d-flex justify-content-between align-items-center px-3 py-2 mt-1 border-0" style={{ color: 'white',minHeight:'6vh' }}>
+    <div className="d-flex justify-content-between align-items-center px-3 py-2 mt-1 border-0" style={{ color: 'white',minHeight:'5vh' }}>
       
       {/* Left: Toggle + Search */}
       <div className="d-flex align-items-center gap-3">

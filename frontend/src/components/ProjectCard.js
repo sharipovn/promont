@@ -118,7 +118,7 @@ export default function ProjectCard({ proj }) {
       className="p-3 text-white  border-4 shadow"
       style={{
         display: 'grid',
-        gridTemplateRows: 'repeat(7, 1fr)', // divide into 7 equal sections
+        gridTemplateRows: 'repeat(7, minmax(0, 1fr))',
         background: 'linear-gradient(145deg, #2e3548, #1e2330)',
         border: '1px solid rgba(255, 255, 255, 0.08)',
         borderRadius: '1rem',
@@ -126,7 +126,7 @@ export default function ProjectCard({ proj }) {
         transition: 'all 0.3s ease',
         cursor: 'pointer',
         width: '100%', // ✅ fills its parent cell
-        height: '100%',
+        height: '32vh',
         fontFamily:'Exo2Variable',
       }}
       onMouseEnter={(e) => {
@@ -140,7 +140,7 @@ export default function ProjectCard({ proj }) {
     >
       {/* Sarlavha */}
       <div>
-          <h6 className="mb-3 fw-bold d-flex align-items-center gap-2 fs-sm" style={{ color: '#00f0ff' }} onClick={() => setShowModal(true)}>
+          <h6 className="mb-1 fw-bold d-flex align-items-center gap-2 fs-sm" style={{ color: '#00f0ff' }} onClick={() => setShowModal(true)}>
             <FaFolderOpen  size={'1rem'}/> <HoverText>{proj.project_name}</HoverText>
           </h6>
       </div>
@@ -148,7 +148,7 @@ export default function ProjectCard({ proj }) {
       {/* Narxi */}
       <div
           className="d-flex align-items-center border-bottom border-secondary fs-xs pb-1 mb-3 small"
-          style={{ minWidth: 0 }}
+          style={{ minWidth: 0}}
         >
           <span
             className="d-flex align-items-center gap-2 text-warning"
@@ -176,7 +176,7 @@ export default function ProjectCard({ proj }) {
       {/* Muddati */}
       <div
           className="d-flex justify-content-between align-items-center border-bottom border-secondary fs-xs pb-1 mb-3 small"
-          style={{ minWidth: 0 }}
+          style={{ minWidth: 0}}
         >
           <span className="d-flex align-items-center gap-2 text-light">
             <FaBusinessTime size="1rem" /><span className='text-light fw-semibold'>{returnTitle('project_card.given_period')}</span>
@@ -224,7 +224,7 @@ export default function ProjectCard({ proj }) {
       {/* Moliyachi */}
       <div
         className="d-flex align-items-center border-bottom fs-xs border-success pb-1 mb-3 small"
-        style={{ minWidth: 0 }}
+        style={{ minWidth: 0}}
       >
         <span className="d-flex align-items-center gap-2 text-light" style={{ whiteSpace: 'nowrap' }}>
           <FaUserTie size="1rem" />
@@ -244,7 +244,7 @@ export default function ProjectCard({ proj }) {
       </div>
 
       {/* Phases */}
-      <div className='d-flex justify-content-center align-items-center flex-row' style={{ width: '100%' }}>
+      <div className='d-flex justify-content-center align-items-center flex-row' style={{ width: '100%'}}>
         <ProjectStatusLine project={proj} />
       </div>
       {/* Status */}

@@ -135,14 +135,14 @@ export default function DashboardScreen() {
               
               {/* Project Cards Grid */}
                 <div
-                  className="p-2"
+                  className="p-2 border"
                   style={{
                     display: 'grid',
                     gridTemplateColumns: 'repeat(5, 1fr)',
                     gridTemplateRows: 'repeat(2, 1fr)',
-                    columnGap: '1.5rem', // horizontal spacing
-                    rowGap: '1rem',    // vertical spacing
-                    height: '68vh',
+                    columnGap: '0.5rem', // horizontal spacing
+                    rowGap: '0.5rem',    // vertical spacing
+                    maxHeight: '68vh',
                     width: '100%', // full width of container
                   }}
                 >

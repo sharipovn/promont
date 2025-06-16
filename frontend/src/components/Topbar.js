@@ -34,7 +34,7 @@ export default function Topbar({ sidebarVisible, toggleSidebar,searchQuery, setS
   }, [fetchUnreadCount]);
 
   return (
-    <div className="d-flex justify-content-between align-items-center px-3 py-2 mt-1 border-0" style={{ color: 'white',minHeight:'5vh' }}>
+    <div className="d-flex justify-content-between align-items-center px-3 py-2 border" style={{ color: 'white',minHeight:'5vh' }}>
       
       {/* Left: Toggle + Search */}
       <div className="d-flex align-items-center gap-3">
@@ -48,7 +48,7 @@ export default function Topbar({ sidebarVisible, toggleSidebar,searchQuery, setS
         </button>
 
         {/* Search Input */}
-        <div className="search-bar-wrapper d-flex align-items-center bg-white rounded-pill px-3">
+        <div className="search-bar-wrapper d-flex align-items-center border bg-white rounded-pill px-3">
             <FaSearch className="me-2 text-muted" />
             <input
                 type="text"

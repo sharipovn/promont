@@ -159,7 +159,7 @@ export default function DashboardScreen() {
                 </div>
 
               {/* ✅ Pagination centered below the grid */}
-              <div className="d-flex justify-content-center mt-2 p-1">
+              <div className="d-flex justify-content-center mt-2 p-1" style={{ minWidth: 0 }}>
                 <CustomPagination
                   currentPage={currentPage}
                   totalPages={totalPages}

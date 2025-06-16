@@ -118,7 +118,7 @@ export default function ProjectCard({ proj }) {
       className="p-3 text-white  border-4 shadow"
       style={{
         display: 'grid',
-        gridTemplateRows: 'repeat(7, minmax(0, 1fr))',
+        gridTemplateRows: 'repeat(6, minmax(0, 1fr))',
         background: 'linear-gradient(145deg, #2e3548, #1e2330)',
         border: '1px solid rgba(255, 255, 255, 0.08)',
         borderRadius: '1rem',
@@ -222,7 +222,7 @@ export default function ProjectCard({ proj }) {
       {/* ✅ Completion */}
 
       {/* Moliyachi */}
-      <div
+      {/* <div
         className="d-flex align-items-center border-bottom fs-xs border-success pb-1 mb-3 small"
         style={{ minWidth: 0}}
       >
@@ -241,7 +241,7 @@ export default function ProjectCard({ proj }) {
         >
           <HoverText maxWidth="100%">{proj.financier_fio}</HoverText>
         </span>
-      </div>
+      </div> */}
 
       {/* Phases */}
       <div className='d-flex justify-content-center align-items-center flex-row' style={{ width: '100%'}}>

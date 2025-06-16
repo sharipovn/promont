@@ -11,7 +11,7 @@ export default function ProjectFilters({ filters, handleInputChange }) {
   };
 
   return (
-    <div className="card px-3 py-1 rounded-4 shadow-lg dashboard-screen-card border">
+    <div className="card px-3 py-1 rounded-4 shadow-lg dashboard-screen-card">
       {/* ✅ Row 1: Date + Price Filters */}
       <div className="row gx-2 gy-2 mb-2">
         {[

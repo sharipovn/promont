@@ -135,7 +135,7 @@ export default function DashboardScreen() {
               
               {/* Project Cards Grid */}
                 <div
-                  className="p-2 border"
+                  className="p-2"
                   style={{
                     display: 'grid',
                     gridTemplateColumns: 'repeat(5, 1fr)',
@@ -159,7 +159,7 @@ export default function DashboardScreen() {
                 </div>
 
               {/* ✅ Pagination centered below the grid */}
-              <div className="d-flex justify-content-center mt-4 p-1">
+              <div className="d-flex justify-content-center mt-2 p-1">
                 <CustomPagination
                   currentPage={currentPage}
                   totalPages={totalPages}

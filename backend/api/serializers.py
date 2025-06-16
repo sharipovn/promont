@@ -75,12 +75,11 @@ class ProjectSerializer(serializers.ModelSerializer):
         return WorkOrder.objects.filter(tch_part_code__fs_part_code__project_code=obj).count()
 
     def get_work_order_confirmed_count(self, obj):
-        work_orders = WorkOrder.objects.filter(tch_part_code__fs_part_code__project_code=obj)
-        full_ids = [wo.full_id for wo in work_orders if wo.full_id]
-        return ObjectLastStatus.objects.filter(
-            full_id__in=full_ids,
-            latest_phase_type__key='WORK_ORDER_COMPLETED'
+        return WorkOrder.objects.filter(
+            tch_part_code__fs_part_code__project_code=obj,
+            finished=True
         ).count()
+
 
 class StaffUserSimpleSerializer(serializers.ModelSerializer):
     class Meta:
@@ -343,7 +342,10 @@ class CompleteWorkOrderSerializer(serializers.ModelSerializer):
             'full_id',
             'files',
             'wo_answer',
-            'wo_remark'
+            'wo_remark',
+            'answer_date',
+            'finished',
+            'finished_date',
         ]
 
     def get_last_status(self, obj):
@@ -355,7 +357,8 @@ class CompleteWorkOrderSerializer(serializers.ModelSerializer):
                 "latest_phase_type": status.latest_phase_type.name if status.latest_phase_type else None,
                 "is_refused": status.latest_phase_type.is_refusal if status.latest_phase_type else False,
                 "updated_by": status.updated_by.fio if status.updated_by else None,
-                "last_updated": status.last_updated
+                "last_updated": status.last_updated,
+                'comment':status.comment,
             }
         except ObjectLastStatus.DoesNotExist:
             return None

@@ -11,6 +11,7 @@ import TranslationScreen from './screens/TranslationScreen';
 import CreateTechnicalPartsScreen from './screens/CreateTechnicalPartsScreen';
 import CreateWorkOrderScreen from './screens/CreateWorkOrderScreen';
 import CompleteWorkOrderScreen from './screens/CompleteWorkOrderScreen';
+import ConfirmFinishedWorkOrderScreen from './screens/ConfirmFinishedWorkOrderScreen';
 
 
 
@@ -55,6 +56,9 @@ export default function App() {
       <Route path="/complete-work-order" element={<PrivateRoute requiredCapabilities={[
                                                           PERMISSIONS.CAN_VIEW,PERMISSIONS.CAN_COMPLETE_WORK_ORDER
                                                         ]}><CompleteWorkOrderScreen /></PrivateRoute>} />
+      <Route path="/confirm-finished-work-orders" element={<PrivateRoute requiredCapabilities={[
+                                                          PERMISSIONS.CAN_VIEW,PERMISSIONS.CAN_CONFIRM_FINISHED_WORK_ORDER
+                                                        ]}><ConfirmFinishedWorkOrderScreen /></PrivateRoute>} />
       <Route path="/noaccess" element={<PrivateRoute><NoAccessScreen /></PrivateRoute>} />
     </Routes>
     </Router>

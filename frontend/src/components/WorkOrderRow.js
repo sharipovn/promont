@@ -3,6 +3,7 @@ import HoverText from './HoverText';
 import { useI18n } from '../context/I18nProvider';
 import RefuseWorkOrderModal from './RefuseWorkOrderModal';
 import WorkOrderConfirmModal from './WorkOrderConfirmModal';
+import {CONSTANTS} from '../constants/app_constants'
 import CompleteWorkOrderModal from './CompleteWorkOrderModal';
 
 
@@ -58,6 +59,17 @@ export default function WorkOrderRow({ order, onRefuse,onConfirmed,onCompleted }
             )}
           </div>
         </div>
+          {!order?.finished && order?.staff_confirm && order?.last_status?.latest_action === CONSTANTS.WORK_ORDER_REFUSED_BY_NACH_OTDEL && (
+            <span
+              className="financial-action-btn fw-semibold send-btn text-danger disabled"
+              style={{ fontSize: '1rem' }}
+              title={order?.last_status?.comment || ''}
+            >
+              {returnTitle('complete_wo.refused_by_nach_otdel')}
+            </span>
+          )}
+
+
 
         {/* Right actions */}
         <div className="d-flex flex-wrap gap-2 align-items-center">
@@ -76,11 +88,23 @@ export default function WorkOrderRow({ order, onRefuse,onConfirmed,onCompleted }
             </span>
           )}
 
+
+          
+
+
           {/* Actions */}
             {confirmed ? (
               <button className="btn-icon-green rounded-3" onClick={() => setShowCompleteModal(true)}>
               <FaClipboardCheck className="me-1" size={14} />{' '}
-              {hasAnswer ? returnTitle('complete_wo.update_complete') : returnTitle('complete_wo.complete_work_order')}
+              {/* {hasAnswer ? returnTitle('complete_wo.update_complete') : returnTitle('complete_wo.complete_work_order')} */}
+                  {
+                  order?.finished
+                    ? returnTitle('complete_wo.finished_already')
+                    : hasAnswer
+                      ? returnTitle('complete_wo.update_complete')
+                      : returnTitle('complete_wo.complete_work_order')
+                  }
+
               </button>
             ) : (
               <>

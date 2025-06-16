@@ -578,6 +578,9 @@ class WorkOrder(models.Model):
     answer_date = models.DateTimeField(null=True, blank=True)
     wo_remark = models.TextField(null=True, blank=True)
     
+    finished = models.BooleanField(default=False)
+    finished_date = models.DateTimeField(null=True, blank=True)
+    
     
 
     class Meta:

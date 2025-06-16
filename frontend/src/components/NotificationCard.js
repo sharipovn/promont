@@ -8,7 +8,7 @@ import { createAxiosInstance } from '../utils/createAxiosInstance';
 import { useI18n } from '../context/I18nProvider';
 import { MdCircleNotifications } from "react-icons/md";
 
-export default function NotificationCard() {
+export default function NotificationCard({fetchUnreadCount}) {
   const [loading, setLoading] = useState(false);
   const [show, setShow] = useState(false);
   const [notifications, setNotifications] = useState([]);
@@ -72,6 +72,7 @@ export default function NotificationCard() {
       setActiveTab(tabKey);
       setCurrentPage(1);
       setTabFade(true);
+      fetchUnreadCount?.(); // ← added here
     }, 150);
   };
 
@@ -169,7 +170,11 @@ export default function NotificationCard() {
                     key={n.full_id + n.performed_at}
                     log={n}
                     hideAction={activeTab === 'history'}
-                    onIdentified={() => fetchNotifications(currentPage)}
+                    onIdentified={() => {
+                      fetchNotifications(currentPage);
+                      fetchUnreadCount?.(); // ← trigger unread update too
+                    }}
+
                   />
                 ))}
               </div>

@@ -182,7 +182,7 @@ export default function CompleteWorkOrderModal({ show, onHide, order, onComplete
             {existingFiles.map((f, i) => (
               <div key={i} className="bg-dark rounded px-3 py-2 mb-1 d-flex justify-content-between align-items-center">
                 <a href={f.file_url} className="text-info small text-truncate" target="_blank" rel="noopener noreferrer">{f.original_name || f.name || `File ${i + 1}`}</a>
-                <FaTimes className="text-danger cursor-pointer" onClick={() => removeExistingFile(i)} />
+                 {!order?.finished && ( <FaTimes className="text-danger cursor-pointer" onClick={() => removeExistingFile(i)} />)}
               </div>
             ))}
           </div>
@@ -190,18 +190,20 @@ export default function CompleteWorkOrderModal({ show, onHide, order, onComplete
           {newFiles.map((f, i) => (
             <div key={i} className="bg-secondary rounded px-3 py-2 mb-1 d-flex justify-content-between align-items-center">
               <span className="text-light small text-truncate">{f.name}</span>
-              <FaTimes className="text-danger cursor-pointer" onClick={() => removeNewFile(i)} />
+               {!order?.finished && ( <FaTimes className="text-danger cursor-pointer" onClick={() => removeNewFile(i)} /> )}
             </div>
           ))}
 
-          <Form.Control
-            type="file"
-            accept=".pdf,.doc,.docx,.jpg,.png"
-            multiple
-            className="text-light border-0 rounded-2 fw-normal mt-2"
-            style={{ backgroundColor: "rgb(49, 62, 82)" }}
-            onChange={handleFileChange}
-          />
+           {!order?.finished && ( 
+                <Form.Control
+                  type="file"
+                  accept=".pdf,.doc,.docx,.jpg,.png"
+                  multiple
+                  className="text-light border-0 rounded-2 fw-normal mt-2"
+                  style={{ backgroundColor: "rgb(49, 62, 82)" }}
+                  onChange={handleFileChange}
+                />
+            )}
           <small className="text-info">{returnTitle('complete_wo.max_file_size')}</small>
         </Form.Group>
 
@@ -209,11 +211,16 @@ export default function CompleteWorkOrderModal({ show, onHide, order, onComplete
           <Button variant="outline-secondary" onClick={onHide} disabled={loading}>
             {returnTitle('app.cancel')}
           </Button>
-          <Button variant="success" onClick={handleSubmit} disabled={loading || locked}>
-            {loading
-              ? returnTitle('complete_wo.sending')
-              : returnTitle(order?.wo_answer ? 'complete_wo.update_complete' : 'complete_wo.complete_work_order')}
-          </Button>
+
+          {!order?.finished && (
+            <Button variant="success" onClick={handleSubmit} disabled={loading || locked}>
+              {loading
+                ? returnTitle('complete_wo.sending')
+                : returnTitle(order?.wo_answer ? 'complete_wo.update_complete' : 'complete_wo.complete_work_order')}
+            </Button>
+          )}
+
+
         </div>
       </Modal.Body>
     </Modal>

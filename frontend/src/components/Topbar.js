@@ -1,4 +1,4 @@
-import React,{useState,useEffect,useMemo} from 'react';
+import React,{useState,useCallback,useEffect,useMemo} from 'react';
 import { FaSearch, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import NotificationCard from './NotificationCard'; // 👈 Qo‘shing
 import { useAuth } from '../context/AuthProvider';
@@ -12,6 +12,8 @@ export default function Topbar({ sidebarVisible, toggleSidebar,searchQuery, setS
 
   const { user,setUser, setAccessToken } = useAuth();
   const [unreadCount, setUnreadCount] = useState(0);
+  
+
   const { returnTitle } = useI18n();
   const navigate = useNavigate();
 
@@ -21,12 +23,15 @@ export default function Topbar({ sidebarVisible, toggleSidebar,searchQuery, setS
   );
   
   
-  useEffect(() => {
+  const fetchUnreadCount = useCallback(() => {
     axiosInstance.get('/action-logs/unread-count/')
       .then(res => setUnreadCount(res.data.count || 0))
       .catch(() => setUnreadCount(0));
-    }, []);
+  }, []);
 
+  useEffect(() => {
+    fetchUnreadCount();
+  }, [fetchUnreadCount]);
 
   return (
     <div className="d-flex justify-content-between align-items-center px-3 py-2 mt-1 border-0" style={{ color: 'white',minHeight:'6vh' }}>
@@ -68,7 +73,7 @@ export default function Topbar({ sidebarVisible, toggleSidebar,searchQuery, setS
           <small className="text-muted text-white-50 fs-8" style={{ fontSize: '0.7rem' }}>{user?.position}</small>
         </div>
             <div className="position-relative">
-            <NotificationCard />
+            <NotificationCard fetchUnreadCount={fetchUnreadCount}/>
             {unreadCount > 0 && (
               <span
                 className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"

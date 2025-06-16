@@ -1744,3 +1744,156 @@ class ProjectPhaseProgressView(APIView):
         result.sort(key=lambda x: x['order'])
 
         return Response(result)
+
+
+
+
+
+class FinishedWorkOrderListView(ListAPIView):
+    serializer_class = CompleteWorkOrderSerializer
+    permission_classes = [
+        IsAuthenticated,
+        HasCapabilityPermission('CAN_CONFIRM_FINISHED_WORK_ORDER')
+    ]
+    pagination_class=CompleteWorkOrderPagination
+
+    def get_queryset(self):
+        user = self.request.user
+
+        return WorkOrder.objects.filter(
+            create_user=user,
+            staff_confirm=True,
+            wo_answer__isnull=False,
+            answer_date__isnull=False
+        ).order_by('-answer_date')
+        
+        
+
+class ConfirmFinishedWorkOrderView(APIView):
+    permission_classes = [
+        IsAuthenticated,
+        HasCapabilityPermission('CAN_CONFIRM_FINISHED_WORK_ORDER')
+    ]
+
+    @transaction.atomic
+    def post(self, request, wo_id):
+        work_order = get_object_or_404(WorkOrder, wo_id=wo_id)
+
+        work_order.finished = True
+        work_order.finished_date = timezone.now()
+        work_order.save()  # Save inside atomic block
+
+        phase_type = PhaseType.objects.filter(key='WORK_ORDER_FINISHED').first()
+
+        # ✅ Create ActionLog
+        ActionLog.objects.create(
+            full_id=work_order.full_id,
+            path_type=work_order.path_type,
+            phase_type=phase_type,
+            comment='Подтверждено как завершенное',
+            performed_by=request.user,
+            notify_to=work_order.wo_staff
+        )
+
+        return Response({'detail': 'Подтверждено как завершенное.'}, status=status.HTTP_200_OK)
+
+
+
+
+class UnlockFinishedWorkOrderView(APIView):
+    permission_classes = [
+        IsAuthenticated,
+        HasCapabilityPermission('CAN_CONFIRM_FINISHED_WORK_ORDER')
+    ]
+
+    @transaction.atomic
+    def post(self, request, wo_id):
+        work_order = get_object_or_404(WorkOrder, wo_id=wo_id)
+
+        work_order.finished = False
+        work_order.finished_date = timezone.now()
+        work_order.save()  # Save inside atomic block
+
+        phase_type = PhaseType.objects.filter(key='WORK_ORDER_UNLOCKED').first()
+
+        # ✅ Create ActionLog
+        ActionLog.objects.create(
+            full_id=work_order.full_id,
+            path_type=work_order.path_type,
+            phase_type=phase_type,
+            comment='Разблокировано начальником отдела',
+            performed_by=request.user,
+            notify_to=work_order.wo_staff
+        )
+
+        return Response({'detail': 'Разблокировано начальником отдела'}, status=status.HTTP_200_OK)
+    
+    
+    
+    
+    
+    
+class RefuseFinishedWorkOrderView(APIView):
+    permission_classes = [IsAuthenticated, HasCapabilityPermission('CAN_CONFIRM_FINISHED_WORK_ORDER')]
+    
+    
+    def get(self, request, wo_id):
+        work_order = get_object_or_404(WorkOrder, pk=wo_id)
+        try:
+            refusal_phase = PhaseType.objects.get(key='WORK_ORDER_REFUSED_BY_NACH_OTDEL')
+            action = ActionLog.objects.filter(
+                full_id=work_order.full_id,
+                path_type=work_order.path_type,
+                phase_type=refusal_phase
+            ).latest('performed_at')
+            print('action:',action)
+        except PhaseType.DoesNotExist:
+            return Response({'detail': 'Тип этапа WORK_ORDER_REFUSED_BY_NACH_OTDEL не найден.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except ActionLog.DoesNotExist:
+            return Response({'detail': 'Информация об отказе не найдена.'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = ActionLogSerializer(action)
+        return Response(serializer.data)
+
+    def post(self, request, wo_id):
+        work_order = get_object_or_404(WorkOrder, pk=wo_id)
+        comment = request.data.get('comment', '').strip()
+        if not comment:
+            return Response({'detail': 'Пожалуйста, укажите причину отказа.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            refusal_phase = PhaseType.objects.get(key='WORK_ORDER_REFUSED_BY_NACH_OTDEL')
+            ActionLog.objects.create(
+                full_id=work_order.full_id,
+                path_type=work_order.path_type,
+                phase_type=refusal_phase,
+                comment=comment,
+                performed_by=request.user,
+                notify_to=work_order.create_user,
+            )
+        except Exception as e:
+            return Response({'detail': f'Ошибка при сохранении журнала действий: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return Response({'detail': 'Отказ успешно зафиксирован.'}, status=status.HTTP_201_CREATED)
+
+    def put(self, request, wo_id):
+        work_order = get_object_or_404(WorkOrder, pk=wo_id)
+        comment = request.data.get('comment', '').strip()
+        if not comment:
+            return Response({'detail': 'Пожалуйста, укажите причину отказа.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            refusal_phase = PhaseType.objects.get(key='WORK_ORDER_REFUSED_BY_NACH_OTDEL')
+            action = ActionLog.objects.filter(
+                full_id=work_order.full_id,
+                path_type=work_order.path_type,
+                phase_type=refusal_phase
+            ).latest('performed_at')
+            action.comment = comment
+            action.save()
+        except ActionLog.DoesNotExist:
+            return Response({'detail': 'Запись отказа не найдена для обновления.'}, status=status.HTTP_404_NOT_FOUND)
+
+        return Response({'detail': 'Комментарий к отказу успешно обновлён.'}, status=status.HTTP_200_OK)
+    
+    

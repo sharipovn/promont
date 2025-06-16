@@ -54,7 +54,7 @@ export default function Notification({ log , hideAction = false, onIdentified}) 
   function formatDaysAgo(daysAgo) {
     if (daysAgo === 0) return returnTitle('notification.today');
     if (daysAgo === 1) return returnTitle('notification.yesterday');
-    return returnTitle('notification.days_ago', { count: daysAgo });
+    return returnTitle('notification.days_ago').replace('{count}', daysAgo);
   }
 
   return (

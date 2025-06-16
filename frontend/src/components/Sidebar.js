@@ -14,6 +14,7 @@ import { LuLanguages } from "react-icons/lu";
 import { GrTechnology } from "react-icons/gr";
 import { MdWorkHistory } from "react-icons/md";
 import { MdOutlineTaskAlt } from "react-icons/md";
+import { PiCalendarCheck } from "react-icons/pi";
 
 
 
@@ -113,6 +114,18 @@ export default function Sidebar() {
                   }}>
                 <MdWorkHistory  style={{ fontSize: 'clamp(1rem, 1vw + 0.5rem, 1.4rem)' }}/>
                 <span>{returnTitle('menu.create_work_orders')}</span>
+              </NavLink>
+            </li>
+         )}
+         {hasCapability(PERMISSIONS.CAN_CONFIRM_FINISHED_WORK_ORDER) && (
+            <li className="nav-item mt-1 mx-3">
+              <NavLink to="/confirm-finished-work-orders" className="sidebar-link d-flex align-items-center gap-2" 
+                  style={{
+                    color: '#344767',
+                    fontSize: 'clamp(0.85rem, 1vw + 0.4rem, 0.9rem)',
+                  }}>
+                <PiCalendarCheck   style={{ fontSize: 'clamp(1rem, 1vw + 0.5rem, 1.4rem)' }}/>
+                <span>{returnTitle('menu.confirm_finished_work_orders')}</span>
               </NavLink>
             </li>
          )}

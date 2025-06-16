@@ -42,7 +42,11 @@ from .views import (StaffUserLoginView,
                     MyNotificationLogsView,
                     MarkActionLogIdentifiedView,
                     NotificationCountView,
-                    ProjectPhaseProgressView)
+                    ProjectPhaseProgressView,
+                    FinishedWorkOrderListView,
+                    ConfirmFinishedWorkOrderView,
+                    UnlockFinishedWorkOrderView,
+                    RefuseFinishedWorkOrderView)
           
           
           
@@ -132,4 +136,10 @@ urlpatterns = [
     
     #phase progress
     path('projects/<int:project_code>/phase-progress/', ProjectPhaseProgressView.as_view()),
+    
+    #for nach otdel confirm finisged jobs
+    path('work-order/finished-for-confirm/', FinishedWorkOrderListView.as_view()),
+    path('work-order/<int:wo_id>/confirm-finished-work-order/', ConfirmFinishedWorkOrderView.as_view()),
+    path('work-order/<int:wo_id>/unlock-finished-work-order/', UnlockFinishedWorkOrderView.as_view()),
+    path('work-order/<int:wo_id>/refuse-finished-work-order/', RefuseFinishedWorkOrderView.as_view()),
 ]

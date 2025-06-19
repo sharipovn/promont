@@ -150,7 +150,7 @@ export default function Sidebar() {
                     fontSize: 'clamp(0.85rem, 1vw + 0.4rem, 0.9rem)',
                   }}>
                 <PiTreeStructureBold style={{ fontSize: 'clamp(1rem, 1vw + 0.5rem, 1.4rem)' }}/>
-                <span>{returnTitle('menu.add_departments')}</span>
+                <span>{returnTitle('menu.manage_departments')}</span>
               </NavLink>
             </li>
          )}

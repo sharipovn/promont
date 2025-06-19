@@ -815,8 +815,10 @@ class DepartmentListCreateView(ListCreateAPIView):
     queryset = Department.objects.all().order_by('-update_time')
     serializer_class = DepartmentSerializer
     permission_classes = [IsAuthenticated, HasCapabilityPermission('CAN_ADD_DEPARTMENTS')]
-    pagination_class = PartnersPagination  # reuse or define similar pagination
-    
+    pagination_class = PartnersPagination
+    filter_backends = [SearchFilter]  # ✅ Add this
+    search_fields = ['department_name']  # ✅ Searchable field
+
     def perform_create(self, serializer):
         serializer.save(create_user=self.request.user)
         

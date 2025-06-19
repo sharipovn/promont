@@ -75,7 +75,7 @@ export default function StaffManagementScreen() {
                   }
                 }}
                 className="translation-search-input"
-                placeholder={returnTitle('staff.search_by_fio')}
+                placeholder={`${returnTitle('staff.search_by_fio')} . . .`}
               />
             </div>
           </div>

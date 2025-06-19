@@ -36,24 +36,47 @@ class DepartmentAdmin(admin.ModelAdmin):
 @admin.register(StaffUser)
 class StaffUserAdmin(UserAdmin):
     model = StaffUser
-    list_display = ('user_id', 'username', 'fio', 'position', 'is_staff', 'is_active','last_login','create_time','department','role')
-    search_fields = ('username', 'fio')
+    list_display = (
+        'user_id', 'username', 'fio', 'position', 'phone_number',  # ✅ added phone_number
+        'is_staff', 'is_active', 'last_login', 'create_time',
+        'department', 'role', 'on_vocation'  # ✅ added on_vocation status
+    )
+    search_fields = ('username', 'fio', 'phone_number')  # ✅ added phone_number to search
     ordering = ('user_id',)
 
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
-        ('Personal Info', {'fields': ('fio', 'position', 'department','role')}),
+        ('Personal Info', {
+            'fields': (
+                'fio', 'position', 'department', 'role', 'phone_number', 'pnfl',
+                'birthday', 'address', 'profile_image', 'position_start_date'  # ✅ personal additions
+            )
+        }),
+        ('Vacation Info', {
+            'fields': (
+                'on_vocation', 'on_vocation_start', 'on_vocation_end'
+            )
+        }),
         ('Login Info', {'fields': ('last_login', 'last_login_time_fail')}),
-        ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
+        ('Permissions', {
+            'fields': (
+                'is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions'
+            )
+        }),
         ('Timestamps', {'fields': ('create_time',)}),
     )
 
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('username', 'fio', 'position', 'department', 'password1', 'password2', 'is_staff', 'is_active')}
-        ),
+            'fields': (
+                'username', 'fio', 'position', 'department', 'role',
+                'phone_number', 'password1', 'password2',
+                'is_staff', 'is_active'
+            )
+        }),
     )
+
     
 @admin.register(Role)
 class RoleAdmin(admin.ModelAdmin):

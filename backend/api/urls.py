@@ -46,7 +46,11 @@ from .views import (StaffUserLoginView,
                     FinishedWorkOrderListView,
                     ConfirmFinishedWorkOrderView,
                     UnlockFinishedWorkOrderView,
-                    RefuseFinishedWorkOrderView)
+                    RefuseFinishedWorkOrderView,
+                    StaffManagementUsersListView,
+                    StaffMgDepartmentListAPIView,
+                    StaffUserUpdateAPIView,
+                    ToggleVacationAPIView)
           
           
           
@@ -142,4 +146,12 @@ urlpatterns = [
     path('work-order/<int:wo_id>/confirm-finished-work-order/', ConfirmFinishedWorkOrderView.as_view()),
     path('work-order/<int:wo_id>/unlock-finished-work-order/', UnlockFinishedWorkOrderView.as_view()),
     path('work-order/<int:wo_id>/refuse-finished-work-order/', RefuseFinishedWorkOrderView.as_view()),
+    
+    
+    
+    #forstaffmanagement
+    path('manage-staff/staff-users/', StaffManagementUsersListView.as_view(), name='staff-users-list'),
+    path('manage-staff/department-list/', StaffMgDepartmentListAPIView.as_view(), name='staff-department-list'),
+    path('manage-staff/staff-users/<int:user_id>/', StaffUserUpdateAPIView.as_view(), name='update_staff_user'),
+    path('manage-staff/staff-users/<int:user_id>/toggle-vacation/', ToggleVacationAPIView.as_view(), name='toggle_vacation'),
 ]

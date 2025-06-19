@@ -1,7 +1,7 @@
 # api/serializers.py
 
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from api.models import StaffUser,Project,ProjectFinancePart,Partner,Translation,Department,ProjectGipPart,ObjectLastStatus,ActionLog,WorkOrder,WorkOrderFile,PhaseType
+from api.models import StaffUser,Project,ProjectFinancePart,Partner,Translation,Department,ProjectGipPart,ObjectLastStatus,ActionLog,WorkOrder,WorkOrderFile,PhaseType,Role
 from rest_framework import serializers
 
 
@@ -413,3 +413,61 @@ class ActionLogNotificationSerializer(serializers.ModelSerializer):
                 return {"name": wo.wo_name}
         except Exception as e:
             return None
+
+
+
+
+
+#for staffusersmanagement
+class RoleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Role
+        fields = ['role_name']
+        
+class StaffManagementUserSerializer(serializers.ModelSerializer):
+    role = RoleSerializer(read_only=True)
+    department = DepartmentSerializer(read_only=True)
+
+    class Meta:
+        model = StaffUser
+        fields = [
+            'user_id',  # ✅ ADD THIS LINE
+            'username',
+            'fio',
+            'position',
+            'department',
+            'role',
+            'create_time',
+            'update_time',
+            'profile_image',
+            'birthday',
+            'address',
+            'on_vocation',
+            'on_vocation_update',
+            'on_vocation_start',
+            'on_vocation_end',
+            'pnfl',
+            'phone_number',
+            'position_start_date',
+        ]
+        
+        
+class StaffUserUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StaffUser
+        fields = [
+            'fio',
+            'position',
+            'position_start_date',
+            'department',
+            'birthday',
+            'address',
+            'pnfl',
+            'phone_number',
+            'profile_image',
+        ]
+
+    def validate_profile_image(self, file):
+        if file and file.size > 10 * 1024 * 1024:
+            raise serializers.ValidationError("Image must be 10MB or less.")
+        return file

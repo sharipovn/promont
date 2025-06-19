@@ -12,7 +12,7 @@ export default function Topbar({ sidebarVisible, toggleSidebar,searchQuery, setS
 
   const { user,setUser, setAccessToken } = useAuth();
   const [unreadCount, setUnreadCount] = useState(0);
-  
+
 
   const { returnTitle } = useI18n();
   const navigate = useNavigate();

@@ -15,6 +15,7 @@ import { GrTechnology } from "react-icons/gr";
 import { MdWorkHistory } from "react-icons/md";
 import { MdOutlineTaskAlt } from "react-icons/md";
 import { PiCalendarCheck } from "react-icons/pi";
+import { GrUserSettings } from "react-icons/gr";
 
 
 
@@ -186,6 +187,18 @@ export default function Sidebar() {
                   }}>
                 <GrTechnology style={{ fontSize: 'clamp(1rem, 1vw + 0.5rem, 1.4rem)' }}/>
                 <span>{returnTitle('menu.create_technical_parts')}</span>
+              </NavLink>
+            </li>
+         )}
+        {hasCapability(PERMISSIONS.CAN_MANAGE_STAFF) && (
+            <li className="nav-item mt-1 mx-3">
+              <NavLink to="/staff-management" className="sidebar-link d-flex align-items-center gap-2" 
+                  style={{
+                    color: '#344767',
+                    fontSize: 'clamp(0.85rem, 1vw + 0.4rem, 0.9rem)',
+                  }}>
+                <GrUserSettings style={{ fontSize: 'clamp(1rem, 1vw + 0.5rem, 1.4rem)' }}/>
+                <span>{returnTitle('menu.staff_management')}</span>
               </NavLink>
             </li>
          )}

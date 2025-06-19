@@ -92,8 +92,21 @@ class StaffUser(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
 
+    # ✅ New fields
+    profile_image = models.ImageField(upload_to='profile_images/', null=True, blank=True,default='profile_images/default_profile_image.png')  # relative to MEDIA_ROOT)
+    birthday = models.DateField(null=True, blank=True)
+    address = models.TextField(null=True, blank=True)
+    on_vocation = models.BooleanField(default=False)
+    on_vocation_update = models.DateTimeField(auto_now=True)  # auto-tracks changes
+    on_vocation_start = models.DateField(null=True, blank=True)
+    on_vocation_end = models.DateField(null=True, blank=True)
+    pnfl = models.CharField(max_length=20, null=True, blank=True)
+    phone_number = models.CharField(max_length=20)  # ✅ required
+    position_start_date = models.DateField(null=True, blank=True)
+
+
     USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['fio']
+    REQUIRED_FIELDS = ['fio', 'phone_number']  # ✅ phone_number added
 
     objects = StaffUserManager()
 
@@ -716,3 +729,7 @@ class Message(models.Model):
 
     def __str__(self):
         return f"Message #{self.message_id} by {self.sender} on {self.path_type}:{self.full_id}"
+
+
+
+

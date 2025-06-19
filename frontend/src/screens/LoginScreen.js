@@ -62,7 +62,7 @@ export default function LoginScreen() {
       reloadTranslations();
       navigate("/dashboard");
     } catch (err) {
-      setError("Invalid username or password");
+      setError("Invalid username or password / Неверное имя пользователя или пароль");
     }
   };
 

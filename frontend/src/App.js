@@ -12,6 +12,7 @@ import CreateTechnicalPartsScreen from './screens/CreateTechnicalPartsScreen';
 import CreateWorkOrderScreen from './screens/CreateWorkOrderScreen';
 import CompleteWorkOrderScreen from './screens/CompleteWorkOrderScreen';
 import ConfirmFinishedWorkOrderScreen from './screens/ConfirmFinishedWorkOrderScreen';
+import StaffManagementScreen from './screens/StaffManagementScreen';
 
 
 
@@ -59,6 +60,9 @@ export default function App() {
       <Route path="/confirm-finished-work-orders" element={<PrivateRoute requiredCapabilities={[
                                                           PERMISSIONS.CAN_VIEW,PERMISSIONS.CAN_CONFIRM_FINISHED_WORK_ORDER
                                                         ]}><ConfirmFinishedWorkOrderScreen /></PrivateRoute>} />
+      <Route path="/staff-management" element={<PrivateRoute requiredCapabilities={[
+                                                          PERMISSIONS.CAN_VIEW,PERMISSIONS.CAN_MANAGE_STAFF
+                                                        ]}><StaffManagementScreen /></PrivateRoute>} />
       <Route path="/noaccess" element={<PrivateRoute><NoAccessScreen /></PrivateRoute>} />
     </Routes>
     </Router>

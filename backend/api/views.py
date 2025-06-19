@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.utils.timezone import now
 from django.contrib.auth import authenticate
-from rest_framework import generics
+from rest_framework import generics,filters
 from rest_framework.permissions import IsAuthenticated,AllowAny
 from .permissions import HasCapabilityPermission
 from datetime import datetime,date
@@ -32,13 +32,15 @@ from .serializers import (ProjectSerializer,
                           ActionLogSerializer,
                           WorkOrderSerializer,
                           CompleteWorkOrderSerializer,
-                          ActionLogNotificationSerializer)
+                          ActionLogNotificationSerializer,
+                          StaffManagementUserSerializer,
+                          StaffUserUpdateSerializer)
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateAPIView,ListAPIView,UpdateAPIView
 from api.serializers import StaffUserTokenSerializer
 from django.utils.dateparse import parse_date
 from django.db.models import Count, Q,Subquery,OuterRef,F
 from django.db import transaction
-from .pagination import ProjectsPagination,ProjectsFiancierConfirmPagination,PartnersPagination,CompleteWorkOrderPagination,TranslationsPagination,GipConfirmPagination,ProjectListCreatePagination,ProjectGipPartPagination,NotificationsPagination
+from .pagination import ProjectsPagination,ProjectsFiancierConfirmPagination,PartnersPagination,CompleteWorkOrderPagination,TranslationsPagination,GipConfirmPagination,ProjectListCreatePagination,ProjectGipPartPagination,NotificationsPagination,StaffManagementPagination
 from django.utils import timezone
 from rest_framework.views import APIView
 from rest_framework.exceptions import ValidationError
@@ -1897,3 +1899,104 @@ class RefuseFinishedWorkOrderView(APIView):
         return Response({'detail': 'Комментарий к отказу успешно обновлён.'}, status=status.HTTP_200_OK)
     
     
+    
+    
+
+
+
+class StaffManagementUsersListView(generics.ListAPIView):
+    serializer_class = StaffManagementUserSerializer
+    permission_classes = [IsAuthenticated, HasCapabilityPermission('CAN_MANAGE_STAFF')]
+    queryset = StaffUser.objects.all().order_by('-update_time')  # ✅ Show latest updated first
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['fio', 'username']  # ✅ Allow search by name or username
+    pagination_class = StaffManagementPagination
+    
+    
+    
+class StaffMgDepartmentListAPIView(ListAPIView):
+    queryset = Department.objects.all().order_by('department_name')
+    serializer_class = DepartmentSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [SearchFilter]
+    search_fields = ['department_name']
+    
+    
+    
+    
+
+class StaffUserUpdateAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def patch(self, request, user_id):
+        try:
+            staff = StaffUser.objects.get(user_id=user_id)
+        except StaffUser.DoesNotExist:
+            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Simple fields
+        for field in ['fio', 'phone_number', 'position', 'address', 'pnfl']:
+            value = request.data.get(field)
+            if value is not None:
+                setattr(staff, field, value)
+
+        # Date fields
+        for date_field in ['birthday', 'position_start_date']:
+            val = request.data.get(date_field)
+            if val in [None, '', 'null']:
+                setattr(staff, date_field, None)
+            else:
+                setattr(staff, date_field, val)
+
+        # Department (ForeignKey)
+        dept_id = request.data.get('department')
+        if dept_id:
+            try:
+                staff.department = Department.objects.get(pk=dept_id)
+            except Department.DoesNotExist:
+                return Response({"detail": "Department not found."}, status=400)
+        elif dept_id in [None, '', 'null']:
+            staff.department = None
+
+        # Profile image
+        image = request.FILES.get('profile_image')
+        if image:
+            if image.size > 10 * 1024 * 1024:
+                return Response({"detail": "Image must be ≤ 10MB"}, status=400)
+            staff.profile_image = image
+
+        staff.save()
+        return Response({"detail": "Updated successfully."})
+    
+    
+    
+    
+    
+class ToggleVacationAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, user_id):
+        try:
+            staff = StaffUser.objects.get(user_id=user_id)
+        except StaffUser.DoesNotExist:
+            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Extract data
+        on_vocation = request.data.get('on_vocation')
+        start_date = request.data.get('on_vocation_start')
+        end_date = request.data.get('on_vocation_end')
+
+        if on_vocation:
+            if not start_date or not end_date:
+                return Response({"detail": "Vacation start and end dates are required."}, status=400)
+            staff.on_vocation = True
+            staff.on_vocation_start = start_date
+            staff.on_vocation_end = end_date
+        else:
+            staff.on_vocation = False
+            staff.on_vocation_start = None
+            staff.on_vocation_end = None
+
+        staff.save()
+        return Response({"detail": "Vacation status updated successfully."}, status=200)

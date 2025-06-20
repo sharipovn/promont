@@ -57,7 +57,7 @@ export default function StaffTable({ staffList,onUpdated }) {
                     <ProfileImage src={staff.profile_image} size={100} />
                   </td>
                 <td className="ps-4 py-3 fw-semibold text-info"><HoverText>{staff?.fio}</HoverText></td>
-                <td className="py-3">{staff?.position || '—'}</td>
+                <td className="py-3">{staff?.position?.position_name || '—'}</td>
                 <td className="py-3">{staff?.position_start_date || '—'}</td>
                 <td className="py-3">{staff?.department?.department_name || '—'}</td>
                 <td className="py-3">{staff?.birthday || '—'}</td>

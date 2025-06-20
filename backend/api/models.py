@@ -53,6 +53,42 @@ class Department(models.Model):
 
 
 
+class JobPosition(models.Model):
+    position_id = models.AutoField(primary_key=True)
+    position_name = models.CharField(max_length=100)
+    position_description = models.TextField(blank=True)
+    department = models.ForeignKey(
+        'Department',  # assumes JobPosition is in same app, else use 'yourapp.Department'
+        on_delete=models.CASCADE,
+        related_name='job_positions'
+    )
+    parent = models.ForeignKey(
+        'self',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='sub_positions',
+        help_text='Optional parent position'
+    )
+    create_user = models.ForeignKey(
+        'StaffUser',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='created_positions'
+    )
+    create_time = models.DateTimeField(auto_now_add=True)
+    update_time = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'job_position'
+        verbose_name = 'Job Position'
+        verbose_name_plural = 'Job Positions'
+        unique_together = ('department', 'position_name')  # ✅ Uniqueness per department
+
+    def __str__(self):
+        return self.position_name
+
 
 class StaffUserManager(BaseUserManager):
     def create_user(self, username, password=None, **extra_fields):
@@ -75,7 +111,14 @@ class StaffUser(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(max_length=150, unique=True)
     password = models.CharField(max_length=128)
     fio = models.CharField(max_length=255)
-    position = models.CharField(max_length=100, null=True, blank=True)
+    position = models.ForeignKey(
+        'JobPosition',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        db_column='position_id',
+        related_name='staff_members'
+    )
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True, db_column='department_id')
     role = models.ForeignKey(
         'Role',

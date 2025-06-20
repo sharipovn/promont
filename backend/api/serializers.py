@@ -1,7 +1,7 @@
 # api/serializers.py
 
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from api.models import StaffUser,Project,ProjectFinancePart,Partner,Translation,Department,ProjectGipPart,ObjectLastStatus,ActionLog,WorkOrder,WorkOrderFile,PhaseType,Role
+from api.models import StaffUser,Project,ProjectFinancePart,Partner,Translation,Department,ProjectGipPart,ObjectLastStatus,ActionLog,WorkOrder,WorkOrderFile,PhaseType,Role,JobPosition
 from rest_framework import serializers
 
 
@@ -14,7 +14,7 @@ class StaffUserTokenSerializer(TokenObtainPairSerializer):
         token["user_id"] = user.user_id
         token["username"] = user.username
         token["fio"] = user.fio
-        token["position"] = user.position
+        token["position"] = user.position.position_name if user.position else None
         token["role"] = user.role.role_name if user.role else None
         token["capabilities"] = list(
             user.role.capabilities.values_list("capability_name", flat=True)
@@ -51,10 +51,18 @@ class ProjectSerializer(serializers.ModelSerializer):
         ]
         
     def get_create_user_fio(self, obj):
-        return f"{obj.create_user.fio} ({obj.create_user.position or '---'})" if obj.create_user else None
+        if obj.create_user:
+            position_name = obj.create_user.position.position_name if obj.create_user.position else '---'
+            return f"{obj.create_user.fio} ({position_name})"
+        return None
+
 
     def get_financier_fio(self, obj):
-        return f"{obj.financier.fio} ({obj.financier.position or '---'})" if obj.financier else None
+        if obj.financier:
+            position_name = obj.financier.position.position_name if obj.financier.position else '---'
+            return f"{obj.financier.fio} ({position_name})"
+        return None
+
 
     def get_last_status(self, obj):
         return getattr(obj, 'last_status', None)
@@ -82,10 +90,12 @@ class ProjectSerializer(serializers.ModelSerializer):
 
 
 class StaffUserSimpleSerializer(serializers.ModelSerializer):
+    position = serializers.SerializerMethodField()
     class Meta:
         model = StaffUser
         fields = ['user_id', 'username', 'fio', 'position']
-        
+    def get_position(self, obj):
+        return obj.position.position_name if obj.position else None
         
         
 class ProjectFinancePartCreateSerializer(serializers.ModelSerializer):
@@ -160,9 +170,46 @@ class TranslationSerializer(serializers.ModelSerializer):
 
         
         
+        
+class SimpleJobPositionSerializer(serializers.ModelSerializer):
+    department_name = serializers.CharField(source='department.department_name', read_only=True)
+    parent_name = serializers.CharField(source='parent.position_name', read_only=True)
+    create_user_fio = serializers.CharField(source='create_user.fio', read_only=True)
+
+    class Meta:
+        model = JobPosition
+        fields = [
+            'position_id',
+            'position_name',
+            'position_description',
+            'department',
+            'department_name',
+            'parent',
+            'parent_name',
+            'create_user',
+            'create_user_fio',
+            'create_time',
+            'update_time',
+        ]
+        
+
+class JobCreatePositionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = JobPosition
+        fields = [
+            'position_name',
+            'position_description',
+            'department',
+            'parent'
+        ]
+        
+        
+        
+        
 class DepartmentSerializer(serializers.ModelSerializer):
     parent_name = serializers.CharField(source='parent.department_name', read_only=True)
     create_user_fio = serializers.CharField(source='create_user.fio', read_only=True)
+    job_positions = SimpleJobPositionSerializer(many=True, read_only=True)
 
     class Meta:
         model = Department
@@ -174,8 +221,10 @@ class DepartmentSerializer(serializers.ModelSerializer):
             'create_user_fio',
             'create_time',
             'update_time',
+            'job_positions',  # ✅ added
         ]
-        
+    
+
         
         
 class ProjectSimpleSerializer(serializers.ModelSerializer):
@@ -427,6 +476,7 @@ class RoleSerializer(serializers.ModelSerializer):
 class StaffManagementUserSerializer(serializers.ModelSerializer):
     role = RoleSerializer(read_only=True)
     department = DepartmentSerializer(read_only=True)
+    position =  SimpleJobPositionSerializer(read_only=True)
 
     class Meta:
         model = StaffUser
@@ -450,6 +500,7 @@ class StaffManagementUserSerializer(serializers.ModelSerializer):
             'phone_number',
             'position_start_date',
         ]
+
         
         
 class StaffUserUpdateSerializer(serializers.ModelSerializer):
@@ -471,3 +522,12 @@ class StaffUserUpdateSerializer(serializers.ModelSerializer):
         if file and file.size > 10 * 1024 * 1024:
             raise serializers.ValidationError("Image must be 10MB or less.")
         return file
+    def validate_position(self, value):
+        if value is not None and not JobPosition.objects.filter(pk=value.pk).exists():
+            raise serializers.ValidationError("Invalid job position.")
+        return value
+    
+    
+    
+    
+    

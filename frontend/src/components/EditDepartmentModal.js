@@ -130,8 +130,16 @@ export default function EditDepartmentModal({ show, onHide, department, onUpdate
               {returnTitle('app.cancel')}
             </Button>
             <Button variant="success" onClick={handleSubmit} disabled={locked}>
-              {isSubmitting ? <Spinner size="sm" animation="border" /> : returnTitle('app.update')}
+              {isSubmitting ? (
+                <>
+                  <Spinner size="sm" animation="border" className="me-2" />
+                  {returnTitle('app.updating')}...
+                </>
+              ) : (
+                returnTitle('app.update')
+              )}
             </Button>
+
           </div>
         </Modal.Body>
       </Modal>

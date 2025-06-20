@@ -9,11 +9,7 @@ import { useAuth } from '../context/AuthProvider';
 import { FaInfoCircle } from 'react-icons/fa';
 import Alert from './Alert';
 
-
-
-
 export default function EditStaffModal({ show, onHide, staff, onUpdated }) {
-
   const { returnTitle } = useI18n();
   const [formData, setFormData] = useState({
     fio: '',
@@ -40,7 +36,11 @@ export default function EditStaffModal({ show, onHide, staff, onUpdated }) {
   useEffect(() => {
     if (show) {
       axiosInstance.get('/manage-staff/department-list/').then(res => {
-        const options = res.data.map(d => ({ value: d.department_id, label: d.department_name }));
+        const options = res.data.map(d => ({
+          value: d.department_id,
+          label: d.department_name,
+          positions: d.job_positions || []
+        }));
         setDepartments(options);
       });
     }
@@ -50,7 +50,7 @@ export default function EditStaffModal({ show, onHide, staff, onUpdated }) {
     if (staff) {
       setFormData({
         fio: staff.fio || '',
-        position: staff.position || '',
+        position: staff.position ? { value: staff.position.position_id, label: staff.position.position_name }: null,
         position_start_date: staff.position_start_date || '',
         department: staff.department ? { value: staff.department.department_id, label: staff.department.department_name } : null,
         birthday: staff.birthday || '',
@@ -83,6 +83,7 @@ export default function EditStaffModal({ show, onHide, staff, onUpdated }) {
     Object.entries({
       ...formData,
       department: formData.department?.value?.toString() ?? '',
+      position: formData.position?.value?.toString() ?? '',
       position_start_date: formData.position_start_date || '',
       birthday: formData.birthday || '',
     }).forEach(([key, value]) => {
@@ -90,12 +91,11 @@ export default function EditStaffModal({ show, onHide, staff, onUpdated }) {
     });
     if (profileImage) payload.append('profile_image', profileImage);
 
-
     setSubmitting(true);
     setError('');
     setFormWarning('');
     axiosInstance
-      .patch(`/manage-staff/staff-users/${staff.user_id}/`, payload,{
+      .patch(`/manage-staff/staff-users/${staff.user_id}/`, payload, {
         headers: { 'Content-Type': 'multipart/form-data' },
       })
       .then(() => {
@@ -141,6 +141,9 @@ export default function EditStaffModal({ show, onHide, staff, onUpdated }) {
     }),
   };
 
+  const selectedDept = departments.find(dep => dep.value === formData.department?.value);
+  const availablePositions = selectedDept?.positions.map(p => ({ value: p.position_id, label: p.position_name })) || [];
+
   return (
     <Modal show={show} onHide={onHide} centered size="lg">
       <Modal.Header closeButton style={{ backgroundColor: '#2e3a4b', color: 'white' }}>
@@ -153,7 +156,7 @@ export default function EditStaffModal({ show, onHide, staff, onUpdated }) {
         <Form encType="multipart/form-data">
           <Row>
             <Col md={4} className="text-center">
-              <div style={{ width: '100%', height: '150px', borderRadius: '10px', border: '1px solid #ccc', overflow: 'hidden', marginBottom: '10px', position: 'relative',  display: 'flex',alignItems: 'center' }}>
+              <div style={{ width: '100%', height: '150px', borderRadius: '10px', border: '1px solid #ccc', overflow: 'hidden', marginBottom: '10px', position: 'relative', display: 'flex', alignItems: 'center' }}>
                 {(profileImage || staff.profile_image) ? (
                   <img
                     src={profileImage ? URL.createObjectURL(profileImage) : staff.profile_image}
@@ -166,7 +169,6 @@ export default function EditStaffModal({ show, onHide, staff, onUpdated }) {
                     {returnTitle('staff.no_image')}
                   </div>
                 )}
-
               </div>
               <Form.Control
                 type="file"
@@ -183,7 +185,6 @@ export default function EditStaffModal({ show, onHide, staff, onUpdated }) {
                   <FaInfoCircle className="me-1" /> {returnTitle('staff.only_images_allowed')}
                 </small>
               </div>
-
             </Col>
             <Col md={8}>
               <Row>
@@ -197,7 +198,18 @@ export default function EditStaffModal({ show, onHide, staff, onUpdated }) {
                 </Col>
                 <Col md={6} className="mb-3">
                   <Form.Label>{returnTitle('staff.position')}</Form.Label>
-                  <Form.Control style={inputStyle} name="position" value={formData.position} onChange={handleChange} disabled={locked} />
+                  <Select
+                      isClearable
+                      classNamePrefix="react-select"
+                      placeholder={returnTitle('staff.select_position')}
+                      className='text-light'
+                      styles={selectStyles}
+                      value={formData.position}
+                      onChange={(opt) => setFormData({ ...formData, position: opt })}
+                      options={availablePositions}
+                      isDisabled={locked || availablePositions.length === 0}
+                    />
+
                 </Col>
                 <Col md={6} className="mb-3">
                   <Form.Label>{returnTitle('staff.position_start_date')}</Form.Label>
@@ -210,12 +222,13 @@ export default function EditStaffModal({ show, onHide, staff, onUpdated }) {
                 <Col md={6} className="mb-3">
                   <Form.Label>{returnTitle('staff.department')}</Form.Label>
                   <Select
+                    isClearable
                     classNamePrefix="react-select"
                     placeholder={returnTitle('staff.select_department')}
                     className='text-light'
                     styles={selectStyles}
                     value={formData.department}
-                    onChange={(opt) => setFormData({ ...formData, department: opt })}
+                    onChange={(opt) => setFormData({ ...formData, department: opt, position: '' })}
                     options={departments}
                     isDisabled={locked}
                   />
@@ -236,7 +249,7 @@ export default function EditStaffModal({ show, onHide, staff, onUpdated }) {
       <Modal.Footer style={{ backgroundColor: '#2e3a4b' }}>
         <Button variant="secondary" onClick={onHide} disabled={locked}>{returnTitle('app.cancel')}</Button>
         <Button variant="primary" onClick={handleSubmit} disabled={locked}>
-          {submitting ? <Spinner size="sm" animation="border" /> : returnTitle('app.update')}
+          {submitting ? <><Spinner size="sm" animation="border" className="me-2" /> {returnTitle('app.updating')}</> : returnTitle('app.update')}
         </Button>
       </Modal.Footer>
     </Modal>

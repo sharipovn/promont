@@ -198,4 +198,4 @@ class MessageSerializer(serializers.ModelSerializer):
         return getattr(obj.sender, 'fio', str(obj.sender)) if obj.sender else None
 
     def get_sender_position(self, obj):
-        return getattr(obj.sender, 'position', None) if obj.sender else None
+        return getattr(obj.sender.position, 'position_name', None) if obj.sender and obj.sender.position else None

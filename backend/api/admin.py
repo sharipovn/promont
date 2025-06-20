@@ -14,7 +14,8 @@ from .models import (Capability,
                      WorkOrderFile,
                      ActionLog,
                      ObjectLastStatus,
-                     Message)
+                     Message,
+                     JobPosition)
 from django.contrib.auth.admin import UserAdmin
 
 
@@ -31,13 +32,17 @@ class DepartmentAdmin(admin.ModelAdmin):
     search_fields = ('department_name',)
     list_filter = ('parent',)
 
-
+@admin.register(JobPosition)
+class JobPositionAdmin(admin.ModelAdmin):
+    list_display = ('position_name', 'department', 'create_time', 'update_time')
+    search_fields = ('position_name',)
+    list_filter = ('department',)
 
 @admin.register(StaffUser)
 class StaffUserAdmin(UserAdmin):
     model = StaffUser
     list_display = (
-        'user_id', 'username', 'fio', 'position', 'phone_number',  # ✅ added phone_number
+        'user_id', 'username', 'fio','position__position_name', 'phone_number',  # ✅ added phone_number
         'is_staff', 'is_active', 'last_login', 'create_time',
         'department', 'role', 'on_vocation'  # ✅ added on_vocation status
     )

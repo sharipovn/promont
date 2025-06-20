@@ -54,7 +54,8 @@ from .views import (StaffUserLoginView,
                     JobPositionsByDepartmentView,
                     JobPositionCreateView,
                     JobPositionDeleteView,
-                    JobPositionUpdateView)
+                    JobPositionUpdateView,
+                    MyDepartmentsTreeView)
           
           
           
@@ -162,4 +163,10 @@ urlpatterns = [
     path('manage-staff/department-list/', StaffMgDepartmentListAPIView.as_view(), name='staff-department-list'),
     path('manage-staff/staff-users/<int:user_id>/', StaffUserUpdateAPIView.as_view(), name='update_staff_user'),
     path('manage-staff/staff-users/<int:user_id>/toggle-vacation/', ToggleVacationAPIView.as_view(), name='toggle_vacation'),
+    
+    
+    
+    
+    #task management
+    path('departments/my-tree/', MyDepartmentsTreeView.as_view(), name='my-departments-tree'),
 ]

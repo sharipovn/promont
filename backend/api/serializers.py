@@ -531,3 +531,34 @@ class StaffUserUpdateSerializer(serializers.ModelSerializer):
     
     
     
+
+
+
+
+class JobPositionNestedSerializer(serializers.ModelSerializer):
+    sub_positions = serializers.SerializerMethodField()
+
+    class Meta:
+        model = JobPosition
+        fields = ['position_id', 'position_name', 'position_description', 'sub_positions']
+
+    def get_sub_positions(self, obj):
+        children = obj.sub_positions.all()
+        return JobPositionNestedSerializer(children, many=True).data
+
+
+class DepartmentTreeSerializer(serializers.ModelSerializer):
+    sub_departments = serializers.SerializerMethodField()
+    job_positions = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Department
+        fields = ['department_id', 'department_name', 'sub_departments', 'job_positions']
+
+    def get_sub_departments(self, obj):
+        children = obj.sub_departments.all()
+        return DepartmentTreeSerializer(children, many=True).data
+
+    def get_job_positions(self, obj):
+        root_positions = obj.job_positions.filter(parent__isnull=True)
+        return JobPositionNestedSerializer(root_positions, many=True).data

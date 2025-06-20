@@ -37,7 +37,8 @@ from .serializers import (ProjectSerializer,
                           StaffManagementUserSerializer,
                           StaffUserUpdateSerializer,
                           SimpleJobPositionSerializer,
-                          JobCreatePositionSerializer)
+                          JobCreatePositionSerializer,
+                          DepartmentTreeSerializer)
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateAPIView,ListAPIView,UpdateAPIView,CreateAPIView,DestroyAPIView,UpdateAPIView
 from api.serializers import StaffUserTokenSerializer
 from django.utils.dateparse import parse_date
@@ -2087,3 +2088,20 @@ class JobPositionUpdateView(UpdateAPIView):
                 )
 
         return super().update(request, *args, **kwargs)
+
+
+
+
+
+
+class MyDepartmentsTreeView(ListAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user_department = request.user.department  # Assuming StaffUser has FK to Department
+        if not user_department:
+            return Response({'detail': 'User has no department assigned.'}, status=400)
+
+        # Return just the user's department and its recursive children
+        serializer = DepartmentTreeSerializer(user_department)
+        return Response(serializer.data)

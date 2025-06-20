@@ -202,6 +202,18 @@ export default function Sidebar() {
               </NavLink>
             </li>
          )}
+         {hasCapability(PERMISSIONS.CAN_WORK_WITH_STAFF) && (
+            <li className="nav-item mt-1 mx-3">
+              <NavLink to="/work-with-staff" className="sidebar-link d-flex align-items-center gap-2" 
+                  style={{
+                    color: '#344767',
+                    fontSize: 'clamp(0.85rem, 1vw + 0.4rem, 0.9rem)',
+                  }}>
+                <GrUserSettings style={{ fontSize: 'clamp(1rem, 1vw + 0.5rem, 1.4rem)' }}/>
+                <span>{returnTitle('menu.work_with_staff')}</span>
+              </NavLink>
+            </li>
+         )}
       </ul>
     </div>
   );

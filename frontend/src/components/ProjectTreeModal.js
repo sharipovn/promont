@@ -14,6 +14,7 @@ import { SiCommerzbank } from "react-icons/si";
 import { GrTechnology } from "react-icons/gr";
 import { BiTask } from "react-icons/bi";
 import { VscError } from "react-icons/vsc";
+import { safeDownload } from '../utils/safeDownload';
 
 import ChatMessaging from './ChatMessaging';
 import { MdOutlineMarkEmailUnread } from "react-icons/md";
@@ -279,9 +280,16 @@ const updateTreeMessageCount = useCallback((node, fullId) => {
                   <div className="text-light" style={{ width: '60%' }}>
                     {value.length === 0 ? '—' : value.map((file, i) => (
                       <div key={i}>
-                        <a href={file.file} target="_blank" rel="noopener noreferrer" className="text-info text-decoration-underline d-inline-flex align-items-center gap-1" download>
-                          <FaDownload /><HoverCountText maxWidth="80%">{file.original_name}</HoverCountText>
-                        </a>
+                        <a
+                            href={file.file}
+                            rel="noopener noreferrer"
+                            download
+                            onClick={(e) => safeDownload(e, file.file)}
+                            className="text-info text-decoration-underline d-inline-flex align-items-center gap-1"
+                          >
+                            <FaDownload />
+                            <HoverCountText maxWidth="80%">{file.original_name}</HoverCountText>
+                          </a>
                       </div>
                     ))}
                   </div>

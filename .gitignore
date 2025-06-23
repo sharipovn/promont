@@ -9,7 +9,8 @@ __pycache__/
 
 # C extensions
 *.so
-
+backend\media\chat_files
+backend\media\work_orders
 # Distribution / packaging
 .Python
 build/

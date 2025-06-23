@@ -4,6 +4,7 @@ import { FaArrowAltCircleDown } from "react-icons/fa";
 import { formatDateTime } from '../utils/formatDateTime';
 import HoverTooltip from './HoverTooltip';
 import { useI18n } from '../context/I18nProvider';
+import { safeDownload } from '../utils/safeDownload';
 
 
 
@@ -31,7 +32,7 @@ export default function ChatMessageItem({ msg }) {
             <a
               href={file.file_url}
               download
-              onClick={(e) => e.stopPropagation()}
+              onClick={(e) => safeDownload(e, file.file_url)}
               className="text-white text-decoration-none file-name-ellipsis"
             >
               <HoverTooltip maxWidth='100%'>{file.file_original_name}</HoverTooltip>

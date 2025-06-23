@@ -1,0 +1,82 @@
+.custom-fin-modal .modal-content {
+  background-color:rgb(49, 62, 82);
+  border: none;
+  border-radius: 1rem;
+  font-family: 'Exo2Variable', sans-serif;
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.6);
+}
+
+/* Inputs (date, text, number) */
+.custom-fin-modal input {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.452) !important;
+  color: #e2e8f0 !important;
+  font-family:'Exo2Variable', sans-serif !important;
+  font-size: 0.9rem;
+  padding: 0.45rem 0.75rem;
+  border-radius: 0.45rem;
+  height: 40px;
+}
+
+/* Input focus */
+.custom-fin-modal input:focus {
+  outline: none;
+  border-color: #38bdf8 !important;
+  box-shadow: 0 0 0 0.1rem rgba(56, 189, 248, 0.4);
+}
+
+/* Labels */
+.custom-fin-modal .form-label {
+  color: #cbd5e1;
+  font-weight: 500;
+  font-size: 0.85rem;
+  margin-bottom: 0.3rem;
+}
+
+/* Title, subtitle font tuning */
+.custom-fin-modal h3,
+.custom-fin-modal h4,
+.custom-fin-modal .fs-5 {
+  font-family:'Exo2Variable', sans-serif;
+}
+
+.custom-fin-modal h3 {
+  font-size: 1.4rem;
+  color: #f1f5f9;
+}
+
+.custom-fin-modal h4 {
+  font-size: 1.1rem;
+  color: #38bdf8;
+  word-break: break-word;
+}
+
+.custom-fin-modal .fs-5 {
+  color: #e2e8f0;
+  font-weight: 500;
+  font-size: 1.1rem;
+}
+
+/* Delete button alignment */
+.custom-fin-modal .btn-outline-danger {
+  padding: 0.45rem 0.65rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Add Part & Submit Buttons */
+.custom-fin-modal .btn-outline-info,
+.custom-fin-modal .btn-outline-secondary,
+.custom-fin-modal .btn-success {
+  font-family:'Exo2Variable', sans-serif;
+  font-weight: 500;
+  font-size: 0.95rem;
+  border-radius: 8px;
+}
+
+/* Hover Effects */
+.custom-fin-modal .btn-outline-info:hover {
+  background-color: #0ea5e9;
+  color: white;
+}

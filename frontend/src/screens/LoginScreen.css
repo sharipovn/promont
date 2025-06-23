@@ -1,0 +1,147 @@
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: 'Exo2Variable', sans-serif;
+    }
+
+    body {
+      background-color: hsl(218, 41%, 15%);
+      background-image:
+        radial-gradient(650px circle at 0% 0%, hsl(218, 41%, 35%) 15%, hsl(218, 41%, 30%) 35%, hsl(218, 41%, 20%) 75%, hsl(218, 41%, 19%) 80%, transparent 100%),
+        radial-gradient(1250px circle at 100% 100%, hsl(218, 41%, 45%) 15%, hsl(218, 41%, 30%) 35%, hsl(218, 41%, 20%) 75%, hsl(218, 41%, 19%) 80%, transparent 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Purple blob circles */
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      background: radial-gradient(#44006b, #ad1fff);
+      z-index: 0;
+    }
+
+    .blob.top-left {
+      width: 250px;
+      height: 250px;
+      top: -80px;
+      left: -100px;
+    }
+
+    .blob.bottom-right {
+      width: 500px;
+      height: 500px;
+      bottom: -100px;
+      right: -120px;
+    }
+
+    .form-container {
+      z-index: 1;
+      background: linear-gradient(150deg, #1B394D 33%, #2D9DA7 34%, #2D9DA7 66%, #EC5F20 67%);
+      padding: 30px 20px 50px;
+      text-align: center;
+      border-radius: 10px;
+       /* 💡 Fixed values */
+      width: 100%;              /* take full width of parent */
+      max-width: 100%;          /* don't go beyond parent */
+      margin: 0 auto; 
+      box-shadow: 0 0 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .form-container .title {
+      color: #fff;
+      font-size: 23px;
+      text-transform: capitalize;
+      letter-spacing: 1px;
+      margin-bottom: 60px;
+    }
+
+    .form-horizontal {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+    }
+
+    .form-icon {
+      color: #fff;
+      background-color: #1B394D;
+      font-size: 75px;
+      line-height: 92px;
+      height: 90px;
+      width: 90px;
+      margin: -65px auto 10px;
+      border-radius: 50%;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+      position: relative;
+    }
+
+    .input-icon {
+      color: #e7e7e7;
+      font-size: 23px;
+      position: absolute;
+      left: 10px;
+      top: 12px;
+    }
+
+    .form-control {
+      font-size: 16px;
+      font-weight: 600;
+      height: 50px;
+      padding-left: 40px;
+      border: none;
+      border-bottom: 2px solid #e7e7e7;
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    .form-control:focus {
+      border-bottom-color: #EC5F20;
+      box-shadow: none;
+    }
+
+    .form-control::placeholder {
+      font-weight: 600;
+    }
+
+    .forgot {
+      font-size: 13px;
+      font-weight: 600;
+      text-align: right;
+      display: block;
+      margin-top: 5px;
+    }
+
+    .forgot a {
+      color: #777;
+      text-decoration: none;
+    }
+
+    .forgot a:hover {
+      text-decoration: underline;
+    }
+
+    .signin {
+      background-color: #EC5F20;
+      color: #fff;
+      font-size: 17px;
+      letter-spacing: 2px;
+      width: 100%;
+      padding: 12px;
+      border: none;
+      transition: all 0.4s ease;
+      text-transform: capitalize;
+    }
+
+    .signin:hover {
+      font-weight: 600;
+      letter-spacing: 4px;
+      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+    }

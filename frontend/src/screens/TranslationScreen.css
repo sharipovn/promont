@@ -1,0 +1,27 @@
+.translation-search-wrapper {
+  position: relative;
+  width: 350px;
+}
+
+.translation-search-input {
+  padding: 0.5rem 0.75rem 0.3rem 2.2rem; /* left padding for icon */
+  background-color: #1e293b;
+  color: #e2e8f0;
+  border: 2px solid rgba(255,255,255,0.08);
+  border-radius: 6px;
+  font-size: 1rem;
+  width: 100%;
+}
+
+.translation-search-input::placeholder {
+  color: #94a3b8;
+}
+
+.search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: 1.1rem;
+}

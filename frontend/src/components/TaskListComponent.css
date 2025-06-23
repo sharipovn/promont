@@ -1,0 +1,131 @@
+/* TaskListComponent.css */
+.task-list-container {
+  width: 30%;
+  background-color: #002b36;
+  border-right: 1px solid #2c3e50;
+  padding: 10px;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+}
+
+.task-tabs {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #2ea4ff;
+}
+
+.tab {
+  flex: 1;
+  padding: 8px;
+  background: none;
+  border: none;
+  color: #aaa;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.3s, border-bottom 0.3s;
+  border-bottom: 2px solid transparent;
+}
+
+.tab.active {
+  color: #2ea4ff;
+  border-bottom: 2px solid #2ea4ff;
+  font-weight: 600;
+}
+
+.task-list-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.task-card {
+  background-color: #2d3748;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.task-card:hover {
+  background-color: #3a465a;
+}
+
+.task-card.done {
+  opacity: 0.7;
+  background-color: #34495e;
+}
+
+.task-title {
+  font-size: 1rem;
+}
+
+.task-meta {
+  margin-top: 4px;
+  color: #bbb;
+}
+
+
+.task-card.to-me {
+  background-color: #2c3e50; /* bluish for received tasks */
+}
+
+.task-card.from-me {
+  background-color: #3e2c50; /* purple for sent tasks */
+}
+
+/* .task-card.done {
+  opacity: 0.6;
+  text-decoration: line-through;
+} */
+
+.animated-check {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(34, 43, 58, 0.95); /* Match your theme */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 5;
+  animation: pop-check 0.4s ease-out;
+}
+
+.big-check {
+  font-size: 4rem;
+  animation: scale-pop 0.5s ease-out;
+}
+
+@keyframes scale-pop {
+  0% {
+    transform: scale(0.2);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes pop-check {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+
+.fade-out {
+  opacity: 0;
+  transform: scale(0.95);
+  transition: all 0.4s ease-in;
+}

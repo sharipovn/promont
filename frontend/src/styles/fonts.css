@@ -1,0 +1,18 @@
+/* src/styles/fonts.css */
+@font-face {
+  font-family: 'Exo2Variable';
+  src: local('Exo2Variable'),
+       url('../assets/fonts/exo2/Exo2-VariableFont_wght.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Exo2Variable';
+  src: local('Exo2ItalicVariable'),
+       url('../assets/fonts/exo2/Exo2-Italic-VariableFont_wght.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}

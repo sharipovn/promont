@@ -1,0 +1,117 @@
+.chat-panel {
+  background-color: #002b36;
+  color: white;
+  flex: 1;
+  display: flex;
+  width: 40%;
+  flex-direction: column;
+  border-top-right-radius: 12px;
+  border-bottom-right-radius: 12px;
+}
+
+.chat-header {
+  font-weight: 600;
+  font-size: 1.1rem;
+  padding: 1rem;
+  color: #00bcd4;
+  border-bottom: 1px solid #2c3e50;
+}
+
+
+
+.chat-body {
+  overflow-y: auto;
+}
+
+.chat-body {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  height: 70vh;
+}
+
+.chat-msg {
+  max-width: 75%;
+  padding: 10px 14px;
+  margin-bottom: 10px;
+  border-radius: 16px;
+  word-wrap: break-word;
+}
+
+.my-msg {
+  align-self: flex-end;
+  background-color: #2c3e50; /* Telegram dark background */
+  color: white;
+  border-top-right-radius: 0;
+}
+
+.their-msg {
+  align-self: flex-start;
+  background-color: #2b5278; /* Telegram-like blue */
+  color: white;
+  border-top-left-radius: 0;
+}
+
+
+
+.chat-input input {
+  background-color: #1c2834;
+  color: white;
+  border: 1px solid #2c3e50;
+}
+
+
+.chat-file {
+  display: flex;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  max-width: 100%;
+}
+
+.file-icon {
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: white;
+  border-radius: 50%;
+  color: #0d6efd;
+  margin-right: 12px;
+}
+
+.file-name-wrapper {
+  min-width: 0;      /* ✅ Important: allows ellipsis to work inside flex */
+  flex-grow: 1;
+}
+
+.file-name-ellipsis {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+
+
+.msg-input {
+  background-color: #0d2a32; /* Dark blue-green like your screenshot */
+  border: 1px solid #0d2a32;
+  box-shadow: none;
+}
+
+.msg-input:focus {
+  background-color: #0d2a32;
+  color: white;
+  border-color: #0d2a32;
+  outline: none;
+  box-shadow: 0 0 0 0.15rem rgba(0, 123, 255, 0.25);
+}
+.msg-input::placeholder {
+  color:rgb(122, 21, 85)
+}

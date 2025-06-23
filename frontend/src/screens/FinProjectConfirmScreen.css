@@ -1,0 +1,51 @@
+.custom-tabs {
+  padding: 0.5rem 1rem;
+}
+
+/* Base tab style */
+.custom-tabs .nav-link {
+  flex: 1 1 auto;
+  min-width: 130px;
+  min-height: 48px;                /* ⬆️ Higher tabs */
+  font-size: 1rem;                 /* ⬆️ Larger text */
+  font-weight: 600;
+  background-color: #1c2739;
+  color: #dce3f0;
+  border: none;
+  border-radius: 0.6rem;
+  padding: 10px 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  box-shadow: none;
+  transition: all 0.3s ease;
+}
+
+/* Hover effect */
+.custom-tabs .nav-link:hover {
+  background-color: #2c3c4e;
+  color: #ffffff;
+}
+
+/* Active tab style */
+.custom-tabs .nav-link.active {
+  background-color: #162434;   /* 🎯 Matches dark background tone */
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 0 12px rgba(0, 208, 255, 0.35);
+}
+
+/* Tab container bottom border */
+.custom-tabs .nav-item {
+  margin-right: 8px;
+}
+
+/* Optional: tab content box */
+.tab-content {
+  background-color: #121e2e;
+  color: white;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-top: 1rem;
+}

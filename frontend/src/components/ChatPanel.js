@@ -33,7 +33,10 @@ export default function ChatPanel({ selectedTask }) {
   const didMountRef = useRef(false);
 
   const taskId = selectedTask?.task_id;
-  const targetUser = selectedTask?.receiver;
+  const targetUser = selectedTask?.sender?.username === user?.username
+          ? selectedTask?.receiver
+          : selectedTask?.sender;
+
 
 
     const fetchMessages = useCallback(async (silent = false) => {

@@ -32,7 +32,7 @@ export default function ChatMessageItem({ msg }) {
             <a
               href={file.file_url}
               download
-              onClick={(e) => safeDownload(e, file.file_url)}
+              onClick={(e) => safeDownload(e, file.file, returnTitle)}
               className="text-white text-decoration-none file-name-ellipsis"
             >
               <HoverTooltip maxWidth='100%'>{file.file_original_name}</HoverTooltip>

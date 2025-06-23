@@ -282,14 +282,14 @@ const updateTreeMessageCount = useCallback((node, fullId) => {
                       <div key={i}>
                         <a
                             href={file.file}
-                            rel="noopener noreferrer"
                             download
-                            onClick={(e) => safeDownload(e, file.file)}
+                            onClick={(e) => safeDownload(e, file.file, returnTitle)}
                             className="text-info text-decoration-underline d-inline-flex align-items-center gap-1"
                           >
                             <FaDownload />
                             <HoverCountText maxWidth="80%">{file.original_name}</HoverCountText>
                           </a>
+
                       </div>
                     ))}
                   </div>

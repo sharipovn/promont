@@ -6,6 +6,10 @@ import { useI18n } from '../context/I18nProvider';
 import { createAxiosInstance } from '../utils/createAxiosInstance';
 import Alert from './Alert';
 import { FaTimes } from 'react-icons/fa';
+import { safeDownload } from '../utils/safeDownload';
+
+
+
 
 export default function CompleteWorkOrderModal({ show, onHide, order, onCompleted }) {
   console.log('opened order:',order)
@@ -181,7 +185,14 @@ export default function CompleteWorkOrderModal({ show, onHide, order, onComplete
           <div className="mb-2">
             {existingFiles.map((f, i) => (
               <div key={i} className="bg-dark rounded px-3 py-2 mb-1 d-flex justify-content-between align-items-center">
-                <a href={f.file_url} className="text-info small text-truncate" target="_blank" rel="noopener noreferrer">{f.original_name || f.name || `File ${i + 1}`}</a>
+                <a
+                  href={f.file_url}
+                  download
+                  onClick={(e) => safeDownload(e, f.file_url, returnTitle)}
+                  className="text-info small text-truncate"
+                >
+                  {f.original_name || f.name || `File ${i + 1}`}
+                </a>
                  {!order?.finished && ( <FaTimes className="text-danger cursor-pointer" onClick={() => removeExistingFile(i)} />)}
               </div>
             ))}

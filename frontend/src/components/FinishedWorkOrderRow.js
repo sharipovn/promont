@@ -12,6 +12,7 @@ import { RiQuestionAnswerFill } from "react-icons/ri";
 import { BiSolidCommentAdd } from "react-icons/bi";
 import { FaLockOpen } from "react-icons/fa";
 import {CONSTANTS} from '../constants/app_constants'
+import { safeDownload } from '../utils/safeDownload';
 
 
 export default function FinishedWorkOrderRow({ order, onConfirmed, onRefuse }) {
@@ -120,12 +121,13 @@ export default function FinishedWorkOrderRow({ order, onConfirmed, onRefuse }) {
                         <li key={idx} className='mb-1'>
                           <a
                             href={file.file_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                            download
+                            onClick={(e) => safeDownload(e, file.file_url, returnTitle)}
                             className="text-info text-decoration-none"
                           >
                             {file.original_name || file.name || `File ${idx + 1}`}
                           </a>
+
                         </li>
                       ))}
                     </ul>

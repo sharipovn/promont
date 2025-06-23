@@ -589,13 +589,14 @@ class ChatMessageFileSerializer(serializers.ModelSerializer):
         return request.build_absolute_uri(obj.file.url) if obj.file else None
 
     def get_file_size(self, obj):
-        if obj.file:
+        try:
             size_bytes = obj.file.size
             if size_bytes < 1024 * 1024:
                 return f"{round(size_bytes / 1024, 1)} KB"
             else:
                 return f"{round(size_bytes / (1024 * 1024), 1)} MB"
-        return None
+        except Exception:
+            return "0 KB"  # File missing or inaccessible
 
 
 class ChatMessageSerializer(serializers.ModelSerializer):

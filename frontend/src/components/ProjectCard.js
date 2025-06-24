@@ -3,6 +3,7 @@ import HoverText from './HoverText';
 import ProjectStatusLine from './ProjectStatusLine';
 import ProjectTreeModal from './ProjectTreeModal';
 import { useI18n } from '../context/I18nProvider';
+import {formatDateOnly} from '../utils/formatDateTime'
 
 import {
   FaUserTie,
@@ -181,7 +182,7 @@ export default function ProjectCard({ proj }) {
           <span className="d-flex align-items-center gap-2 text-light">
             <FaBusinessTime size="1rem" /><span className='text-light fw-semibold'>{returnTitle('project_card.given_period')}</span>
           </span>
-          <HoverText>{proj.start_date} — {proj.end_date}</HoverText>
+          <HoverText>{formatDateOnly(proj.start_date)} — {formatDateOnly(proj.end_date)}</HoverText>
         </div>
 
 

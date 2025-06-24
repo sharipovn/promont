@@ -13,7 +13,7 @@ export function formatDateTime(dateStr) {
   const hours = pad(date.getHours());
   const minutes = pad(date.getMinutes());
 
-  return `${day}-${month}-${year} ${hours}:${minutes}`;
+  return `${day}.${month}.${year} ${hours}:${minutes}`;
 }
 
 
@@ -29,5 +29,5 @@ export function formatDateOnly(dateStr) {
   const month = pad(date.getMonth() + 1);
   const year = date.getFullYear();
 
-  return `${day}-${month}-${year}`;
+  return `${day}.${month}.${year}`;
 }

@@ -1,5 +1,6 @@
 import React from 'react';
 import { useI18n } from '../context/I18nProvider';
+import DatePicker from 'react-datepicker';
 
 export default function ProjectFilters({ filters, handleInputChange }) {
   const { returnTitle } = useI18n();

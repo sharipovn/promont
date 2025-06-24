@@ -205,7 +205,7 @@ class ProjectListAPIView(generics.ListAPIView):
         capabilities = set(user.get_capability_names())
 
         # ✅ If user is Tech Director or Fin Director — see all projects
-        if 'IS_TECH_DIR' in capabilities or 'IS_FIN_DIR' in capabilities:
+        if 'IS_TECH_DIR' in capabilities or 'IS_FIN_DIR' in capabilities or 'IS_GEN_DIR' in capabilities:
             qs = Project.objects.all()
         else:
             base_q = Q(create_user=user) | Q(project_gip=user)
@@ -2028,8 +2028,35 @@ class ToggleVacationAPIView(APIView):
         staff.save()
         return Response({"detail": "Vacation status updated successfully."}, status=200)
     
-    
-    
+
+class ToggleBusinessTripPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, user_id):
+        try:
+            staff = StaffUser.objects.get(user_id=user_id)
+        except StaffUser.DoesNotExist:
+            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Extract data
+        on_business_trip = request.data.get('on_business_trip')
+        start_date = request.data.get('on_business_trip_start')
+        end_date = request.data.get('on_business_trip_end')
+
+        if on_business_trip:
+            if not start_date or not end_date:
+                return Response({"detail": "Business Trip start and end dates are required."}, status=400)
+            staff.on_business_trip = True
+            staff.on_business_trip_start = start_date
+            staff.on_business_trip_end = end_date
+        else:
+            staff.on_business_trip = False
+            staff.on_business_trip_start = None
+            staff.on_business_trip_end = None
+
+        staff.save()
+        return Response({"detail": "Business Trip status updated successfully."}, status=200)
+
     
     
 class JobPositionsByDepartmentView(ListAPIView):

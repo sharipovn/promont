@@ -31,6 +31,7 @@ class SpecialProjectRetrieveView(RetrieveAPIView):
             project.create_user == user or
             project.project_gip == user or
             'IS_FIN_DIR' in capabilities or
+            'IS_GEN_DIR' in capabilities or
             'IS_TECH_DIR' in capabilities
         ):
             return project

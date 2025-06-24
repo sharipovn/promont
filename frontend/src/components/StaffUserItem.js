@@ -21,6 +21,9 @@ export default function StaffUserItem({ staff, isActive, onClick }) {
           {staff.on_vocation && (
             <span className="badge bg-warning text-dark">{returnTitle('staff.on_vocation')}</span>
           )}
+          {staff.on_business_trip && (
+            <span className="badge bg-warning text-dark">{returnTitle('staff.on_business_trip')}</span>
+          )}
         </span>
         <span className="text-success small">{staff.position_name}</span>
       </div>

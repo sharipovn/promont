@@ -16,6 +16,7 @@ export default function CreateProjectModal({ show, onHide, onCreated }) {
   const [form, setForm] = useState({
     project_name: '',
     total_price: '',
+    contract_number: '',
     start_date: '',
     end_date: '',
     financier: null,
@@ -96,9 +97,9 @@ export default function CreateProjectModal({ show, onHide, onCreated }) {
   };
 
   const handleSubmit = async () => {
-    const { project_name, total_price, start_date, end_date, financier, partner, currency } = form;
+    const { project_name, total_price,contract_number, start_date, end_date, financier, partner, currency } = form;
 
-    if (!project_name || !total_price || !start_date || !end_date || !financier || !partner || !currency) {
+    if (!project_name || !total_price || !start_date || !end_date || !financier || !partner || !currency ||!contract_number) {
       setAlertMsg(returnTitle('create_proj.all_fields_required'));
       return;
     }
@@ -138,6 +139,7 @@ export default function CreateProjectModal({ show, onHide, onCreated }) {
         setForm({
           project_name: '',
           total_price: '',
+          contract_number:'',
           start_date: '',
           end_date: '',
           financier: null,
@@ -199,6 +201,7 @@ export default function CreateProjectModal({ show, onHide, onCreated }) {
         {alertMsg && <Alert type="info" message={alertMsg} />}
 
         <Form>
+          <div className="row">
           <Form.Group className="mb-3">
             <Form.Label className="text-light">{returnTitle('create_proj.project_name')}</Form.Label>
             <Form.Control
@@ -212,6 +215,22 @@ export default function CreateProjectModal({ show, onHide, onCreated }) {
               {...withValidation(returnTitle('create_proj.project_name_required'))}
             />
           </Form.Group>
+          </div>
+          <div className="row">
+          <Form.Group className="mb-3">
+            <Form.Label className="text-light">{returnTitle('create_proj.contract_number')}</Form.Label>
+            <Form.Control
+              type="text"
+              name="contract_number"
+              className="bg-transparent border text-light"
+              value={form.contract_number}
+              onChange={handleChange}
+              placeholder={returnTitle('app.e.g.') + ' 556444654065'}
+              required
+              {...withValidation(returnTitle('create_proj.contract_number_required'))}
+            />
+          </Form.Group>
+          </div>
           <div className="row">
             <div className="col-md-6 mb-3">
               <Form.Group className="mb-3">

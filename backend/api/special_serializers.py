@@ -71,7 +71,7 @@ class TechnicalPartSerializer(serializers.ModelSerializer):
         user = self.context['request'].user
         caps = set(user.get_capability_names())
 
-        if caps & {'IS_TECH_DIR', 'IS_FIN_DIR', 'IS_FINANCIER', 'IS_GIP'}:
+        if caps & {'IS_TECH_DIR', 'IS_FIN_DIR', 'IS_FINANCIER', 'IS_GIP','IS_GEN_DIR'}:
             return WorkOrderSerializer(obj.work_orders.all(), many=True, context=self.context).data
 
         if 'IS_NACH_OTDEL' in caps and obj.tch_part_nach == user:
@@ -115,7 +115,7 @@ class FinancePartSerializer(serializers.ModelSerializer):
         caps = set(user.get_capability_names())
         all_parts = obj.gip_parts.all()
 
-        if caps & {'IS_TECH_DIR', 'IS_FIN_DIR', 'IS_FINANCIER', 'IS_GIP'}:
+        if caps & {'IS_TECH_DIR', 'IS_FIN_DIR', 'IS_FINANCIER', 'IS_GIP','IS_GEN_DIR'}:
             return TechnicalPartSerializer(all_parts, many=True, context=self.context).data
 
         if 'IS_NACH_OTDEL' in caps:
@@ -167,7 +167,7 @@ class SpecialProjectSerializer(serializers.ModelSerializer):
         caps = set(user.get_capability_names())
         all_parts = obj.finance_parts.all()
 
-        if caps & {'IS_TECH_DIR', 'IS_FIN_DIR', 'IS_FINANCIER', 'IS_GIP'} or obj.create_user == user:
+        if caps & {'IS_TECH_DIR', 'IS_FIN_DIR', 'IS_FINANCIER', 'IS_GIP','IS_GEN_DIR'} or obj.create_user == user:
             return FinancePartSerializer(all_parts, many=True, context=self.context).data
 
         if 'IS_NACH_OTDEL' in caps:

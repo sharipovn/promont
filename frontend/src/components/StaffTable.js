@@ -5,11 +5,14 @@ import { useI18n } from '../context/I18nProvider';
 import HoverText from './HoverText';
 import EditStaffModal from './EditStaffModal';
 import MakeVacationModal from './MakeVacationModal';
+import MakeBusinessTripModal from './MakeBusinessTripModal'
 import './TranslationTable.css';
 import { FaCheckCircle } from "react-icons/fa";
 import ProfileImage from './ProfileImage';
 import { BiEdit } from "react-icons/bi";
 import { MdWork } from "react-icons/md";
+import { MdWorkOff } from "react-icons/md";
+import { FaBusinessTime } from "react-icons/fa6";
 
 
 
@@ -19,6 +22,7 @@ export default function StaffTable({ staffList,onUpdated }) {
   const [selectedStaff, setSelectedStaff] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showVacationModal, setShowVacationModal] = useState(false);
+  const [showBusinessTripModal, setShowBusinessTripModal] = useState(false);
 
   return (
     <>
@@ -45,6 +49,9 @@ export default function StaffTable({ staffList,onUpdated }) {
               <th>{returnTitle('staff.vocation')}</th>
               <th>{returnTitle('staff.on_vocation_start')}</th>
               <th>{returnTitle('staff.on_vocation_end')}</th>
+              <th>{returnTitle('staff.on_business_trip')}</th>
+              <th>{returnTitle('staff.on_business_trip_start')}</th>
+              <th>{returnTitle('staff.on_business_trip_end')}</th>
               <th>{returnTitle('staff.pnfl')}</th>
               <th>{returnTitle('staff.phone_number')}</th>
               <th className="text-center" style={{ width: '100px' }}>{returnTitle('staff.actions')}</th>
@@ -72,6 +79,16 @@ export default function StaffTable({ staffList,onUpdated }) {
 
                 <td className="py-3">{staff?.on_vocation_start || '—'}</td>
                 <td className="py-3">{staff?.on_vocation_end || '—'}</td>
+                                <td className="py-3 text-center">
+                  {staff.on_business_trip ? (
+                    <FaCheckCircle className="text-info" size={'1rem'} title={returnTitle('staff.on_business_trip')} />
+                  ) : (
+                    '—'
+                  )}
+                </td>
+
+                <td className="py-3">{staff?.on_business_trip_start || '—'}</td>
+                <td className="py-3">{staff?.on_business_trip_end || '—'}</td>
                 <td className="py-3">{staff?.pnfl || '—'}</td>
                 <td className="py-3">{staff?.phone_number || '—'}</td>
                <td className="text-center py-3">
@@ -94,7 +111,17 @@ export default function StaffTable({ staffList,onUpdated }) {
                       setShowVacationModal(true);
                     }}
                   >
-                    <MdWork size={16} />
+                    <MdWorkOff size={16} />
+                  </button>
+                  <button
+                    className="edit-btn-icon  text-info"
+                    title={staff.on_business_trip ? returnTitle('staff.remove_business_trip') : returnTitle('staff.make_on_business_trip')}
+                    onClick={() => {
+                      setSelectedStaff(staff);
+                      setShowBusinessTripModal(true);
+                    }}
+                  >
+                    <FaBusinessTime size={16} />
                   </button>
                 </div>
               </td>
@@ -119,6 +146,15 @@ export default function StaffTable({ staffList,onUpdated }) {
         <MakeVacationModal
           show={showVacationModal}
           onHide={() => setShowVacationModal(false)}
+          staff={selectedStaff}
+          onUpdated={onUpdated} // ✅ trigger refetch
+        />
+      )}
+
+      {selectedStaff && showBusinessTripModal && (
+        <MakeBusinessTripModal
+          show={showBusinessTripModal}
+          onHide={() => setShowBusinessTripModal(false)}
           staff={selectedStaff}
           onUpdated={onUpdated} // ✅ trigger refetch
         />

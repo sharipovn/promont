@@ -65,7 +65,8 @@ from .views import (StaffUserLoginView,
                     MarkTaskAsDoneView,
                     ChatMessageSendFileView,
                     UnreadMessagesMinimalView,
-                    CurrencyListView)
+                    CurrencyListView,
+                    ToggleBusinessTripPIView)
           
           
           
@@ -173,6 +174,7 @@ urlpatterns = [
     path('manage-staff/department-list/', StaffMgDepartmentListAPIView.as_view(), name='staff-department-list'),
     path('manage-staff/staff-users/<int:user_id>/', StaffUserUpdateAPIView.as_view(), name='update_staff_user'),
     path('manage-staff/staff-users/<int:user_id>/toggle-vacation/', ToggleVacationAPIView.as_view(), name='toggle_vacation'),
+    path('manage-staff/staff-users/<int:user_id>/toggle-bisness-trip/', ToggleBusinessTripPIView.as_view(), name='toggle_vacation'),
     
     
     

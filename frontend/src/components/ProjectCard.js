@@ -141,7 +141,7 @@ export default function ProjectCard({ proj }) {
       {/* Sarlavha */}
       <div>
           <h6 className="mb-1 fw-bold d-flex align-items-center gap-2 fs-sm" style={{ color: '#00f0ff' }} onClick={() => setShowModal(true)}>
-            <FaFolderOpen  size={'1rem'}/> <HoverText>{proj.project_name}</HoverText>
+            <FaFolderOpen  size={'1rem'}/> <HoverText>{proj.project_name}</HoverText>{proj?.contract_number && <span className='text-success'>({proj?.contract_number})</span>}
           </h6>
       </div>
 

@@ -16,6 +16,7 @@ export default function UpdateProjectModal({ show, onHide, project, onUpdated })
   const [form, setForm] = useState({
     project_name: '',
     total_price: '',
+    contract_number: '',
     start_date: '',
     end_date: '',
     financier: null,
@@ -43,6 +44,7 @@ export default function UpdateProjectModal({ show, onHide, project, onUpdated })
       setForm({
         project_name: project.project_name || '',
         total_price: project.total_price?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ') || '',
+        contract_number: project.contract_number || '',
         start_date: project.start_date || '',
         end_date: project.end_date || '',
         financier: project.financier
@@ -111,9 +113,9 @@ export default function UpdateProjectModal({ show, onHide, project, onUpdated })
   };
 
   const handleSubmit = async () => {
-    const { project_name, total_price, start_date, end_date, financier, partner,currency } = form;
+    const { project_name, total_price, start_date, end_date, financier, partner,currency,contract_number } = form;
 
-    if (!project_name || !total_price || !start_date || !end_date || !financier || !partner || !currency ) {
+    if (!project_name || !total_price || !start_date || !end_date || !financier || !partner || !currency ||!contract_number) {
       setAlertMsg(returnTitle('create_proj.all_fields_required'));
       return;
     }
@@ -209,6 +211,7 @@ export default function UpdateProjectModal({ show, onHide, project, onUpdated })
         {alertMsg && <Alert type="info" message={alertMsg} />}
 
         <Form>
+          <div className="row">
           <Form.Group className="mb-3">
             <Form.Label className="text-light">{returnTitle('create_proj.project_name')}</Form.Label>
             <Form.Control
@@ -221,7 +224,21 @@ export default function UpdateProjectModal({ show, onHide, project, onUpdated })
               required
             />
           </Form.Group>
-
+          </div>
+          <div className="row">
+          <Form.Group className="mb-3">
+            <Form.Label className="text-light">{returnTitle('create_proj.contract_number')}</Form.Label>
+            <Form.Control
+              type="text"
+              name="contract_number"
+              className="bg-transparent border text-light"
+              value={form.contract_number}
+              onChange={handleChange}
+              placeholder={returnTitle('app.e.g.') + ' 54646546546546'}
+              required
+            />
+          </Form.Group>
+          </div>
 
           <div className="row">
             <div className="col-md-6 mb-3">

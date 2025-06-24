@@ -18,8 +18,12 @@ export default function ProjectRow({ project, onEdit }) {
       <div className="flex-grow-1">
             <h6 className="text-success mb-1 fs-6">
             {project.project_name}{' '}
-            <span className="text-secondary">({Number(project.total_price).toLocaleString()} ({returnTitle(`currency.${project?.currency_name?.toLowerCase()}`)})</span>
+            <span className="text-secondary">({Number(project.total_price).toLocaleString()} {returnTitle(`currency.${project?.currency_name?.toLowerCase()}`)})</span>
             </h6>
+        <div className="text-secondary small">
+          <span>{returnTitle('create_proj.contract_number')} :</span>{' '}
+          <span className='text-info'>{project.contract_number}</span>{' '}
+        </div>
         <div className="text-light small">
           <strong>{returnTitle('app.created_by')}:</strong>{' '}
           <strong>{project.create_user_fio}</strong>{' '}

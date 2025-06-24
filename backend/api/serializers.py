@@ -497,6 +497,10 @@ class StaffManagementUserSerializer(serializers.ModelSerializer):
             'on_vocation_update',
             'on_vocation_start',
             'on_vocation_end',
+            'on_business_trip',
+            'on_business_trip_update',
+            'on_business_trip_start',
+            'on_business_trip_end',
             'pnfl',
             'phone_number',
             'position_start_date',
@@ -568,7 +572,7 @@ class MyStaffTreeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = StaffUser
-        fields = ['user_id','username', 'fio', 'position_name', 'profile_image', 'on_vocation']
+        fields = ['user_id','username', 'fio', 'position_name', 'profile_image', 'on_vocation','on_business_trip']
 
 
 class StaffUserMiniSerializer(serializers.ModelSerializer):

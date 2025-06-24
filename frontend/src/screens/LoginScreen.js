@@ -14,6 +14,7 @@ const translations = {
     forgot: "Forgot Password?",
     login: "Login",
     lang: "Eng",
+    login_error: "Invalid username or password",
   },
   uz: {
     title: "Shaxsiy kabinet",
@@ -22,6 +23,7 @@ const translations = {
     forgot: "Parolni unutdingizmi?",
     login: "Kirish",
     lang: "O'zb",
+    login_error: "Foydalanuvchi nomi yoki parol noto‘g‘ri",
   },
   ru: {
     title: "Мой аккаунт",
@@ -30,6 +32,7 @@ const translations = {
     forgot: "Забыли пароль?",
     login: "Войти",
     lang: "Рус",
+    login_error: "Неверное имя пользователя или пароль",
   },
 };
 
@@ -62,7 +65,7 @@ export default function LoginScreen() {
       reloadTranslations();
       navigate("/dashboard");
     } catch (err) {
-      setError("Invalid username or password / Неверное имя пользователя или пароль");
+      setError(t.login_error);
     }
   };
 

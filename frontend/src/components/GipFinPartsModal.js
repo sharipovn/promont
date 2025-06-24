@@ -74,7 +74,7 @@ export default function GipFinPartsModal({ show, onHide, project,onCreated,onUpd
               {parts.map((part, index) => (
                 <Row key={index} className="border-top py-2 px-2 align-items-center">
                   <Col>{part.fs_part_name || '-'}</Col>
-                  <Col>{Number(part.fs_part_price || 0).toLocaleString()} so'm</Col>
+                  <Col>{Number(part.fs_part_price || 0).toLocaleString()} {returnTitle(`currency.${project?.currency_name?.toLowerCase()}`)}</Col>
                   <Col>{part.fs_start_date}</Col>
                   <Col>{part.fs_finish_date}</Col>
                   <Col><HoverText>{part.financier_fio || '-'}</HoverText></Col>

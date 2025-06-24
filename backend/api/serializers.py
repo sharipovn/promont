@@ -1,7 +1,7 @@
 # api/serializers.py
 
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from api.models import StaffUser,Project,ProjectFinancePart,Partner,UserTask,Translation,Department,ProjectGipPart,ChatMessage,ActionLog,WorkOrder,WorkOrderFile,PhaseType,Role,JobPosition,ChatMessageFile
+from api.models import StaffUser,Project,ProjectFinancePart,Partner,UserTask,Currency,Translation,Department,ProjectGipPart,ChatMessage,ActionLog,WorkOrder,WorkOrderFile,PhaseType,Role,JobPosition,ChatMessageFile
 from rest_framework import serializers
 
 
@@ -32,6 +32,7 @@ class ProjectSerializer(serializers.ModelSerializer):
     all_sent_to_tech_dir = serializers.SerializerMethodField()
     all_tech_dir_confirmed = serializers.SerializerMethodField()
     partner_name = serializers.CharField(source='partner.partner_name', read_only=True)
+    currency_name = serializers.CharField(source='currency.currency_name', read_only=True)
     partner_inn = serializers.CharField(source='partner.partner_inn', read_only=True)
     last_status = serializers.SerializerMethodField(read_only=True)
     full_id = serializers.CharField(read_only=True)
@@ -47,7 +48,7 @@ class ProjectSerializer(serializers.ModelSerializer):
             'project_code', 'create_user', 'create_date', 'update_date',
             'create_user_fio', 'financier_fio','finance_parts_count','technical_parts_count',
             'all_sent_to_tech_dir','all_tech_dir_confirmed','partner_name','partner_inn',
-            'work_order_count', 'work_order_confirmed_count','full_id','path_type','last_status',
+            'work_order_count', 'work_order_confirmed_count','full_id','path_type','last_status','currency_name'  # ✅ Add this here
         ]
         
     def get_create_user_fio(self, obj):
@@ -670,3 +671,10 @@ class UnreadSimpleMessageSerializer(serializers.ModelSerializer):
             'file_original_name': f.file_original_name,
             'file_url': self.context['request'].build_absolute_uri(f.file.url),
         } for f in obj.files.all()]
+        
+        
+        
+class CurrencySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Currency
+        fields = ['currency_id', 'currency_name']

@@ -20,10 +20,12 @@ export default function UpdateProjectModal({ show, onHide, project, onUpdated })
     end_date: '',
     financier: null,
     partner: null,
+    currency: null, // ✅ new
   });
 
   const [financierOptions, setFinancierOptions] = useState([]);
   const [partnerOptions, setPartnerOptions] = useState([]);
+  const [currencyOptions, setCurrencyOptions] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const [alertMsg, setAlertMsg] = useState('');;
   useEffect(() => {
@@ -49,6 +51,9 @@ export default function UpdateProjectModal({ show, onHide, project, onUpdated })
         partner: project.partner
           ? { value: project.partner, label: `${project.partner_name} (${project.partner_inn})` }
           : null,
+        currency: project.currency
+          ? { value: project.currency, label: project.currency_name  }
+          : null,
       });
 
 
@@ -59,7 +64,23 @@ export default function UpdateProjectModal({ show, onHide, project, onUpdated })
             label: `${user.fio} (${user.position || '---'})`,
           }));
           setFinancierOptions(options);
+          setAlertMsg(''); // ✅ Clear alert if success
+        }).catch((err) => {
+          setAlertMsg('❌ ' + returnTitle('create_proj.financier_list_fetch_failed')); // Or custom message
         });
+
+
+      axiosInstance.get('/currencies/').then((res) => {
+        const options = res.data.map((c) => ({
+          value: c.currency_id,
+          label: c.currency_name,
+        }));
+        setCurrencyOptions(options);
+        setAlertMsg(''); // ✅ Clear alert if success
+      }).catch((err) => {
+          setAlertMsg('❌ ' + returnTitle('create_proj.currency_list_fetch_failed')); // Or custom message
+        });
+
 
       axiosInstance.get('/partners/')
         .then((res) => {
@@ -68,7 +89,11 @@ export default function UpdateProjectModal({ show, onHide, project, onUpdated })
             label: `${p.partner_name} (${p.partner_inn})`,
           }));
           setPartnerOptions(options);
+          setAlertMsg(''); // ✅ Clear alert if success
+        }).catch((err) => {
+          setAlertMsg('❌ ' + returnTitle('create_proj.partner_list_fetch_failed')); // Or custom message
         });
+
     }
   }, [show, project, axiosInstance]);
 
@@ -86,9 +111,9 @@ export default function UpdateProjectModal({ show, onHide, project, onUpdated })
   };
 
   const handleSubmit = async () => {
-    const { project_name, total_price, start_date, end_date, financier, partner } = form;
+    const { project_name, total_price, start_date, end_date, financier, partner,currency } = form;
 
-    if (!project_name || !total_price || !start_date || !end_date || !financier || !partner) {
+    if (!project_name || !total_price || !start_date || !end_date || !financier || !partner || !currency ) {
       setAlertMsg(returnTitle('create_proj.all_fields_required'));
       return;
     }
@@ -113,6 +138,7 @@ export default function UpdateProjectModal({ show, onHide, project, onUpdated })
       total_price: parseInt(form.total_price.replace(/\s/g, ''), 10),
       financier: form.financier.value,
       partner: form.partner.value,
+      currency: form.currency?.value,
     };
 
     setSubmitting(true);
@@ -196,18 +222,39 @@ export default function UpdateProjectModal({ show, onHide, project, onUpdated })
             />
           </Form.Group>
 
-          <Form.Group className="mb-3">
-            <Form.Label className="text-light">{returnTitle('create_proj.total_price')} ({returnTitle('create_proj.uzs')})</Form.Label>
-            <Form.Control
-              type="text"
-              name="total_price"
-              className="bg-transparent border text-light"
-              value={form.total_price}
-              onChange={handleChange}
-              inputMode="numeric"
-              required
-            />
-          </Form.Group>
+
+          <div className="row">
+            <div className="col-md-6 mb-3">
+              <Form.Group className="mb-3">
+                <Form.Label className="text-light">{returnTitle('create_proj.total_price')} ({returnTitle('create_proj.uzs')})</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="total_price"
+                  className="bg-transparent border text-light"
+                  value={form.total_price}
+                  onChange={handleChange}
+                  inputMode="numeric"
+                  required
+                />
+              </Form.Group>
+              </div>
+             <div className="col-md-6 mb-3">
+                <Form.Group className="mb-3">
+                <Form.Label className="text-light">
+                  {returnTitle('create_proj.currency')}
+                </Form.Label>
+                <Select
+                  options={currencyOptions}
+                  value={form.currency}
+                  onChange={(selected) => setForm({ ...form, currency: selected })}
+                  placeholder={returnTitle('create_proj.select_currency')}
+                  styles={customSelectStyles}
+                  classNamePrefix="react-select"
+                />
+              </Form.Group>
+            </div>
+          </div>
+
 
           <div className="row">
             <div className="col-md-6 mb-3">

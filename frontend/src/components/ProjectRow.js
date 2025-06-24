@@ -7,6 +7,7 @@ import { useI18n } from '../context/I18nProvider';
 
 export default function ProjectRow({ project, onEdit }) {
   const { returnTitle } = useI18n();
+  console.log('project:',project)
 
   return (
     <div
@@ -17,7 +18,7 @@ export default function ProjectRow({ project, onEdit }) {
       <div className="flex-grow-1">
             <h6 className="text-success mb-1 fs-6">
             {project.project_name}{' '}
-            <span className="text-secondary">({Number(project.total_price).toLocaleString()} {returnTitle('create_proj.uzs')})</span>
+            <span className="text-secondary">({Number(project.total_price).toLocaleString()} ({returnTitle(`currency.${project?.currency_name?.toLowerCase()}`)})</span>
             </h6>
         <div className="text-light small">
           <strong>{returnTitle('app.created_by')}:</strong>{' '}

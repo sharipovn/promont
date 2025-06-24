@@ -56,7 +56,7 @@ export default function UpdateFinancialPartsModal({ show, onHide, project, onUpd
       const totalAllocated = updated.reduce((sum, p, i) => sum + (i === index ? Number(numericValue) : sanitizePrice(p.fs_part_price)), 0);
       const max = Number(project?.total_price || 0);
       if (totalAllocated > max) {
-        setWarning(`${returnTitle('create_fpart.exceeds_total_by')} ${(totalAllocated - max).toLocaleString()} so'm`);
+        setWarning(`${returnTitle('create_fpart.exceeds_total_by')} ${(totalAllocated - max).toLocaleString()} ${returnTitle(`currency.${project?.currency_name?.toLowerCase()}`)?.toUpperCase()}`);
       }
       updated[index][field] = Number(numericValue).toLocaleString();
     } else {
@@ -146,7 +146,7 @@ export default function UpdateFinancialPartsModal({ show, onHide, project, onUpd
           <h5 className="text-info">{project?.project_name}</h5>
           <h6 className="text-secondary">{project?.start_date} → {project?.end_date}</h6>
           <div className="fs-5 mb-2 text-white">
-            {returnTitle('create_fpart.remaining_budget')} : <span className='text-success'>{remaining.toLocaleString()} {returnTitle('create_proj.uzs')}</span> {returnTitle('create_fpart.total_budget')} : <span className='text-warning'>{maxAvailable.toLocaleString()} {returnTitle('create_proj.uzs')}</span>
+            {returnTitle('create_fpart.remaining_budget')} : <span className='text-success'>{remaining.toLocaleString()} {returnTitle(`currency.${project?.currency_name?.toLowerCase()}`)?.toUpperCase()}</span> {returnTitle('create_fpart.total_budget')} : <span className='text-warning'>{maxAvailable.toLocaleString()} {returnTitle(`currency.${project?.currency_name?.toLowerCase()}`)?.toUpperCase()}</span>
           </div>
 
           {parts.map((part, index) => (

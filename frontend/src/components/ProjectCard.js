@@ -167,7 +167,7 @@ export default function ProjectCard({ proj }) {
             }}
           >
             <HoverText maxWidth="100%">
-              {Number(proj.total_price).toLocaleString()} UZS
+              {Number(proj.total_price).toLocaleString()} {returnTitle(`currency.${proj?.currency_name?.toLowerCase()}`)?.toUpperCase()}
             </HoverText>
           </span>
         </div>

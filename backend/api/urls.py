@@ -64,7 +64,8 @@ from .views import (StaffUserLoginView,
                     UserTaskListView,
                     MarkTaskAsDoneView,
                     ChatMessageSendFileView,
-                    UnreadMessagesMinimalView)
+                    UnreadMessagesMinimalView,
+                    CurrencyListView)
           
           
           
@@ -188,4 +189,7 @@ urlpatterns = [
     path('chat/messages/send-files/', ChatMessageSendFileView.as_view()),
     path('chat/messages/unread-minimal/', UnreadMessagesMinimalView.as_view(), name='unread-messages-minimal'),
 
+
+    #currency
+    path('currencies/', CurrencyListView.as_view(), name='currency-list'),
 ]

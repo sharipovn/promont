@@ -77,7 +77,7 @@ export default function FinancialPartsModal({ show, onHide, project, onCreated }
     const remaining = maxAvailable - totalAllocated;
 
     if (remaining < 0) {
-      setWarning(`❌ ${returnTitle('create_fpart.exceeds_total_by')} ${Math.abs(remaining).toLocaleString()} so'm`);
+      setWarning(`❌ ${returnTitle('create_fpart.exceeds_total_by')} ${Math.abs(remaining).toLocaleString()} ${returnTitle(`currency.${project?.currency_name?.toLowerCase()}`)?.toUpperCase()}`);
       setSubmitting(false);
       return;
     }
@@ -147,7 +147,7 @@ export default function FinancialPartsModal({ show, onHide, project, onCreated }
           <h5 className="text-info">{project?.project_name}</h5>
           <h6 className="text-secondary">{project?.start_date} → {project?.end_date}</h6>
           <div className="fs-5 mb-2 text-white">
-            {returnTitle('create_fpart.remaining_budget')} : <span className='text-success'>{remaining.toLocaleString()} {returnTitle('create_proj.uzs')}</span> {returnTitle('create_fpart.total_budget')} : <span className='text-warning'>{maxAvailable.toLocaleString()} {returnTitle('create_proj.uzs')}</span> 
+            {returnTitle('create_fpart.remaining_budget')} : <span className='text-success'>{remaining.toLocaleString()} {returnTitle(`currency.${project?.currency_name?.toLowerCase()}`)?.toUpperCase()}</span> {returnTitle('create_fpart.total_budget')} : <span className='text-warning'>{maxAvailable.toLocaleString()} {returnTitle(`currency.${project?.currency_name?.toLowerCase()}`)?.toUpperCase()}</span> 
           </div>
 
           {parts.map((part, index) => (

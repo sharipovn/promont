@@ -11,7 +11,7 @@ from .models import (Capability,
                      ProjectPhase,
                      ProjectGipPart,
                      WorkOrder, 
-                     WorkOrderFile,
+                     Currency,
                      ActionLog,
                      ObjectLastStatus,
                      Message,
@@ -97,19 +97,24 @@ class RoleAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
 
+@admin.register(Currency)
+class CurrencyAdmin(admin.ModelAdmin):
+    list_display = ('currency_id', 'currency_name', 'description', 'create_time', 'update_time')
+    search_fields = ('currency_name', 'description')
+    ordering = ('currency_name',)
 
 
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
     list_display = (
-        'project_code', 'project_name', 'total_price','partner',
+        'project_code', 'project_name', 'total_price','currency','partner',
         'start_date', 'end_date',
         'financier', 'financier_confirm', 'financier_confirm_date',
         'project_gip', 'gip_confirm', 'gip_confirm_date',
         'create_user', 'create_date', 'update_date',
         'get_full_id', 'last_status_display',
     )
-    list_filter = ('financier_confirm', 'gip_confirm', 'start_date', 'end_date', 'partner')
+    list_filter = ('financier_confirm', 'gip_confirm', 'start_date', 'end_date', 'partner','currency')
     search_fields = ('project_code', 'project_name','partner__partner_name')
 
     @admin.display(description='Full ID')

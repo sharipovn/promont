@@ -199,10 +199,48 @@ class Role(models.Model):
 
 
 
+
+
+
+
+class Currency(models.Model):
+    currency_id = models.AutoField(primary_key=True)
+    currency_name = models.CharField(max_length=10, unique=True)  # e.g., 'UZS', 'USD', 'EUR'
+    description = models.TextField(blank=True, null=True)
+    create_time = models.DateTimeField(auto_now_add=True)
+    update_time = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'currencies'
+        verbose_name = "Currency"
+        verbose_name_plural = "Currencies"
+
+    def __str__(self):
+        return self.currency_name
+
+
+def get_default_currency():
+    from .models import Currency
+    return Currency.objects.get(currency_name='UZS').pk
+
+
+
+
+
+
 class Project(models.Model):
     project_code = models.AutoField(primary_key=True)
     project_name = models.CharField(max_length=255,unique=True)
     total_price = models.BigIntegerField()
+    
+    currency  = models.ForeignKey(
+        'Currency',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='projects',
+        default=get_default_currency  # ← this sets UZS as default
+    )
 
     start_date = models.DateField()
     end_date = models.DateField()

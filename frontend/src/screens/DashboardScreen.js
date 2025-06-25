@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo,useCallback} from 'react';
+import React, { useState, useEffect, useMemo,useCallback,useRef } from 'react';
 import { useAuth } from '../context/AuthProvider';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
@@ -28,7 +28,7 @@ export default function DashboardScreen() {
   const [loading, setLoading] = useState(false);
   const { returnTitle } = useI18n();
 
-
+  const requestIdRef = useRef(0); // 🆕 uniq ID saqlovchi ref
 
   const [filters, setFilters] = useState({
     start_date_from: '',
@@ -57,7 +57,9 @@ export default function DashboardScreen() {
   };
 
   const fetchProjects = useCallback(() => {
+    const requestId = ++requestIdRef.current; // har bir chaqirishda ID o‘sadi
     setLoading(true);
+    setProjects([]); // eski ma’lumotlar yo‘qoladi
     const params = {
       page: currentPage,
     };
@@ -76,14 +78,23 @@ export default function DashboardScreen() {
     axiosInstance
       .get('/projects/', { params })
       .then((res) => {
-        setProjects(res.data.results);
-        setTotalPages(Math.ceil(res.data.count / 10)); // 20 = page_size
+            if (requestId === requestIdRef.current) {
+            setProjects(res.data.results);
+            setTotalPages(Math.ceil(res.data.count / 10));
+            setError('');
+          } else {
+            console.warn('⚠️ Old response ignored (requestId mismatch)');
+          }
       })
       .catch((err) => {
           console.error('❌ Error fetching projects:', err);
           setError(returnTitle('dashboard.failed_to_load_projects'));
         })
-    .finally(() => setLoading(false));
+    .finally(() => {
+      if (requestId === requestIdRef.current) {
+        setLoading(false);
+      }
+    });
   }, [axiosInstance, filters, currentPage, searchQuery]);
   
   
@@ -133,17 +144,31 @@ export default function DashboardScreen() {
                 <ProjectFilters filters={filters} handleInputChange={handleInputChange} />
               {/* card part here */}
               
-              {/* Project Cards Grid */}
+              {/* Wrapper with spinner + grid */}
+                  <div className="p-2 position-relative">
+
+                    {/* 🔄 Spinner loading holatda */}
+                    {loading && (
+                    <div className="d-flex flex-column justify-content-center align-items-center mb-2 text-info" style={{ minHeight: '60vh' }}>
+                      <Spinner animation="border" variant="info" role="status" style={{ width: '5rem', height: '5rem' }} />
+                      <span className="mt-2 fw-semibold" style={{ fontSize: '1rem' }}>
+                        {returnTitle('app.loading')}
+                      </span>
+                    </div>
+
+
+                    )}
+
+                {/* 📦 Grid qismi */}
                 <div
-                  className="p-2"
                   style={{
                     display: 'grid',
                     gridTemplateColumns: 'repeat(5, 1fr)',
                     gridTemplateRows: 'repeat(2, 1fr)',
-                    columnGap: '0.5rem', // horizontal spacing
-                    rowGap: '0.5rem',    // vertical spacing
+                    columnGap: '0.5rem',
+                    rowGap: '0.5rem',
                     maxHeight: '68vh',
-                    width: '100%', // full width of container
+                    width: '100%',
                   }}
                 >
                   {projects.map((proj) => (
@@ -152,11 +177,21 @@ export default function DashboardScreen() {
                     </div>
                   ))}
 
-                  {/* Fill empty grid spots */}
-                  {Array.from({ length: 10 - projects.length }).map((_, idx) => (
-                    <div key={`empty-${idx}`} />
-                  ))}
+                  {/* 🔲 Bo‘sh joylar to‘ldiruvchi */}
+                  {!loading && projects.length > 0 &&
+                    Array.from({ length: 10 - projects.length }).map((_, idx) => (
+                      <div key={`empty-${idx}`} />
+                    ))}
+
+                  {/* ❌ Ma'lumot yo‘q holat */}
+                  {!loading && projects.length === 0 && (
+                    <div className="d-flex flex-column justify-content-center  align-items-center mb-2 text-info" style={{ gridColumn: '1 / -1',minHeight:'60vh'}}>
+                      <span style={{ fontSize: '2.5rem' }}>{returnTitle('dashboard.not_found_projects')}</span>
+                    </div>
+                  )}
                 </div>
+              </div>
+
 
               {/* ✅ Pagination centered below the grid */}
               <div className="d-flex justify-content-center mt-2 p-1" style={{ minWidth: 0 }}>

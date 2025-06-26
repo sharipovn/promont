@@ -68,7 +68,8 @@ from .views import (StaffUserLoginView,
                     CurrencyListView,
                     ToggleBusinessTripPIView,
                     HoldStaffUserListView,
-                    HoldWorkOrderView)
+                    HoldWorkOrderView,
+                    ChangePasswordView)
           
           
           
@@ -77,7 +78,8 @@ from .special_views import SpecialProjectRetrieveView,SendMessageView, MessageLi
 urlpatterns = [
     path('login/', StaffUserLoginView.as_view(), name='jwt_login'),
     path('refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('create-project/', ProjectCreateAPIView.as_view(), name='create-project'),\
+    path('create-project/', ProjectCreateAPIView.as_view(), name='create-project'),
+    path('auth/change-password/', ChangePasswordView.as_view(), name='change_password'),
     
     #project-create
     path('project-list-create/', ProjectListCreateView.as_view(), name='project-list-create'),
@@ -86,6 +88,7 @@ urlpatterns = [
     
     #take users with capability     
     path('users-with-capability/', UsersWithCapabilityAPIView.as_view(), name='users-with-capability'),
+    
     
     path('projects-notifications/financier/', ProjectListNotificationFinancierView.as_view(), name='project-notifications-financier'),
     path('projects-confirm/financier/', ProjectListFinancierConfirmView.as_view(), name='project-notifications-financier'),

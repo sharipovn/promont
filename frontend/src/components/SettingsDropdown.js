@@ -4,6 +4,8 @@ import { FaSignOutAlt } from 'react-icons/fa';
 import { useAuth } from '../context/AuthProvider';
 import { useNavigate } from 'react-router-dom';
 import { useI18n } from '../context/I18nProvider';
+import ChangePasswordModal from './ChangePasswordModal'; // top of file
+import { FaLock } from "react-icons/fa6";
 
 export default function SettingsDropdown() {
   const [show, setShow] = useState(false);
@@ -11,6 +13,8 @@ export default function SettingsDropdown() {
   const { logout } = useAuth();
   const navigate = useNavigate();
   const { lang, changeLanguage, returnTitle } = useI18n(); // ✅ include returnTitle
+  // inside component
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
 
   useEffect(() => {
     const handleOutsideClick = (e) => {
@@ -76,6 +80,31 @@ export default function SettingsDropdown() {
           </div>
 
           <div
+              className="d-flex align-items-center gap-2 p-2 rounded hover-effect mb-2"
+              style={{
+                cursor: 'pointer',
+                backgroundColor: 'rgba(255,255,255,0.05)',
+                transition: 'background-color 0.3s ease',
+                userSelect: 'none',
+              }}
+              onClick={() => {
+                setShow(false); // ✅ close dropdown
+                setShowPasswordModal(true); // ✅ open modal
+              }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)')
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)')
+              }
+            >
+              <FaLock className="text-info" />
+              <span className="text-light">{returnTitle('change_pass.change_password')}</span>
+            </div>
+
+
+
+          <div
             className="d-flex align-items-center gap-2 p-2 rounded hover-effect"
             style={{
               cursor: 'pointer',
@@ -96,6 +125,7 @@ export default function SettingsDropdown() {
           </div>
         </div>
       )}
+        <ChangePasswordModal show={showPasswordModal} onHide={() => setShowPasswordModal(false)} />
     </div>
   );
 }

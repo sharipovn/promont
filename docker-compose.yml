@@ -1,0 +1,32 @@
+version: "3.9"
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: promont-backend
+    command: gunicorn config.wsgi:application --bind 0.0.0.0:8010
+    volumes:
+      - ./backend:/app
+      - ./backend/media:/app/media
+      - static_volume:/app/staticfiles
+    expose:
+      - "8010"
+    env_file:
+      - ./backend/config/.env
+
+  nginx:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: promont-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./backend/media:/app/media
+    depends_on:
+      - backend
+
+volumes:
+  static_volume:

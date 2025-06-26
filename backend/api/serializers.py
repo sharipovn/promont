@@ -396,6 +396,10 @@ class CompleteWorkOrderSerializer(serializers.ModelSerializer):
             'answer_date',
             'finished',
             'finished_date',
+            'holded',
+            'holded_date',
+            'holded_reason',
+            'holded_for',
         ]
 
     def get_last_status(self, obj):
@@ -412,6 +416,14 @@ class CompleteWorkOrderSerializer(serializers.ModelSerializer):
             }
         except ObjectLastStatus.DoesNotExist:
             return None
+
+
+class HoldWorkOrderStaffSerializer(serializers.ModelSerializer):
+    position_name = serializers.CharField(source='position.position_name', read_only=True)
+    class Meta:
+        model = StaffUser
+        fields = ['user_id','fio', 'position_name']
+
 
 
 class PhaseTypeSerializer(serializers.ModelSerializer):

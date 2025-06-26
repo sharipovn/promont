@@ -24,6 +24,7 @@ export default function RefuseWorkOrderModal({ show, onHide, order, onRefuse }) 
   useEffect(() => {
     if (show) {
       setLocked(false);
+      setAlert({ show: false, variant: '', message: '' })
     }
   }, [show]);
 

@@ -42,7 +42,8 @@ from .serializers import (ProjectSerializer,
                           MyStaffTreeSerializer,
                           ChatMessageSerializer,
                           UnreadSimpleMessageSerializer,
-                          CurrencySerializer)
+                          CurrencySerializer,
+                          HoldWorkOrderStaffSerializer)
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateAPIView,ListAPIView,UpdateAPIView,CreateAPIView,DestroyAPIView,UpdateAPIView
 from api.serializers import StaffUserTokenSerializer
 from django.utils.dateparse import parse_date
@@ -1848,8 +1849,101 @@ class UnlockFinishedWorkOrderView(APIView):
     
     
     
+class HoldStaffUserListView(ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = HoldWorkOrderStaffSerializer
+
+    def get_queryset(self):
+        return StaffUser.objects.filter(
+            is_active=True,
+            position__isnull=False
+        ).exclude(user_id=self.request.user.user_id).order_by('fio')
     
     
+    
+
+class HoldWorkOrderView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @transaction.atomic
+    def post(self, request, wo_id):
+        try:
+            order = WorkOrder.objects.select_for_update().get(pk=wo_id)
+        except WorkOrder.DoesNotExist:
+            return Response({'detail': 'Work order not found'}, status=404)
+
+        reason = request.data.get("holded_reason").strip()
+        notify_id = request.data.get("notify_staff")
+        try:
+            notify_user = StaffUser.objects.get(user_id=notify_id)
+        except StaffUser.DoesNotExist:
+            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        if not reason or not notify_id:
+            return Response({'detail': 'Reason and notify_to are required'}, status=400)
+
+        if order.holded:
+            return Response({'detail': 'Already holded'}, status=400)
+
+        order.holded = True
+        order.holded_reason = reason
+        order.holded_for=notify_user
+        order.holded_date = timezone.now()
+        order.save()
+        
+        phase_type = PhaseType.objects.filter(key='WORK_ORDER_HOLDED').first()
+        
+        ActionLog.objects.create(
+            full_id=order.full_id,
+            path_type=order.path_type,
+            phase_type=phase_type,
+            comment=reason,
+            performed_by=request.user,
+            notify_to=notify_user
+        )
+
+        return Response({'detail': 'Work order holded successfully'}, status=200)
+
+    @transaction.atomic
+    def put(self, request, wo_id):
+        try:
+            order = WorkOrder.objects.select_for_update().get(pk=wo_id)
+        except WorkOrder.DoesNotExist:
+            return Response({'detail': 'Work order not found'}, status=404)
+
+        if not order.holded:
+            return Response({'detail': 'Work order is not yet holded'}, status=400)
+
+        reason = request.data.get("holded_reason").strip()
+        notify_id = request.data.get("notify_staff")
+        try:
+            notify_user = StaffUser.objects.get(user_id=notify_id)
+        except StaffUser.DoesNotExist:
+            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        if not reason or not notify_id:
+            return Response({'detail': 'Reason and notify_to are required'}, status=400)
+
+        order.holded_reason = reason
+        order.holded_for=notify_user
+        order.holded_date = timezone.now()
+        order.save()
+        
+        phase_type = PhaseType.objects.filter(key='WORK_ORDER_HOLDED_UPDATED').first()
+
+        ActionLog.objects.create(
+            full_id=order.full_id,
+            path_type=order.path_type,
+            phase_type=phase_type,
+            comment=reason,
+            performed_by=request.user,
+            notify_to=notify_user
+        )
+
+        return Response({'detail': 'Hold reason updated'}, status=200)
+
+
+
     
 class RefuseFinishedWorkOrderView(APIView):
     permission_classes = [IsAuthenticated, HasCapabilityPermission('CAN_CONFIRM_FINISHED_WORK_ORDER')]

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo,useEffect } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
 import { createAxiosInstance } from '../utils/createAxiosInstance';
 import { useNavigate } from 'react-router-dom';
@@ -17,6 +17,20 @@ export default function AddTranslationModal({ show, onHide, onCreated }) {
   const [success, setSuccess] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+
+    useEffect(() => {
+    if (show) {
+      // Reset modal when opened
+      setKey('');
+      setEn('');
+      setRu('');
+      setUz('');
+      setError('');
+      setSuccess('');
+      setIsSubmitting(false);
+    }
+  }, [show]);
+
   const { setUser, setAccessToken } = useAuth();
   const navigate = useNavigate();
 
@@ -27,7 +41,7 @@ export default function AddTranslationModal({ show, onHide, onCreated }) {
 
   const handleSubmit = async () => {
     if (!key.trim()) {
-      setError('Translation key is required.');
+      setError(returnTitle('internalization.key_required'));
       return;
     }
 
@@ -35,7 +49,8 @@ export default function AddTranslationModal({ show, onHide, onCreated }) {
     setError('');
     try {
       await axiosInstance.post('/manage-translations/', { key, en, ru, uz });
-      setSuccess('✅ Translation added.');
+      setSuccess(returnTitle('internalization.translation_added'));
+      setError('');
       setTimeout(() => {
         onHide();
         onCreated?.();
@@ -47,7 +62,7 @@ export default function AddTranslationModal({ show, onHide, onCreated }) {
         setIsSubmitting(false);
       }, 1200);
     } catch (err) {
-      setError('❌ Failed to add translation.');
+      setError(returnTitle('internalization.translation_add_failed_or_key_already_exists'));
       setIsSubmitting(false);
     }
   };

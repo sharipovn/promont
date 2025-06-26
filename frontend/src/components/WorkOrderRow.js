@@ -5,6 +5,9 @@ import RefuseWorkOrderModal from './RefuseWorkOrderModal';
 import WorkOrderConfirmModal from './WorkOrderConfirmModal';
 import {CONSTANTS} from '../constants/app_constants'
 import CompleteWorkOrderModal from './CompleteWorkOrderModal';
+import HoldWorkOrderModal from './HoldWorkOrderModal';
+import { BsFillPauseCircleFill } from "react-icons/bs";
+
 
 
 import { differenceInCalendarDays, parseISO } from 'date-fns';
@@ -20,6 +23,8 @@ export default function WorkOrderRow({ order, onRefuse,onConfirmed,onCompleted }
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showRefuseModal, setShowRefuseModal] = useState(false);
   const [showCompleteModal, setShowCompleteModal] = useState(false);
+  const [showHoldModal, setShowHoldModal] = useState(false);
+
 
   
 
@@ -94,9 +99,20 @@ export default function WorkOrderRow({ order, onRefuse,onConfirmed,onCompleted }
 
           {/* Actions */}
             {confirmed ? (
+              <>
+              {!order?.finished && !hasAnswer && (
+                <button className="btn btn-success rounded-3 d-flex align-items-center gap-1" onClick={() => setShowHoldModal(true)}>
+                  <BsFillPauseCircleFill size={14} />
+                  <span>
+                    {order?.holded
+                      ? returnTitle('complete_wo.update_holded')
+                      : returnTitle('complete_wo.hold_work_order')}
+                  </span>
+                </button>
+              )}
+
               <button className="btn-icon-green rounded-3" onClick={() => setShowCompleteModal(true)}>
               <FaClipboardCheck className="me-1" size={14} />{' '}
-              {/* {hasAnswer ? returnTitle('complete_wo.update_complete') : returnTitle('complete_wo.complete_work_order')} */}
                   {
                   order?.finished
                     ? returnTitle('complete_wo.finished_already')
@@ -104,8 +120,8 @@ export default function WorkOrderRow({ order, onRefuse,onConfirmed,onCompleted }
                       ? returnTitle('complete_wo.update_complete')
                       : returnTitle('complete_wo.complete_work_order')
                   }
-
               </button>
+              </>
             ) : (
               <>
                 <button className="btn-icon-green rounded-3" onClick={() => setShowConfirmModal(true)}>
@@ -142,6 +158,12 @@ export default function WorkOrderRow({ order, onRefuse,onConfirmed,onCompleted }
         onHide={() => setShowCompleteModal(false)}
         order={order}
         onCompleted={onCompleted}
+      />
+      <HoldWorkOrderModal
+        show={showHoldModal}
+        onHide={() => setShowHoldModal(false)}
+        order={order}
+        onHolded={onCompleted}
       />
 
 

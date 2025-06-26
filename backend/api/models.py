@@ -682,6 +682,17 @@ class WorkOrder(models.Model):
     finished_date = models.DateTimeField(null=True, blank=True)
     
     
+    holded = models.BooleanField(default=False)
+    holded_date = models.DateTimeField(null=True, blank=True)
+    holded_reason=models.TextField(null=True, blank=True)
+    holded_for = models.ForeignKey(
+        'StaffUser',
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='holded_fors'
+    )
+    
+    
 
     class Meta:
         db_table = 'work_orders'

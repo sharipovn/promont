@@ -222,13 +222,10 @@ class Currency(models.Model):
     def __str__(self):
         return self.currency_name
 
-
 def get_default_currency():
     from .models import Currency
-    return Currency.objects.get(currency_name='UZS').pk
-
-
-
+    currency, _ = Currency.objects.get_or_create(currency_name='UZS')
+    return currency.pk
 
 
 

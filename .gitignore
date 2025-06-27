@@ -9,8 +9,7 @@ __pycache__/
 
 # C extensions
 *.so
-backend\media\chat_files
-backend\media\work_orders
+backend\media
 # Distribution / packaging
 .Python
 build/
@@ -133,7 +132,7 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-.env
+# .env
 .venv
 env/
 venv/

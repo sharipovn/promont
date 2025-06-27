@@ -20,7 +20,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: promont-nginx(frontend)
+    container_name: promont-nginx-frontend
     ports:
       - "4444:80"  # Frontend will be accessible on http://localhost:4444
     volumes:

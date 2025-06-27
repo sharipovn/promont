@@ -8,7 +8,7 @@ RUN npm install
 COPY . .
 
 # ⬅️ FIX: Allocate 8GB memory for node build
-ENV NODE_OPTIONS=--max-old-space-size=2048
+ENV NODE_OPTIONS=--max-old-space-size=4096
 RUN npm run build
 
 

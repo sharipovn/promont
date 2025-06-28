@@ -1,4 +1,4 @@
-version: "3.9"
+# version: "3.9"
 
 services:
   backend:
@@ -20,9 +20,9 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: promont-nginx
+    container_name: promont-nginx-frontend
     ports:
-      - "80:80"
+      - "4444:80"  # Frontend will be accessible on http://localhost:4444
     volumes:
       - ./backend/media:/app/media
     depends_on:

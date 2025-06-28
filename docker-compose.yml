@@ -22,7 +22,7 @@ services:
       dockerfile: Dockerfile
     container_name: promont-nginx
     ports:
-      - "4444:3333"
+      - "80:80"
     volumes:
       - ./backend/media:/app/media
     depends_on:

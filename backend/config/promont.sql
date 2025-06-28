@@ -20,4 +20,6 @@ GRANT ALL ON SCHEMA promont TO promont_user;
 --python manage.py makemigrations api
 
 
-SELECT * FROM pro_fin_part;
+
+
+SELECT * FROM c_ar

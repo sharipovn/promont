@@ -24,23 +24,29 @@ export async function safeDownload(e, fileUrl, returnTitle = null) {
   };
 
   try {
-    const res = await fetch(fileUrl);
-    if (!res.ok) {
-      showTooltip(returnTitle ? returnTitle('file.file_is_lost') : '❌ File not found', e.currentTarget || e.target);
-      return;
-    }
+    if (!fileUrl) throw new Error("Invalid URL");
 
-    const blob = await res.blob();
-    const blobUrl = window.URL.createObjectURL(blob);
+    console.log("🟢 Checking file:", fileUrl);
+
+    const res = await fetch(fileUrl, { method: 'HEAD' }); // ✅ HEAD to check without downloading
+    if (!res.ok) throw new Error("File not found");
+
+    console.log("✅ File exists, triggering download");
 
     const a = document.createElement('a');
-    a.href = blobUrl;
-    a.download = fileUrl.split('/').pop();
+    a.href = fileUrl;
+    a.setAttribute('target', '_blank'); // Optional: open in new tab
+    a.setAttribute('rel', 'noopener noreferrer');
+    a.setAttribute('download', fileUrl.split('/').pop());
+    a.style.display = 'none';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    window.URL.revokeObjectURL(blobUrl);
-  } catch {
-    showTooltip(returnTitle ? returnTitle('file.file_is_lost') : '❌ File not found', e.currentTarget || e.target);
+  } catch (err) {
+    console.error("❌ File download error:", err.message || err);
+    showTooltip(
+      returnTitle ? returnTitle('file.file_is_lost') : '❌ File not found',
+      e.currentTarget || e.target
+    );
   }
 }

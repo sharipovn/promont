@@ -1,0 +1,41 @@
+.admin-menu .list-group-item {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  color: #ccc;
+  background-color: #2a2d3e;
+  border: 1px solid #3a3d4d;
+  border-radius: 6px;
+  margin-bottom: 6px;
+}
+
+.admin-menu .list-group-item:hover {
+  background-color: #323547;
+  color: #0d6efd;
+}
+
+.admin-menu .list-group-item.active {
+  background-color: #0d6efd;
+  color: white;
+  font-weight: 600;
+  border-color: #0d6efd;
+}
+
+.admin-menu-wrapper h6 {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+
+.admin-content-area h6 {
+  color: #eee;
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

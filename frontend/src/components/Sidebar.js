@@ -17,6 +17,7 @@ import { MdOutlineTaskAlt } from "react-icons/md";
 import { PiCalendarCheck } from "react-icons/pi";
 import { GrUserSettings } from "react-icons/gr";
 import { GoTasklist } from "react-icons/go";
+import { RiAdminLine } from "react-icons/ri";
 
 
 
@@ -212,6 +213,18 @@ export default function Sidebar() {
                   }}>
                 <GoTasklist style={{ fontSize: 'clamp(1rem, 1vw + 0.5rem, 1.4rem)' }}/>
                 <span>{returnTitle('menu.work_with_staff')}</span>
+              </NavLink>
+            </li>
+         )}
+          {hasCapability(PERMISSIONS.IS_ADMIN) && (
+            <li className="nav-item mt-1 mx-3">
+              <NavLink to="/admin-panel" className="sidebar-link d-flex align-items-center gap-2" 
+                  style={{
+                    color: '#344767',
+                    fontSize: 'clamp(0.85rem, 1vw + 0.4rem, 0.9rem)',
+                  }}>
+                <RiAdminLine  style={{ fontSize: 'clamp(1rem, 1vw + 0.5rem, 1.4rem)' }}/>
+                <span>{returnTitle('menu.admin_panel')}</span>
               </NavLink>
             </li>
          )}

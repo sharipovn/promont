@@ -1,4 +1,26 @@
-# Byte-compiled / optimized / DLL files
+# # Byte-compiled / optimized / DLL files
+# # Ignore Dockerfile in backend
+# backend/Dockerfile
+
+# # Ignore Docker/Nginx-related files in frontend
+# frontend/Dockerfile
+# frontend/nginx.conf
+# frontend/nginx/
+# frontend/docker/
+
+# # Ignore root-level Docker/Nix files
+# Dockerfile
+# docker-compose.yml
+# docker-compose*.yml
+# .dockerignore
+# *.nix
+# *.lock
+
+# # Optional: Ignore any docker or nginx folders at any level
+# **/docker/
+# **/nginx/
+
+
 # React
 frontend/node_modules
 frontend/build

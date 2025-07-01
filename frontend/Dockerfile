@@ -6,6 +6,7 @@ COPY package*.json ./
 RUN npm install
 
 COPY . .
+
 # ⬅️ FIX: Allocate 8GB memory for node build
 ENV NODE_OPTIONS=--max-old-space-size=8192
 RUN npm run build
@@ -16,5 +17,5 @@ FROM nginx:stable
 COPY --from=build /app/build /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-EXPOSE 80
+EXPOSE 4444
 CMD ["nginx", "-g", "daemon off;"]

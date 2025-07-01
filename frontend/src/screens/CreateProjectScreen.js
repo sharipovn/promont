@@ -71,6 +71,7 @@ export default function CreateProjectScreen() {
             <Sidebar />
           </div>
 
+          {/* Main Content */}
           <div style={{ width: '82%', padding: '1rem' }}>
             <div className="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
               <h5 className="text-info mb-0 d-flex align-items-center gap-2">

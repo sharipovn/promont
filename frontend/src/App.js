@@ -14,6 +14,7 @@ import CompleteWorkOrderScreen from './screens/CompleteWorkOrderScreen';
 import ConfirmFinishedWorkOrderScreen from './screens/ConfirmFinishedWorkOrderScreen';
 import StaffManagementScreen from './screens/StaffManagementScreen';
 import WorkWithStaffScreen from './screens/WorkWithStaffScreen';
+import AdminScreen from './screens/AdminScreen';
 
 
 
@@ -67,6 +68,9 @@ export default function App() {
       <Route path="/work-with-staff" element={<PrivateRoute requiredCapabilities={[
                                                           PERMISSIONS.CAN_VIEW,PERMISSIONS.CAN_WORK_WITH_STAFF
                                                         ]}><WorkWithStaffScreen /></PrivateRoute>} />
+      <Route path="/admin-panel" element={<PrivateRoute requiredCapabilities={[
+                                                          PERMISSIONS.CAN_VIEW,PERMISSIONS.IS_ADMIN
+                                                        ]}><AdminScreen /></PrivateRoute>} />
                                                         
       <Route path="/noaccess" element={<PrivateRoute><NoAccessScreen /></PrivateRoute>} />
     </Routes>

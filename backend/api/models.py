@@ -3,6 +3,7 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.utils import timezone
 from django.core.validators import FileExtensionValidator
 from django.core.exceptions import ValidationError
+from django.conf import settings
 
 
 
@@ -129,6 +130,13 @@ class StaffUser(AbstractBaseUser, PermissionsMixin):
         db_column='role_id'
     )
     create_time = models.DateTimeField(default=timezone.now)
+    create_user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='created_staff_users'
+    )
     update_time = models.DateTimeField(auto_now=True)  # ✅ this tracks update
     # last_login_time_success = models.DateTimeField(null=True, blank=True)
     last_login_time_fail = models.DateTimeField(null=True, blank=True)

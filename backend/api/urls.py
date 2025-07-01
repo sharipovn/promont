@@ -73,7 +73,8 @@ from .views import (StaffUserLoginView,
           
           
           
-from .special_views import SpecialProjectRetrieveView,SendMessageView, MessageListView          
+from .special_views import SpecialProjectRetrieveView,SendMessageView, MessageListView      
+from .admin_views import AdminUserListView,CreateUserView,AdminRoleListView,AdminUpdateUserView,AdminSetUserPasswordView,PauseUserView,ActivateUserView
 
 urlpatterns = [
     path('login/', StaffUserLoginView.as_view(), name='jwt_login'),
@@ -201,4 +202,13 @@ urlpatterns = [
 
     #currency
     path('currencies/', CurrencyListView.as_view(), name='currency-list'),
+    
+    #admin-panel
+    path('admin-users/', AdminUserListView.as_view(), name='admin-users'),
+    path('admin-users/create/', CreateUserView.as_view(), name='create-user'),
+    path('admin-users/roles/', AdminRoleListView.as_view(), name='admin-role-list'),
+    path('admin-users/update/<int:user_id>/', AdminUpdateUserView.as_view()),
+    path('admin-users/set-password/<int:user_id>/', AdminSetUserPasswordView.as_view()),
+    path('admin-users/pause/<int:user_id>/', PauseUserView.as_view()),
+    path('admin-users/activate/<int:user_id>/', ActivateUserView.as_view()),
 ]

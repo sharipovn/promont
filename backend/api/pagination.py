@@ -69,3 +69,11 @@ class DepartmentPagination(PageNumberPagination):
     page_size_query_param = 'page_size'
     max_page_size =8  
     
+
+
+
+class AdminUserPagination(PageNumberPagination):
+    page_size = 15
+    page_size_query_param = 'page_size'
+    max_page_size = 15  
+    

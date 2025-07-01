@@ -16,12 +16,19 @@ import { TbPercentage75 } from "react-icons/tb";
 import { FaFolderOpen } from "react-icons/fa6";
 import { FaCoins } from "react-icons/fa6";
 import { FaBusinessTime } from "react-icons/fa";
+import { useAuth } from '../context/AuthProvider';
+import { CAPABILITIES } from '../constants/app_constants';
+import { hasAllCapabilities,hasAnyCapability } from '../utils/hasCapability';
+
+
+
 
 export default function ProjectCard({ proj }) {
   const [showModal, setShowModal] = useState(false);
-  console.log('projects:',proj)
-
+  const { user } = useAuth();
   const {returnTitle}=useI18n()
+
+
 
   function getWorkOrderStatusAndPercent(confirmedCount, totalCount) {
     let percent = 0;
@@ -140,18 +147,33 @@ export default function ProjectCard({ proj }) {
       }}
     >
       {/* Sarlavha */}
-      <div>
-          <h6 className="mb-1 fw-bold d-flex align-items-center gap-2 fs-sm" style={{ color: '#00f0ff' }} onClick={() => setShowModal(true)}>
-            <FaFolderOpen  size={'1rem'}/> <HoverText>{proj.project_name}</HoverText>{proj?.contract_number && <span className='text-success'>({proj?.contract_number})</span>}
-          </h6>
-      </div>
+        <div>
+          {/* Project Name - larger */}
+          <h5
+            className="fw-bold d-flex align-items-center gap-2 mb-1"
+            style={{ color: '#00f0ff', fontSize: '1.1rem', cursor: 'pointer' }}
+            onClick={() => setShowModal(true)}
+          >
+            <FaFolderOpen size="1rem" />
+            <HoverText style={{fontSize: '1.2rem'}}>{proj.project_name}</HoverText>
+          </h5>
+
+          {/* Contract Number - smaller */}
+          {proj?.contract_number && (
+            <div className="text-success" style={{ fontSize: '1rem', marginLeft: '1.5rem' }}>
+              {proj.contract_number}
+            </div>
+          )}
+        </div>
+
 
       {/* Narxi */}
-      <div
-          className="d-flex align-items-center border-bottom border-secondary fs-xs pb-1 mb-3 small"
-          style={{ minWidth: 0}}
-        >
-          <span
+        {hasAnyCapability(user, [CAPABILITIES.IS_FIN_DIR, CAPABILITIES.IS_FINANCIER, CAPABILITIES.IS_GEN_DIR, CAPABILITIES.IS_TECH_DIR]) && (
+        <div
+            className="d-flex align-items-center border-bottom border-secondary fs-xs pb-1 mb-3 small"
+            style={{ minWidth: 0}}
+          >
+            <span
             className="d-flex align-items-center gap-2 text-warning"
             style={{ whiteSpace: 'nowrap' }}
           >
@@ -172,7 +194,7 @@ export default function ProjectCard({ proj }) {
             </HoverText>
           </span>
         </div>
-
+          )}
 
       {/* Muddati */}
       <div

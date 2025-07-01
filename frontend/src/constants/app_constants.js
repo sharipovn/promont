@@ -6,3 +6,12 @@ export const CONSTANTS = {
   WORK_ORDER_REFUSED_BY_NACH_OTDEL:'WORK_ORDER_REFUSED_BY_NACH_OTDEL',
   // Add other keys as needed
 };
+
+
+
+export const CAPABILITIES = {
+    IS_FIN_DIR: 'IS_FIN_DIR',
+    IS_FINANCIER: 'IS_FINANCIER',
+    IS_GEN_DIR: 'IS_GEN_DIR',
+    IS_TECH_DIR: 'IS_TECH_DIR',
+};

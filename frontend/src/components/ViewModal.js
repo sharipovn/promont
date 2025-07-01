@@ -11,7 +11,7 @@ import {CONSTANTS} from '../constants/app_constants'
 import './ViewModal.css';
 
 export default function ViewModal({ show, onHide, project, onVerified }) {
-  console.log('project:',project)
+  // console.log('project:',project)
 
   const { returnTitle } = useI18n()
 

@@ -74,7 +74,7 @@ from .views import (StaffUserLoginView,
           
           
 from .special_views import SpecialProjectRetrieveView,SendMessageView, MessageListView      
-from .admin_views import AdminUserListView,CreateUserView,AdminRoleListView,AdminUpdateUserView,AdminSetUserPasswordView,PauseUserView,ActivateUserView
+from .admin_views import AdminUserListView,CreateUserView,AdminRoleListView,AdminUpdateUserView,AdminSetUserPasswordView,PauseUserView,ActivateUserView,ProjectLogListView
 
 urlpatterns = [
     path('login/', StaffUserLoginView.as_view(), name='jwt_login'),
@@ -211,4 +211,7 @@ urlpatterns = [
     path('admin-users/set-password/<int:user_id>/', AdminSetUserPasswordView.as_view()),
     path('admin-users/pause/<int:user_id>/', PauseUserView.as_view()),
     path('admin-users/activate/<int:user_id>/', ActivateUserView.as_view()),
+    
+    #admin panel logs
+    path('admin-panel/project-logs/', ProjectLogListView.as_view(), name='project-logs'),
 ]

@@ -6,11 +6,12 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.utils.timezone import now
 from rest_framework.permissions import IsAuthenticated
-from .models import StaffUser,Role
-from .admin_serializers import AdminUserListSerializer,StaffUserCreateSerializer,AdminRoleSerializer,AdminUserUpdateSerializer,AdminSetPasswordSerializer
+from .models import StaffUser,Role,Project          
+from .admin_serializers import AdminUserListSerializer,StaffUserCreateSerializer,AdminRoleSerializer,AdminUserUpdateSerializer,AdminSetPasswordSerializer,ProjectLogSerializer
 from .permissions import HasCapabilityPermission
-from .pagination import AdminUserPagination
+from .pagination import AdminUserPagination,ProjectLogPagination
 from django.shortcuts import get_object_or_404
+from django.utils.dateparse import parse_date
 
 
 class AdminUserListView(ListAPIView):
@@ -130,3 +131,37 @@ class ActivateUserView(APIView):
         user.is_active = True
         user.save()
         return Response({'detail': 'User activated successfully.'}, status=status.HTTP_200_OK)
+    
+    
+    
+class ProjectLogListView(ListAPIView):
+    serializer_class = ProjectLogSerializer
+    permission_classes = [IsAuthenticated, HasCapabilityPermission('IS_ADMIN')]
+    pagination_class = ProjectLogPagination  # ✅ Use pagination
+
+    def get_queryset(self):
+        queryset = Project.history.all().order_by('-history_date')  # ✅ Uses HistoricalProject
+
+        project_id = self.request.query_params.get('project_id')
+        project_name = self.request.query_params.get('project_name')
+        user_name = self.request.query_params.get('user_name')
+        start_date = self.request.query_params.get('start_date')
+        end_date = self.request.query_params.get('end_date')
+
+        # ✅ Filters — Defensive against empty strings
+        if project_id:
+            queryset = queryset.filter(project_code=project_id)
+
+        if project_name:
+            queryset = queryset.filter(project_name__icontains=project_name)
+
+        if user_name:
+            queryset = queryset.filter(history_user_display__icontains=user_name)
+
+        if start_date:
+            queryset = queryset.filter(history_date__date__gte=parse_date(start_date))
+
+        if end_date:
+            queryset = queryset.filter(history_date__date__lte=parse_date(end_date))
+
+        return queryset

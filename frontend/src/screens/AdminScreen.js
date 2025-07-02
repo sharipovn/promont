@@ -4,6 +4,7 @@ import Sidebar from '../components/Sidebar';
 import { useI18n } from '../context/I18nProvider';
 import AdminUsers from '../components/AdminUsers';
 import AdminRoles from '../components/AdminRoles';
+import AdminLogAudit from '../components/AdminLogAudit';
 import AdminPermissions from '../components/AdminPermissions';
 import './AdminScreen.css';
 import { TiThMenuOutline } from "react-icons/ti";
@@ -22,6 +23,8 @@ export default function AdminScreen() {
     switch (activeTab) {
       case 'users':
         return <AdminUsers />;
+      case 'logs':
+        return <AdminLogAudit />;
       case 'roles':
         return <AdminRoles />;
       case 'permissions':
@@ -65,6 +68,12 @@ export default function AdminScreen() {
                     onClick={() => setActiveTab('users')}
                     >
                     <FaUserShield size={16} /> {returnTitle('admin_panel.users')}
+                    </button>
+                    <button
+                    className={`list-group-item list-group-item-action d-flex align-items-center gap-2 ${activeTab === 'logs' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('logs')}
+                    >
+                    <FaUserShield size={16} /> {returnTitle('admin_panel.audit_logs')}
                     </button>
                     <button
                     className={`list-group-item list-group-item-action d-flex align-items-center gap-2 ${activeTab === 'roles' ? 'active' : ''}`}

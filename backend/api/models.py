@@ -237,6 +237,15 @@ def get_default_currency():
     return currency.pk
 
 
+class HistoricalProjectBase(models.Model):
+    financier_name = models.CharField(max_length=255, null=True, blank=True)
+    partner_name = models.CharField(max_length=255, null=True, blank=True)
+    currency_name = models.CharField(max_length=255, null=True, blank=True)
+    history_user_display = models.CharField(max_length=255, null=True, blank=True)
+
+    class Meta:
+        abstract = True
+
 
 class Project(models.Model):
     project_code = models.AutoField(primary_key=True)
@@ -283,8 +292,13 @@ class Project(models.Model):
 
 
     # ✅ Add this line
-    history_user_display = models.CharField(max_length=255, null=True, blank=True)
-    history = HistoricalRecords()
+    
+    history = HistoricalRecords(
+        bases=[HistoricalProjectBase],
+        table_name='projects_hist',
+        custom_model_name='HistoricalProject'
+    )
+    
     class Meta:
         db_table = 'projects'
         verbose_name = "Project"

@@ -29,10 +29,25 @@ def update_object_last_status(sender, instance, created, **kwargs):
 
 
 
-def set_history_user_display(sender, **kwargs):
+def set_history_display_fields(sender, **kwargs):
     history_instance = kwargs['history_instance']
-    history_user = getattr(history_instance, 'history_user', None)
-    if history_user:
-        history_instance.history_user_display = str(history_user)
+    obj = kwargs['instance']
+    model_name = obj.__class__.__name__
 
-pre_create_historical_record.connect(set_history_user_display)
+    if model_name == 'Project':
+        history_instance.currency_name = getattr(obj.currency, 'currency_name', None) if obj.currency else None
+        history_instance.financier_name = getattr(obj.financier, 'fio', None) if obj.financier else None
+        history_instance.partner_name = getattr(obj.partner, 'partner_name', None) if obj.partner else None
+
+        history_user = getattr(history_instance, 'history_user', None)
+        if history_user:
+            history_instance.history_user_display = str(history_user)
+
+    # elif model_name == 'AnotherModel':
+    #     history_instance.something = obj.something.else...
+    #     history_user = getattr(history_instance, 'history_user', None)
+    #     if history_user:
+    #         history_instance.history_user_display = str(history_user)
+
+pre_create_historical_record.connect(set_history_display_fields)
+

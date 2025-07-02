@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import StaffUser,Role
+from .models import StaffUser,Role,Project,Currency,Partner
+
 
 
 
@@ -84,3 +85,100 @@ class AdminSetPasswordSerializer(serializers.Serializer):
         user.set_password(self.validated_data['password'])
         user.save(update_fields=['password'])
         return user
+
+
+
+
+
+class ProjectLogSerializer(serializers.ModelSerializer):
+    project_id = serializers.IntegerField(source='project_code', read_only=True)
+    project_name = serializers.CharField(read_only=True)
+    changed_by = serializers.SerializerMethodField()
+    field = serializers.SerializerMethodField()
+    old_value = serializers.SerializerMethodField()
+    new_value = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Project.history.model
+        fields = [
+            'history_id',
+            'project_id',
+            'project_name',
+            'history_type',
+            'changed_by',
+            'history_date',
+            'field',
+            'old_value',
+            'new_value',
+        ]
+
+    def get_changed_by(self, obj):
+        return obj.history_user_display or (
+            getattr(obj.history_user, 'fio', None) if obj.history_user else None
+        )
+
+    def _get_diff(self, obj):
+        cache_key = f'_diff_cache_{obj.history_id}'
+        if cache_key in self.context:
+            return self.context[cache_key]
+
+        prev = getattr(obj, 'prev_record', None)
+        if not prev:
+            try:
+                prev = obj.get_previous_by_history_date()
+            except Exception:
+                self.context[cache_key] = []
+                return []
+
+        try:
+            diff = obj.diff_against(prev)
+        except Exception:
+            self.context[cache_key] = []
+            return []
+
+        changes = []
+        fk_snapshot_map = {
+            'currency': 'currency_name',
+            'partner': 'partner_name',
+            'financier': 'financier_name',
+        }
+
+
+        for change in diff.changes:
+            field_name = change.field
+            # print(f"[AUDIT] RAW FIELD: field_name='{field_name}' old='{change.old}' new='{change.new}'")
+
+            if field_name in fk_snapshot_map:
+                snapshot_field = fk_snapshot_map[field_name]
+                old_value = getattr(prev, snapshot_field, str(change.old)) or '-'
+                new_value = getattr(obj, snapshot_field, str(change.new)) or '-'
+                # print(f"[AUDIT FIXED] FK FIELD: {field_name=} old='{old_value}' new='{new_value}'")
+                changes.append({
+                    'field': field_name,
+                    'old': old_value,
+                    'new': new_value,
+                })
+            else:
+                changes.append({
+                    'field': field_name,
+                    'old': str(change.old) if change.old is not None else '-',
+                    'new': str(change.new) if change.new is not None else '-',
+                })
+
+
+
+
+        self.context[cache_key] = changes
+        return changes
+
+    def get_field(self, obj):
+        changes = self._get_diff(obj)
+        return changes[0]['field'] if changes else '-'
+
+    def get_old_value(self, obj):
+        changes = self._get_diff(obj)
+        return changes[0]['old'] if changes else '-'
+
+    def get_new_value(self, obj):
+        changes = self._get_diff(obj)
+        return changes[0]['new'] if changes else '-'

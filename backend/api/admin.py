@@ -20,6 +20,7 @@ from .models import (Capability,
                      ChatMessageFile,
                      UserTask)
 from django.contrib.auth.admin import UserAdmin
+from simple_history.admin import SimpleHistoryAdmin
 
 
 @admin.register(Capability)
@@ -110,7 +111,7 @@ class CurrencyAdmin(admin.ModelAdmin):
 
 
 @admin.register(Project)
-class ProjectAdmin(admin.ModelAdmin):
+class ProjectAdmin(SimpleHistoryAdmin):
     list_display = (
         'project_code', 'project_name', 'total_price','currency','partner',
         'start_date', 'end_date',

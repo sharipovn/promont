@@ -4,6 +4,7 @@ from django.utils import timezone
 from django.core.validators import FileExtensionValidator
 from django.core.exceptions import ValidationError
 from django.conf import settings
+from simple_history.models import HistoricalRecords  # 👈 import this
 
 
 
@@ -280,6 +281,10 @@ class Project(models.Model):
     create_date = models.DateTimeField(auto_now_add=True)
     update_date = models.DateTimeField(auto_now=True)
 
+
+    # ✅ Add this line
+    history_user_display = models.CharField(max_length=255, null=True, blank=True)
+    history = HistoricalRecords()
     class Meta:
         db_table = 'projects'
         verbose_name = "Project"

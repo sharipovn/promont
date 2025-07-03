@@ -36,12 +36,14 @@ def set_history_display_fields(sender, **kwargs):
 
     if model_name == 'Project':
         history_instance.currency_name = getattr(obj.currency, 'currency_name', None) if obj.currency else None
-        history_instance.financier_name = getattr(obj.financier, 'fio', None) if obj.financier else None
+        history_instance.financier_name = getattr(obj.financier, 'username', None) if obj.financier else None
         history_instance.partner_name = getattr(obj.partner, 'partner_name', None) if obj.partner else None
+        history_instance.project_gip_name = getattr(obj.project_gip, 'username', None) if obj.project_gip else None
+        history_instance.create_username = getattr(obj.create_user, 'username', None) if obj.create_user else None
 
         history_user = getattr(history_instance, 'history_user', None)
         if history_user:
-            history_instance.history_user_display = str(history_user)
+            history_instance.history_user_display = getattr(history_user, 'username', str(history_user))
 
     # elif model_name == 'AnotherModel':
     #     history_instance.something = obj.something.else...

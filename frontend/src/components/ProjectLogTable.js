@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { FaEye } from 'react-icons/fa';
 import './TranslationTable.css';
 import CustomPagination from './CustomPagination';
+import ProjectSnapshotModal from './ProjectSnapshotModal';
 import Alert from './Alert';
 import { useI18n } from '../context/I18nProvider';
 import { formatDateTime } from '../utils/formatDateTime';
@@ -24,6 +25,9 @@ export default function ProjectLogTable() {
   const [searchUser, setSearchUser] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [snapshotModal, setSnapshotModal] = useState({ show: false, historyId: null });
+
+
 
   const { setUser, setAccessToken } = useAuth();
   const navigate = useNavigate();
@@ -31,6 +35,9 @@ export default function ProjectLogTable() {
     () => createAxiosInstance(navigate, setUser, setAccessToken),
     [navigate, setUser, setAccessToken]
   );
+
+
+
 
   const fetchLogs = () => {
     setLoading(true);
@@ -174,28 +181,28 @@ export default function ProjectLogTable() {
             </thead>
             <tbody>
               {logs.map((log, idx) => (
-                <tr key={log.id}>
+                <tr key={log?.id}>
                   <td>{(currentPage - 1) * 15 + idx + 1}</td>
-                  <td>{log.project_id}</td>
-                  <td>{log.project_name}</td>
+                  <td>{log?.project_id}</td>
+                  <td>{log?.project_name}</td>
                   <td>
                     {{
                       '+': returnTitle('audit_log.created'),
                       '~': returnTitle('audit_log.updated'),
                       '-': returnTitle('audit_log.deleted'),
-                    }[log.history_type] || log.history_type}
+                    }[log?.history_type] || log?.history_type}
                   </td>
-                  <td>{log.changed_by || '-'}</td>
-                  <td>{formatDateTime(log.history_date)}</td>
-                  <td>{log.field || '-'}</td>
-                  <td>{log.old_value || '-'}</td>
-                  <td>{log.new_value || '-'}</td>
+                  <td>{log?.changed_by || '-'}</td>
+                  <td>{formatDateTime(log?.history_date)}</td>
+                  <td>{log?.field || '-'}</td>
+                  <td>{log?.old_value || '-'}</td>
+                  <td>{log?.new_value || '-'}</td>
                   <td>
                     <FaEye
-                      className="text-info cursor-pointer"
-                      title={returnTitle('audit_log.view_snapshot')}
-                      onClick={() => console.log('View snapshot for log', log.id)}
-                    />
+                        className="text-info cursor-pointer"
+                        title={returnTitle('audit_log.view_snapshot')}
+                        onClick={() => setSnapshotModal({ show: true, historyId: log.history_id })}
+                      />
                   </td>
                 </tr>
               ))}
@@ -209,6 +216,12 @@ export default function ProjectLogTable() {
           <CustomPagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
         </div>
       )}
+      <ProjectSnapshotModal
+          show={snapshotModal.show}
+          historyId={snapshotModal.historyId}
+          onHide={() => setSnapshotModal({ show: false, historyId: null })}
+        />
+
     </div>
   );
 }

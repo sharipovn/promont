@@ -182,3 +182,34 @@ class ProjectLogSerializer(serializers.ModelSerializer):
     def get_new_value(self, obj):
         changes = self._get_diff(obj)
         return changes[0]['new'] if changes else '-'
+
+
+
+
+class ProjectSnapshotSerializer(serializers.ModelSerializer):
+    changed_by = serializers.CharField(source='history_user_display')
+
+    class Meta:
+        model = Project.history.model
+        fields = [
+            'project_code',            # ✅ use this instead of project_id
+            'project_name',
+            'contract_number',
+            'total_price',
+            'currency_name',
+            'start_date',
+            'end_date',
+            'financier_name',
+            'financier_confirm',
+            'financier_confirm_date',
+            'project_gip_id',
+            'project_gip_name',
+            'gip_confirm',
+            'gip_confirm_date',
+            'partner_name',
+            'create_username',
+            'create_date',
+            'update_date',
+            'changed_by',
+            'history_date',
+        ]

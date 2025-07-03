@@ -7,7 +7,7 @@ from rest_framework import status
 from django.utils.timezone import now
 from rest_framework.permissions import IsAuthenticated
 from .models import StaffUser,Role,Project          
-from .admin_serializers import AdminUserListSerializer,StaffUserCreateSerializer,AdminRoleSerializer,AdminUserUpdateSerializer,AdminSetPasswordSerializer,ProjectLogSerializer
+from .admin_serializers import AdminUserListSerializer,StaffUserCreateSerializer,AdminRoleSerializer,AdminUserUpdateSerializer,AdminSetPasswordSerializer,ProjectLogSerializer,ProjectSnapshotSerializer
 from .permissions import HasCapabilityPermission
 from .pagination import AdminUserPagination,ProjectLogPagination
 from django.shortcuts import get_object_or_404
@@ -165,3 +165,17 @@ class ProjectLogListView(ListAPIView):
             queryset = queryset.filter(history_date__date__lte=parse_date(end_date))
 
         return queryset
+
+
+
+
+class ProjectSnapshotView(APIView):
+    permission_classes = [IsAuthenticated, HasCapabilityPermission('IS_ADMIN')]
+
+    def get(self, request, history_id):
+        try:
+            record = Project.history.get(history_id=history_id)
+            serializer = ProjectSnapshotSerializer(record)
+            return Response(serializer.data)
+        except Project.history.model.DoesNotExist:
+            return Response({'detail': 'Snapshot not found'}, status=404)

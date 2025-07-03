@@ -242,9 +242,15 @@ class HistoricalProjectBase(models.Model):
     partner_name = models.CharField(max_length=255, null=True, blank=True)
     currency_name = models.CharField(max_length=255, null=True, blank=True)
     history_user_display = models.CharField(max_length=255, null=True, blank=True)
+    project_gip_name = models.CharField(max_length=255, null=True, blank=True)
+
+    # ✅ Only username of creator
+    create_username = models.CharField(max_length=150, null=True, blank=True)
 
     class Meta:
         abstract = True
+
+
 
 
 class Project(models.Model):

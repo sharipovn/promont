@@ -338,7 +338,15 @@ class Project(models.Model):
     @property
     def path_type(self):
         return "PROJECT"
-        
+
+
+class HistoricalProjectFinancePartBase(models.Model):
+    create_username = models.CharField(max_length=150, null=True, blank=True)
+
+    class Meta:
+        abstract = True
+
+       
 
 class ProjectFinancePart(models.Model):
     fs_part_code = models.AutoField(primary_key=True)
@@ -371,6 +379,12 @@ class ProjectFinancePart(models.Model):
     tech_dir_confirm = models.BooleanField(default=False)
     tech_dir_confirm_date = models.DateTimeField(null=True, blank=True)
 
+    
+    history = HistoricalRecords(
+        bases=[HistoricalProjectFinancePartBase],
+        table_name='pro_fin_part_hist',
+        custom_model_name='HistoricalProjectFinancePart'
+    )
     class Meta:
         db_table = 'pro_fin_part'
         verbose_name = "Project Finance Part"
@@ -566,7 +580,13 @@ class ProjectPhase(models.Model):
         self.save(update_fields=['is_acknowledged', 'acknowledged_by', 'acknowledged_at'])
 
 
+class HistoricalProjectGipPartBase(models.Model):
+    create_username = models.CharField(max_length=150, null=True, blank=True)
+    tch_part_nach_username = models.CharField(max_length=150, null=True, blank=True)
+    history_user_display = models.CharField(max_length=150, null=True, blank=True)
 
+    class Meta:
+        abstract = True
 
 
 class ProjectGipPart(models.Model):
@@ -602,6 +622,12 @@ class ProjectGipPart(models.Model):
     nach_otd_confirm = models.BooleanField(default=False)
     nach_otd_confirm_date = models.DateTimeField(null=True, blank=True)  # ✅ New field
 
+    
+    history = HistoricalRecords(
+        bases=[HistoricalProjectGipPartBase],
+        table_name='project_gip_parts_hist',
+        custom_model_name='HistoricalProjectGipPart'
+    )
     class Meta:
         db_table = 'project_gip_parts'
         verbose_name = 'Technical Part'
@@ -640,6 +666,15 @@ class ProjectGipPart(models.Model):
         return "TECH_PART"
 
 
+class HistoricalWorkOrderFileBase(models.Model):
+    work_order_id = models.IntegerField(null=True, blank=True)
+    work_order_name = models.CharField(max_length=255, null=True, blank=True)
+    original_name = models.CharField(max_length=255, null=True, blank=True)
+    history_user_display = models.CharField(max_length=255, null=True, blank=True)
+
+    class Meta:
+        abstract = True
+
 
 
 class WorkOrderFile(models.Model):
@@ -657,6 +692,13 @@ class WorkOrderFile(models.Model):
     original_name = models.CharField(max_length=255)  # ✅ store original filename
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
+    
+    history = HistoricalRecords(
+        bases=[HistoricalWorkOrderFileBase],
+        table_name='work_order_file_hist',
+        custom_model_name='HistoricalWorkOrderFile'
+    )
+    
     def save(self, *args, **kwargs):
         if not self.original_name and self.file:
             self.original_name = self.file.name
@@ -671,7 +713,17 @@ class WorkOrderFile(models.Model):
             from django.core.exceptions import ValidationError
             raise ValidationError("Размер файла не должен превышать 10 МБ.")
 
+class HistoricalWorkOrderBase(models.Model):
+    tch_part_code_id = models.IntegerField(null=True, blank=True)
+    tch_part_name = models.CharField(max_length=255, null=True, blank=True)
+    wo_staff_username = models.CharField(max_length=150, null=True, blank=True)
+    create_username = models.CharField(max_length=150, null=True, blank=True)
+    holded_for_username = models.CharField(max_length=150, null=True, blank=True)
+    history_user_display = models.CharField(max_length=255, null=True, blank=True)
 
+    class Meta:
+        abstract = True
+        
 
 class WorkOrder(models.Model):
     wo_id = models.AutoField(primary_key=True)
@@ -722,7 +774,11 @@ class WorkOrder(models.Model):
         related_name='holded_fors'
     )
     
-    
+    history = HistoricalRecords(
+        bases=[HistoricalWorkOrderBase],
+        table_name='work_order_hist',
+        custom_model_name='HistoricalWorkOrder'
+        )
 
     class Meta:
         db_table = 'work_orders'

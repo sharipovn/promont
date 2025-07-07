@@ -17,6 +17,7 @@ from .views import (StaffUserLoginView,
                     PartnerUpdateView,
                     TranslationListView,
                     DepartmentListCreateView,
+                    ParentDepartmentListView,
                     DepartmentUpdateView,
                     RefuseProjectByFinancierView,
                     TranslationListCreateAPIView,
@@ -117,6 +118,7 @@ urlpatterns = [
     
     #departments
     path('departments/', DepartmentListCreateView.as_view(), name='department-list-create'),
+    path('parent-departments/', ParentDepartmentListView.as_view(), name='parent-department-list'),
     path('departments/<int:department_id>/update/', DepartmentUpdateView.as_view(), name='department-update'),
     path('job-positions/department/<int:department_id>/', JobPositionsByDepartmentView.as_view(), name='job_positions_by_department'),
     path('job-positions/', JobPositionCreateView.as_view(), name='job_position_create'),

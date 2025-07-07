@@ -34,8 +34,8 @@ export default function AddDepartmentModal({ show, onHide, onCreated }) {
       setSuccess('');
       setIsSubmitting(false);
       setLocked(false);
-      axiosInstance.get('/departments/').then((res) => {
-        setDepartments(res.data.results || []);
+      axiosInstance.get('/parent-departments/').then((res) => {
+        setDepartments(res.data || []);
       });
     }
   }, [show, axiosInstance]);

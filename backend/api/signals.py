@@ -45,6 +45,45 @@ def set_history_display_fields(sender, **kwargs):
         if history_user:
             history_instance.history_user_display = getattr(history_user, 'username', str(history_user))
 
+    elif model_name == 'ProjectFinancePart':
+        history_instance.create_username = getattr(obj.create_user_id, 'username', None) if obj.create_user_id else None
+        # You can add more fields to snapshot here if needed in future
+
+        history_user = getattr(history_instance, 'history_user', None)
+        if history_user:
+            history_instance.history_user_display = getattr(history_user, 'username', str(history_user))
+            
+            
+    elif model_name == 'ProjectGipPart':
+        history_instance.create_username = getattr(obj.create_user_id, 'username', None) if obj.create_user_id else None
+        history_instance.tch_part_nach_username = getattr(obj.tch_part_nach, 'username', None) if obj.tch_part_nach else None
+
+        history_user = getattr(history_instance, 'history_user', None)
+        if history_user:
+            history_instance.history_user_display = getattr(history_user, 'username', str(history_user))
+    
+    
+    elif model_name == 'WorkOrderFile':
+        history_instance.work_order_id = getattr(obj.work_order, 'wo_id', None) if obj.work_order else None
+        history_instance.work_order_name = getattr(obj.work_order, 'wo_name', None) if obj.work_order else None
+        history_instance.original_name = obj.original_name
+
+        history_user = getattr(history_instance, 'history_user', None)
+        if history_user:
+            history_instance.history_user_display = getattr(history_user, 'username', str(history_user))
+            
+    elif model_name == 'WorkOrder':
+        history_instance.tch_part_code_id = getattr(obj.tch_part_code, 'tch_part_code', None)
+        history_instance.tch_part_name = getattr(obj.tch_part_code, 'tch_part_name', None)
+
+        history_instance.wo_staff_username = getattr(obj.wo_staff, 'username', None) if obj.wo_staff else None
+        history_instance.create_username = getattr(obj.create_user, 'username', None) if obj.create_user else None
+        history_instance.holded_for_username = getattr(obj.holded_for, 'username', None) if obj.holded_for else None
+
+        history_user = getattr(history_instance, 'history_user', None)
+        if history_user:
+            history_instance.history_user_display = getattr(history_user, 'username', str(history_user))
+    
     # elif model_name == 'AnotherModel':
     #     history_instance.something = obj.something.else...
     #     history_user = getattr(history_instance, 'history_user', None)

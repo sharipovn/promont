@@ -869,6 +869,13 @@ class DepartmentListCreateView(ListCreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(create_user=self.request.user)
+    
+class ParentDepartmentListView(ListAPIView):
+    queryset = Department.objects.all().order_by('-update_time')
+    serializer_class = DepartmentSerializer
+    permission_classes = [IsAuthenticated, HasCapabilityPermission('CAN_ADD_DEPARTMENTS')]
+    
+    
         
         
 class DepartmentUpdateView(RetrieveUpdateAPIView):

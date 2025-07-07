@@ -13,6 +13,8 @@ services:
       - static_volume:/app/staticfiles
     expose:
       - "8010"
+    ports:
+      - "8010:8010"
     env_file:
       - ./backend/config/.env
 

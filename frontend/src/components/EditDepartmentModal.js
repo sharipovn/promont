@@ -37,8 +37,8 @@ export default function EditDepartmentModal({ show, onHide, department, onUpdate
       setSuccess('');
       setIsSubmitting(false);
       setLocked(false);
-      axiosInstance.get('/departments/').then((res) => {
-        const filtered = res.data.results.filter((d) => d.department_id !== department?.department_id);
+      axiosInstance.get('/parent-departments/').then((res) => {
+        const filtered = res.data.filter((d) => d.department_id !== department?.department_id);
         setDepartments(filtered);
       });
     }

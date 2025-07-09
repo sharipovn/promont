@@ -13,10 +13,12 @@ import CreateNewUserModal from './CreateNewUserModal';
 import AdminUpdateUserModal from './AdminUpdateUserModal';
 import SetUserPasswordModal from './SetUserPasswordModal';
 import PauseUserModal from './PauseUserModal';
+import DeleteUserModal from './DeleteUserModal';
+
 
 
 import './TranslationTable.css';
-import { FaCheckCircle, FaTimesCircle, FaPauseCircle, FaPlayCircle, FaEdit,FaPlus,FaKey } from 'react-icons/fa';
+import { FaCheckCircle, FaTimesCircle, FaPauseCircle, FaPlayCircle, FaEdit,FaPlus,FaKey,FaTrash } from 'react-icons/fa';
 
 
 
@@ -41,6 +43,7 @@ export default function AdminUsers() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [selectedUserForPassword, setSelectedUserForPassword] = useState(null);
+  const [userToDelete, setUserToDelete] = useState(null);
   const [targetUser, setTargetUser] = useState(null);
   const [actionMode, setActionMode] = useState('pause');
 
@@ -213,6 +216,11 @@ export default function AdminUsers() {
                               title={returnTitle('admin_panel.set_password')}
                               onClick={() => setSelectedUserForPassword(u)}
                             />
+                            <FaTrash
+                                className="text-danger cursor-pointer"
+                                title={returnTitle('admin_panel.delete')}
+                                onClick={() => setUserToDelete(u)}
+                              />
                         </div>
                       )}
                     </td>
@@ -247,6 +255,13 @@ export default function AdminUsers() {
         onUpdated={fetchUsers}
         mode={actionMode}
       />
+      <DeleteUserModal
+        show={!!userToDelete}
+        user={userToDelete}
+        onHide={() => setUserToDelete(null)}
+        onDeleted={fetchUsers}
+      />
+
 
       {/* Pagination */}
       {!loading && (

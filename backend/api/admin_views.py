@@ -7,7 +7,7 @@ from rest_framework import status
 from django.utils.timezone import now
 from rest_framework.permissions import IsAuthenticated
 from .models import StaffUser,Role,Project          
-from .admin_serializers import AdminUserListSerializer,StaffUserCreateSerializer,AdminRoleSerializer,AdminUserUpdateSerializer,AdminSetPasswordSerializer,ProjectLogSerializer,ProjectSnapshotSerializer
+from .admin_serializers import AdminUserListSerializer,StaffUserCreateSerializer,AdminRoleSerializer,AdminUserUpdateSerializer,AdminSetPasswordSerializer,ProjectLogSerializer,ProjectSnapshotSerializer,UserLogSerializer,UserSnapshotSerializer
 from .permissions import HasCapabilityPermission
 from .pagination import AdminUserPagination,ProjectLogPagination
 from django.shortcuts import get_object_or_404
@@ -134,6 +134,22 @@ class ActivateUserView(APIView):
     
     
     
+class AdminUserDeleteView(APIView):
+    permission_classes = [IsAuthenticated, HasCapabilityPermission('IS_ADMIN')]
+    def delete(self, request, user_id):
+        try:
+            user = StaffUser.objects.get(user_id=user_id)
+        except StaffUser.DoesNotExist:
+            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        # Optionally prevent deleting superusers or yourself
+        if user.is_superuser:
+            return Response({"detail": "Cannot delete a superuser."}, status=status.HTTP_403_FORBIDDEN)
+        if user == request.user:
+            return Response({"detail": "You cannot delete your own account."}, status=status.HTTP_400_BAD_REQUEST)
+        user.delete()
+        return Response({"detail": "User deleted successfully."}, status=status.HTTP_204_NO_CONTENT) 
+    
+    
 class ProjectLogListView(ListAPIView):
     serializer_class = ProjectLogSerializer
     permission_classes = [IsAuthenticated, HasCapabilityPermission('IS_ADMIN')]
@@ -178,4 +194,45 @@ class ProjectSnapshotView(APIView):
             serializer = ProjectSnapshotSerializer(record)
             return Response(serializer.data)
         except Project.history.model.DoesNotExist:
+            return Response({'detail': 'Snapshot not found'}, status=404)
+        
+        
+        
+class UserLogListView(ListAPIView):
+    serializer_class = UserLogSerializer
+    permission_classes = [IsAuthenticated, HasCapabilityPermission('IS_ADMIN')]
+    pagination_class = ProjectLogPagination
+
+    def get_queryset(self):
+        queryset = StaffUser.history.all().order_by('-history_date')
+
+        username = self.request.query_params.get('username')
+        fio = self.request.query_params.get('fio')
+        changed_by = self.request.query_params.get('user_name')
+        start_date = self.request.query_params.get('start_date')
+        end_date = self.request.query_params.get('end_date')
+
+        if username:
+            queryset = queryset.filter(username__icontains=username)
+        if fio:
+            queryset = queryset.filter(fio__icontains=fio)
+        if changed_by:
+            queryset = queryset.filter(history_user_display__icontains=changed_by)
+        if start_date:
+            queryset = queryset.filter(history_date__date__gte=parse_date(start_date))
+        if end_date:
+            queryset = queryset.filter(history_date__date__lte=parse_date(end_date))
+
+        return queryset
+    
+    
+class UserSnapshotView(APIView):
+    permission_classes = [IsAuthenticated, HasCapabilityPermission('IS_ADMIN')]
+
+    def get(self, request, history_id):
+        try:
+            record = StaffUser.history.get(history_id=history_id)
+            serializer = UserSnapshotSerializer(record)
+            return Response(serializer.data)
+        except StaffUser.history.model.DoesNotExist:
             return Response({'detail': 'Snapshot not found'}, status=404)

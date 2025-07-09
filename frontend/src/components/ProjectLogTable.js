@@ -11,6 +11,13 @@ import { createAxiosInstance } from '../utils/createAxiosInstance';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthProvider';
 
+import { TiStarFullOutline } from "react-icons/ti";
+import { FaPlusCircle, FaMinusCircle } from 'react-icons/fa';
+
+
+
+
+
 export default function ProjectLogTable() {
   const { returnTitle } = useI18n();
   const [logs, setLogs] = useState([]);
@@ -194,9 +201,23 @@ export default function ProjectLogTable() {
                   </td>
                   <td>{log?.changed_by || '-'}</td>
                   <td>{formatDateTime(log?.history_date)}</td>
-                  <td>{log?.field || '-'}</td>
-                  <td>{log?.old_value || '-'}</td>
-                  <td>{log?.new_value || '-'}</td>
+                  <td>
+                    {(log?.history_type === '+' || log?.history_type === '-')
+                      ? returnTitle('audit_log.all_fields')
+                      : (log?.field || '-')}
+                  </td>
+
+                  <td>
+                    {(log?.history_type === '+' || log?.history_type === '-')
+                      ? ''
+                      : (log?.old_value || '-')}
+                  </td>
+
+                  <td>
+                    {(log?.history_type === '+' || log?.history_type === '-')
+                      ? ''
+                      : (log?.new_value || '-')}
+                  </td>
                   <td>
                     <FaEye
                         className="text-info cursor-pointer"

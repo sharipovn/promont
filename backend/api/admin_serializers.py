@@ -222,3 +222,125 @@ class ProjectSnapshotSerializer(serializers.ModelSerializer):
             'changed_by',
             'history_date',
         ]
+
+
+
+class UserLogSerializer(serializers.ModelSerializer):
+    changed_by = serializers.SerializerMethodField()
+    role_name = serializers.CharField(source='role.role_name', read_only=True)
+    position_name = serializers.CharField(source='position.position_name', read_only=True)
+    department_name = serializers.CharField(source='department.department_name', read_only=True)
+    create_username = serializers.SerializerMethodField()
+    field = serializers.SerializerMethodField()
+    old_value = serializers.SerializerMethodField()
+    new_value = serializers.SerializerMethodField()
+
+    class Meta:
+        model = StaffUser.history.model
+        fields = [
+            'history_id',
+            'username',
+            'fio',
+            'role_name',
+            'position_name',
+            'department_name',
+            'create_username',
+            'history_type',
+            'changed_by',
+            'history_date',
+            'field',
+            'old_value',
+            'new_value',
+        ]
+
+    def get_changed_by(self, obj):
+        return obj.history_user_display or (
+            getattr(obj.history_user, 'fio', None) if obj.history_user else None
+        )
+
+    def get_create_username(self, obj):
+        return getattr(obj.create_user, 'username', None)
+
+    def _get_diff(self, obj):
+        cache_key = f'_diff_cache_{obj.history_id}'
+        if cache_key in self.context:
+            return self.context[cache_key]
+
+        prev = getattr(obj, 'prev_record', None)
+        if not prev:
+            try:
+                prev = obj.get_previous_by_history_date()
+            except Exception:
+                self.context[cache_key] = []
+                return []
+
+        try:
+            diff = obj.diff_against(prev)
+        except Exception:
+            self.context[cache_key] = []
+            return []
+
+        changes = []
+        fk_snapshot_map = {
+            'role': 'role_name',
+            'position': 'position_name',
+            'department': 'department_name',
+        }
+
+        for change in diff.changes:
+            field_name = change.field
+            if field_name in fk_snapshot_map:
+                snapshot_field = fk_snapshot_map[field_name]
+                old_value = getattr(prev, snapshot_field, str(change.old)) or '-'
+                new_value = getattr(obj, snapshot_field, str(change.new)) or '-'
+                changes.append({'field': field_name, 'old': old_value, 'new': new_value})
+            else:
+                changes.append({
+                    'field': field_name,
+                    'old': str(change.old) if change.old is not None else '-',
+                    'new': str(change.new) if change.new is not None else '-',
+                })
+
+        self.context[cache_key] = changes
+        return changes
+
+    def get_field(self, obj):
+        changes = self._get_diff(obj)
+        return changes[0]['field'] if changes else '-'
+
+    def get_old_value(self, obj):
+        changes = self._get_diff(obj)
+        return changes[0]['old'] if changes else '-'
+
+    def get_new_value(self, obj):
+        changes = self._get_diff(obj)
+        return changes[0]['new'] if changes else '-'
+
+
+
+        
+class UserSnapshotSerializer(serializers.ModelSerializer):
+    changed_by = serializers.CharField(source='history_user_display', default='-')
+    role_name = serializers.CharField(source='role.role_name', default='-', read_only=True)
+    department_name = serializers.CharField(source='department.department_name', default='-', read_only=True)
+    position_name = serializers.CharField(source='position.position_name', default='-', read_only=True)
+    create_username = serializers.CharField(source='create_user.username', default='-', read_only=True)
+
+    class Meta:
+        model = StaffUser.history.model
+        fields = [
+            'user_id',
+            'username',
+            'fio',
+            'phone_number',
+            'role_name',
+            'position_name',
+            'department_name',
+            'is_active',
+            'is_superuser',
+            'create_username',
+            'create_time',
+            'update_time',
+            'changed_by',
+            'history_date',
+        ]

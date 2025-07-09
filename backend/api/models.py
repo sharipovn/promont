@@ -107,7 +107,21 @@ class StaffUserManager(BaseUserManager):
         extra_fields.setdefault('is_staff', True)
         return self.create_user(username, password, **extra_fields)
     
-    
+
+
+
+class HistoricalStaffUserBase(models.Model):
+    role_name = models.CharField(max_length=255, null=True, blank=True)
+    position_name = models.CharField(max_length=255, null=True, blank=True)
+    department_name = models.CharField(max_length=255, null=True, blank=True)
+    create_username = models.CharField(max_length=150, null=True, blank=True)
+    history_user_display = models.CharField(max_length=255, null=True, blank=True)
+
+    class Meta:
+        abstract = True
+
+
+
 
 class StaffUser(AbstractBaseUser, PermissionsMixin):
     user_id = models.AutoField(primary_key=True)
@@ -167,6 +181,15 @@ class StaffUser(AbstractBaseUser, PermissionsMixin):
 
     objects = StaffUserManager()
 
+        # ✅ Add this line
+    
+    history = HistoricalRecords(
+        bases=[HistoricalStaffUserBase],
+        table_name='staff_users_hist',
+        custom_model_name='HistoricalStaffUsers'
+    )
+    
+    
     class Meta:
         db_table = 'staff_users'
 

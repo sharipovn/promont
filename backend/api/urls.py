@@ -75,7 +75,7 @@ from .views import (StaffUserLoginView,
           
           
 from .special_views import SpecialProjectRetrieveView,SendMessageView, MessageListView      
-from .admin_views import AdminUserListView,CreateUserView,AdminRoleListView,AdminUpdateUserView,AdminSetUserPasswordView,PauseUserView,ActivateUserView,ProjectLogListView,ProjectSnapshotView
+from .admin_views import AdminUserListView,CreateUserView,AdminRoleListView,AdminUpdateUserView,AdminSetUserPasswordView,PauseUserView,ActivateUserView,ProjectLogListView,ProjectSnapshotView,AdminUserDeleteView,UserSnapshotView,UserLogListView
 
 urlpatterns = [
     path('login/', StaffUserLoginView.as_view(), name='jwt_login'),
@@ -213,8 +213,12 @@ urlpatterns = [
     path('admin-users/set-password/<int:user_id>/', AdminSetUserPasswordView.as_view()),
     path('admin-users/pause/<int:user_id>/', PauseUserView.as_view()),
     path('admin-users/activate/<int:user_id>/', ActivateUserView.as_view()),
+    path('admin-users/delete/<int:user_id>/', AdminUserDeleteView.as_view(), name='delete-user'),
     
     #admin panel logs
     path('admin-panel/project-logs/', ProjectLogListView.as_view(), name='project-logs'),
     path('admin-panel/project-snapshot/<int:history_id>/', ProjectSnapshotView.as_view()),
+    
+    path('admin-panel/user-logs/', UserLogListView.as_view()),
+    path('admin-panel/user-snapshot/<int:history_id>/', UserSnapshotView.as_view()),
 ]

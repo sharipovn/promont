@@ -84,6 +84,15 @@ def set_history_display_fields(sender, **kwargs):
         if history_user:
             history_instance.history_user_display = getattr(history_user, 'username', str(history_user))
     
+    elif model_name == 'StaffUser':
+        history_instance.role_name = getattr(obj.role, 'role_name', None) if obj.role else None
+        history_instance.position_name = getattr(obj.position, 'position_name', None) if obj.position else None
+        history_instance.department_name = getattr(obj.department, 'department_name', None) if obj.department else None
+        history_instance.create_username = getattr(obj.create_user, 'username', None) if obj.create_user else None
+        history_user = getattr(history_instance, 'history_user', None)
+        if history_user:
+            history_instance.history_user_display = getattr(history_user, 'username', str(history_user))
+    
     # elif model_name == 'AnotherModel':
     #     history_instance.something = obj.something.else...
     #     history_user = getattr(history_instance, 'history_user', None)

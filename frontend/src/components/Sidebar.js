@@ -22,7 +22,8 @@ import { RiAdminLine } from "react-icons/ri";
 
 
 export default function Sidebar() {
-  const { hasCapability } = useAuth();
+  const { hasCapability,user } = useAuth();
+  console.log('user in sidebar:',user.position)
   const {returnTitle } = useI18n(); // ✅ include returnTitle
   return (
     <div
@@ -204,7 +205,7 @@ export default function Sidebar() {
               </NavLink>
             </li>
          )}
-         {hasCapability(PERMISSIONS.CAN_WORK_WITH_STAFF) && (
+         {user.position && hasCapability(PERMISSIONS.CAN_WORK_WITH_STAFF) && (
             <li className="nav-item mt-1 mx-3">
               <NavLink to="/work-with-staff" className="sidebar-link d-flex align-items-center gap-2" 
                   style={{

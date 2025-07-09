@@ -140,9 +140,9 @@ export default function AdminUsers() {
           }}
         >
           <table className="custom-dark-table w-100">
-            <thead>
+            <thead className="sticky-header">
                 <tr className="text-uppercase small">
-                <th>#</th>
+                <th className='freeze-header-left'>#</th>
                 <th>{returnTitle('admin_panel.id')}</th>
                 <th>{returnTitle('admin_panel.username')}</th>
                 <th>{returnTitle('admin_panel.fio')}</th>
@@ -153,18 +153,18 @@ export default function AdminUsers() {
                 <th>{returnTitle('admin_panel.creator')}</th>
                 <th>{returnTitle('admin_panel.created')}</th>
                 <th>{returnTitle('admin_panel.updated')}</th>
-                <th>{returnTitle('admin_panel.actions')}</th>
+                <th className='freeze-header-right'>{returnTitle('admin_panel.actions')}</th>
                 </tr>
             </thead>
             <tbody>
                 {users.map((u, index) => (
                 <tr key={u.user_id}>
-                    <td>{(currentPage - 1) * 15 + index + 1}</td>
-                    <td>{u.user_id}</td>
-                    <td>{u.username}</td>
-                    <td><HoverText>{u.fio}</HoverText></td>
-                    <td>{u.phone_number}</td>
-                    <td>{u.role_name || '—'}</td>
+                    <td className='freeze-left nowrap-cell'>{(currentPage - 1) * 15 + index + 1}</td>
+                    <td className='nowrap-cell'>{u.user_id|| '—'}</td>
+                    <td className='nowrap-cell'>{u.username|| '—'}</td>
+                    <td className='nowrap-cell'>{u.fio|| '—'}</td>
+                    <td className='nowrap-cell'>{u.phone_number|| '—'}</td>
+                    <td className='nowrap-cell'>{u.role_name || '—'}</td>
                     <td className="text-center">
                     {u.is_active ? (
                         <FaCheckCircle className="text-success" />
@@ -177,11 +177,11 @@ export default function AdminUsers() {
                         ) : (
                             '—'
                         )}</td>
-                    <td>{u.create_user_fio || '—'}</td>
-                    <td>{formatDateTime(u.create_time)}</td>
-                    <td>{formatDateTime(u.update_time)}</td>
+                    <td className='nowrap-cell'>{u.create_user_fio || '—'}</td>
+                    <td className='nowrap-cell'>{formatDateTime(u.create_time)|| '—'}</td>
+                    <td className='nowrap-cell'>{formatDateTime(u.update_time)|| '—'}</td>
                     {/* ✅ Actions column */}
-                    <td>
+                    <td className="freeze-right nowrap-cell"> 
                       {!u.is_superuser && (
                         <div className="d-flex gap-4">
                           {u.is_active ? (

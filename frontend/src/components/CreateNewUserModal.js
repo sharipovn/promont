@@ -64,7 +64,7 @@ export default function CreateNewUserModal({ show, onHide, onCreated }) {
   const handleSubmit = async () => {
     const { username, fio, phone_number, role, password1, password2 } = form;
 
-    if (!username || !fio || !phone_number || !password1 || !password2) {
+    if (!username || !fio || !phone_number || !password1 || !password2 ) {
       setAlertMsg('❌ ' + returnTitle('create_user.all_fields_required'));
       return;
     }

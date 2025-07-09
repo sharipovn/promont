@@ -45,6 +45,7 @@ export function I18nProvider({ children }) {
   };
 
   const returnTitle = (key) => {
+    if (lang === 'i18n') return key; // ✅ Show key itself
     const entry = translations[key];
     if (!entry) return key;
 

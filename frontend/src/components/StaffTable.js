@@ -38,38 +38,38 @@ export default function StaffTable({ staffList,onUpdated }) {
         <table className="custom-dark-table w-100">
           <thead>
             <tr className="text-uppercase small">
-              <th>{returnTitle('staff.photo')}</th>
-              <th className="ps-4">{returnTitle('staff.fio')}</th>
-              <th>{returnTitle('staff.position')}</th>
-              <th>{returnTitle('staff.position_start_date')}</th>
-              <th>{returnTitle('staff.department')}</th>
+              <th className='nowrap-cell freeze-header-left'>{returnTitle('staff.photo')}</th>
+              <th className="ps-4 nowrap-cell">{returnTitle('staff.fio')}</th>
+              <th className='nowrap-cell'>{returnTitle('staff.position')}</th>
+              <th className='nowrap-cell'>{returnTitle('staff.position_start_date')}</th>
+              <th className='nowrap-cell'>{returnTitle('staff.department')}</th>
               
-              <th>{returnTitle('staff.birthday')}</th>
-              <th>{returnTitle('staff.address')}</th>
-              <th>{returnTitle('staff.vocation')}</th>
-              <th>{returnTitle('staff.on_vocation_start')}</th>
-              <th>{returnTitle('staff.on_vocation_end')}</th>
-              <th>{returnTitle('staff.on_business_trip')}</th>
-              <th>{returnTitle('staff.on_business_trip_start')}</th>
-              <th>{returnTitle('staff.on_business_trip_end')}</th>
-              <th>{returnTitle('staff.pnfl')}</th>
-              <th>{returnTitle('staff.phone_number')}</th>
-              <th className="text-center" style={{ width: '100px' }}>{returnTitle('staff.actions')}</th>
+              <th className='nowrap-cell'>{returnTitle('staff.birthday')}</th>
+              <th className='nowrap-cell'>{returnTitle('staff.address')}</th>
+              <th className='nowrap-cell'>{returnTitle('staff.vocation')}</th>
+              <th className='nowrap-cell'>{returnTitle('staff.on_vocation_start')}</th>
+              <th className='nowrap-cell'>{returnTitle('staff.on_vocation_end')}</th>
+              <th className='nowrap-cell'>{returnTitle('staff.on_business_trip')}</th>
+              <th className='nowrap-cell'>{returnTitle('staff.on_business_trip_start')}</th>
+              <th className='nowrap-cell'>{returnTitle('staff.on_business_trip_end')}</th>
+              <th className='nowrap-cell'>{returnTitle('staff.pnfl')}</th>
+              <th className='nowrap-cell'>{returnTitle('staff.phone_number')}</th>
+              <th className="text-center nowrap-cell freeze-header-right" style={{ width: '100px' }}>{returnTitle('staff.actions')}</th>
             </tr>
           </thead>
           <tbody>
             {staffList.map(staff => (
               <tr key={staff.user_id}>
-                <td className="py-3 text-center">
+                <td className="py-3 text-center freeze-left">
                     <ProfileImage src={staff.profile_image} size={100} />
                   </td>
-                <td className="ps-4 py-3 fw-semibold text-info"><HoverText>{staff?.fio}</HoverText></td>
-                <td className="py-3">{staff?.position?.position_name || '—'}</td>
-                <td className="py-3">{staff?.position_start_date || '—'}</td>
-                <td className="py-3">{staff?.department?.department_name || '—'}</td>
-                <td className="py-3">{staff?.birthday || '—'}</td>
-                <td className="py-3"><HoverText>{staff?.address || '—'}</HoverText></td>
-                <td className="py-3 text-center">
+                <td className="ps-4 nowrap-cell py-3 fw-semibold text-info">{staff?.fio}</td>
+                <td className="py-3 nowrap-cell">{staff?.position?.position_name || '—'}</td>
+                <td className="py-3 nowrap-cell">{staff?.position_start_date || '—'}</td>
+                <td className="py-3 nowrap-cell">{staff?.department?.department_name || '—'}</td>
+                <td className="py-3 nowrap-cell">{staff?.birthday || '—'}</td>
+                <td className="py-3 nowrap-cell"><HoverText>{staff?.address || '—'}</HoverText></td>
+                <td className="py-3 nowrap-cell text-center">
                   {staff.on_vocation ? (
                     <FaCheckCircle className="text-warning" size={'1rem'} title={returnTitle('staff.on_vocation')} />
                   ) : (
@@ -77,8 +77,8 @@ export default function StaffTable({ staffList,onUpdated }) {
                   )}
                 </td>
 
-                <td className="py-3">{staff?.on_vocation_start || '—'}</td>
-                <td className="py-3">{staff?.on_vocation_end || '—'}</td>
+                <td className="py-3 nowrap-cell">{staff?.on_vocation_start || '—'}</td>
+                <td className="py-3 nowrap-cell">{staff?.on_vocation_end || '—'}</td>
                                 <td className="py-3 text-center">
                   {staff.on_business_trip ? (
                     <FaCheckCircle className="text-info" size={'1rem'} title={returnTitle('staff.on_business_trip')} />
@@ -87,11 +87,11 @@ export default function StaffTable({ staffList,onUpdated }) {
                   )}
                 </td>
 
-                <td className="py-3">{staff?.on_business_trip_start || '—'}</td>
-                <td className="py-3">{staff?.on_business_trip_end || '—'}</td>
-                <td className="py-3">{staff?.pnfl || '—'}</td>
-                <td className="py-3">{staff?.phone_number || '—'}</td>
-               <td className="text-center py-3">
+                <td className="py-3 nowrap-cell">{staff?.on_business_trip_start || '—'}</td>
+                <td className="py-3 nowrap-cell">{staff?.on_business_trip_end || '—'}</td>
+                <td className="py-3 nowrap-cell">{staff?.pnfl || '—'}</td>
+                <td className="py-3 nowrap-cell">{staff?.phone_number || '—'}</td>
+               <td className="text-center py-3 nowrap-cell freeze-right">
                 <div className="d-flex justify-content-center gap-2">
                   <button
                     className="edit-btn-icon text-warning"

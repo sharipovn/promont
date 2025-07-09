@@ -17,6 +17,13 @@ services:
       - "8010:8010"
     env_file:
       - ./backend/config/.env
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 10G
+        reservations:
+          memory: 1G
 
   nginx:
     build:
@@ -27,8 +34,16 @@ services:
       - "4444:4444"
     volumes:
       - ./backend/media:/app/media
+      - static_volume:/app/staticfiles
     depends_on:
       - backend
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 512M
 
 volumes:
   static_volume:

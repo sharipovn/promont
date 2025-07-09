@@ -1,5 +1,5 @@
 import React,{useState,useCallback,useEffect,useMemo} from 'react';
-import { FaSearch, FaChevronLeft, FaChevronRight, FaComments } from 'react-icons/fa'; // 👈 Add chat icon
+import { FaSearch, FaChevronLeft, FaChevronRight } from 'react-icons/fa'; // 👈 Add chat icon
 import NotificationCard from './NotificationCard'; // 👈 Qo‘shing
 import { useAuth } from '../context/AuthProvider';
 import SettingsDropdown from './SettingsDropdown'; // joyini to‘g‘rilang
@@ -56,13 +56,14 @@ export default function Topbar({ sidebarVisible, toggleSidebar,searchQuery, setS
       {/* Left: Toggle + Search */}
       <div className="d-flex align-items-center gap-3">
         {/* Toggle Button */}
-        <button
-          className="btn btn-info rounded-circle d-flex align-items-center justify-content-center"
-          onClick={toggleSidebar}
-          style={{ width: 40, height: 40 }}
-        >
-          {sidebarVisible ? <FaChevronLeft /> : <FaChevronRight />}
-        </button>
+          <button
+            className="btn btn-info rounded-circle d-flex align-items-center justify-content-center"
+            onClick={toggleSidebar}
+            style={{ width: 40, height: 40, color: 'white'}}
+          >
+            {sidebarVisible ? <FaChevronLeft /> : <FaChevronRight />}
+            {sidebarVisible ? '1' : '0'}
+          </button>
 
         {/* Search Input */}
         <div className="search-bar-wrapper d-flex align-items-center border bg-white rounded-pill px-3">

@@ -386,3 +386,57 @@ code {
   white-space: nowrap;
   text-overflow: ellipsis;
 }
+
+
+
+/* index.css or global.css */
+
+/* Sticky top header row */
+/* Sticky left column cell */
+.freeze-left {
+  position: sticky;
+  left: 0;
+  background-color: inherit;
+  z-index: 2;
+  background-clip: padding-box;
+  white-space: normal;
+}
+
+/* Sticky top-left corner cell */
+.freeze-header-left {
+  position: sticky;
+  top: 0;
+  left: 0;
+  background-color: inherit;
+  z-index: 3;
+  background-clip: padding-box;
+  white-space: normal;
+}
+
+/* Sticky right column cell */
+.freeze-right {
+  position: sticky;
+  right: 0;
+  background-color: inherit;
+  z-index: 2;
+  background-clip: padding-box;
+  white-space: normal;
+  box-shadow: -1px 0 0px rgba(0, 0, 0, 0.25); /* left shadow */
+}
+
+/* Sticky top-right corner cell */
+.freeze-header-right {
+  position: sticky;
+  top: 0;
+  right: 0;
+  background-color: inherit;
+  z-index: 3;
+  background-clip: padding-box;
+  white-space: normal;
+  box-shadow: -1px 0 0px rgba(0, 0, 0, 0.25); /* left shadow */
+}
+
+
+.nowrap-cell {
+  white-space: nowrap;
+}

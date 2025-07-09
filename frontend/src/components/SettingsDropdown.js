@@ -34,7 +34,8 @@ export default function SettingsDropdown() {
   const langOptions = [
     { code: 'en', label: 'Eng' },
     { code: 'ru', label: 'Рус' },
-    { code: 'uz', label: "O'zb" }
+    { code: 'uz', label: "O'zb" },
+    { code: 'i18n', label: 'i18n' } // ✅ added
   ];
 
   return (
@@ -48,7 +49,7 @@ export default function SettingsDropdown() {
         <div
           className="position-absolute end-0 mt-2 p-3 rounded shadow"
           style={{
-            width: '250px',
+            width: '310px',
             background: '#24324a',
             backdropFilter: 'blur(8px)',
             WebkitBackdropFilter: 'blur(8px)',

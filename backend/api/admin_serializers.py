@@ -38,6 +38,7 @@ class AdminUserListSerializer(serializers.ModelSerializer):
 
 class StaffUserCreateSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
+    role_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)
 
     class Meta:
         model = StaffUser
@@ -45,6 +46,14 @@ class StaffUserCreateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         password = validated_data.pop('password')
+        role_id = validated_data.pop('role_id', None)
+
+        if role_id:
+            try:
+                validated_data['role'] = Role.objects.get(pk=role_id)
+            except Role.DoesNotExist:
+                raise serializers.ValidationError({'role_id': 'Invalid role_id'})
+
         user = StaffUser.objects.create_user(password=password, **validated_data)
         return user
 

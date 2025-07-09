@@ -109,6 +109,18 @@ export default function Sidebar() {
               </NavLink>
             </li>
          )}
+         {hasCapability(PERMISSIONS.CAN_CREATE_TECH_PARTS) && (
+            <li className="nav-item mt-1 mx-3">
+              <NavLink to="/manage-technical-parts" className="sidebar-link d-flex align-items-center gap-2" 
+                  style={{
+                    color: '#344767',
+                    fontSize: 'clamp(0.85rem, 1vw + 0.4rem, 0.9rem)',
+                  }}>
+                <GrTechnology style={{ fontSize: 'clamp(1rem, 1vw + 0.5rem, 1.4rem)' }}/>
+                <span>{returnTitle('menu.create_technical_parts')}</span>
+              </NavLink>
+            </li>
+         )}
          {hasCapability(PERMISSIONS.CAN_CREATE_WORK_ORDER) && (
             <li className="nav-item mt-1 mx-3">
               <NavLink to="/manage-work-orders" className="sidebar-link d-flex align-items-center gap-2" 
@@ -181,18 +193,7 @@ export default function Sidebar() {
               </NavLink>
             </li>
          )}
-         {hasCapability(PERMISSIONS.CAN_CREATE_TECH_PARTS) && (
-            <li className="nav-item mt-1 mx-3">
-              <NavLink to="/manage-technical-parts" className="sidebar-link d-flex align-items-center gap-2" 
-                  style={{
-                    color: '#344767',
-                    fontSize: 'clamp(0.85rem, 1vw + 0.4rem, 0.9rem)',
-                  }}>
-                <GrTechnology style={{ fontSize: 'clamp(1rem, 1vw + 0.5rem, 1.4rem)' }}/>
-                <span>{returnTitle('menu.create_technical_parts')}</span>
-              </NavLink>
-            </li>
-         )}
+         
         {hasCapability(PERMISSIONS.CAN_MANAGE_STAFF) && (
             <li className="nav-item mt-1 mx-3">
               <NavLink to="/staff-management" className="sidebar-link d-flex align-items-center gap-2" 

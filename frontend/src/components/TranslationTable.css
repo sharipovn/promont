@@ -1,18 +1,32 @@
 .custom-dark-table {
-  width: 100%;
+  width: max-content; /* ✅ allow natural width + scroll */
+  min-width: 100%;     /* ✅ prevent collapsing */
   border-collapse: collapse;
   background-color: #2e3a4b;
   color: #f1f5f9;
   font-size: 14px;
   border-radius: 12px;
-  overflow: hidden;
+  table-layout: auto;  /* or fixed if you define column widths */
+}
+
+.table-wrapper {
+  max-height: 70vh;
+  overflow: auto;
+  position: relative;
+  border-radius: 12px;
+  background-color: #2e3a4b;
+  overflow: auto; /* ⬅️ vertical + horizontal scroll */
 }
 
 .custom-dark-table thead {
   background-color: #38475a;
+}
+
+.custom-dark-table thead th {
   position: sticky;
   top: 0;
-  z-index: 10;
+  background-color: #38475a;
+  z-index: 3; /* Make sure it stays above td content */
 }
 
 .custom-dark-table th,

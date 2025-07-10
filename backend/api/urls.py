@@ -52,6 +52,7 @@ from .views import (StaffUserLoginView,
                     StaffMgDepartmentListAPIView,
                     StaffUserUpdateAPIView,
                     ToggleVacationAPIView,
+                    ToggleMedicalLeaveAPIView,
                     JobPositionsByDepartmentView,
                     JobPositionCreateView,
                     JobPositionDeleteView,
@@ -184,6 +185,7 @@ urlpatterns = [
     path('manage-staff/department-list/', StaffMgDepartmentListAPIView.as_view(), name='staff-department-list'),
     path('manage-staff/staff-users/<int:user_id>/', StaffUserUpdateAPIView.as_view(), name='update_staff_user'),
     path('manage-staff/staff-users/<int:user_id>/toggle-vacation/', ToggleVacationAPIView.as_view(), name='toggle_vacation'),
+    path('manage-staff/staff-users/<int:user_id>/toggle-medical-leave/', ToggleMedicalLeaveAPIView.as_view(), name='toggle_medical_leave'),
     path('manage-staff/staff-users/<int:user_id>/toggle-bisness-trip/', ToggleBusinessTripPIView.as_view(), name='toggle_vacation'),
     
     

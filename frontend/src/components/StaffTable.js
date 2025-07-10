@@ -5,6 +5,7 @@ import { useI18n } from '../context/I18nProvider';
 import HoverText from './HoverText';
 import EditStaffModal from './EditStaffModal';
 import MakeVacationModal from './MakeVacationModal';
+import MakeMedicalLeaveModal from './MakeMedicalLeaveModal';
 import MakeBusinessTripModal from './MakeBusinessTripModal'
 import './TranslationTable.css';
 import { FaCheckCircle } from "react-icons/fa";
@@ -13,6 +14,7 @@ import { BiEdit } from "react-icons/bi";
 import { MdWork } from "react-icons/md";
 import { MdWorkOff } from "react-icons/md";
 import { FaBusinessTime } from "react-icons/fa6";
+import { FaBriefcaseMedical } from "react-icons/fa6";
 
 
 
@@ -22,23 +24,24 @@ export default function StaffTable({ staffList,onUpdated }) {
   const [selectedStaff, setSelectedStaff] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showVacationModal, setShowVacationModal] = useState(false);
+  const [showMedicalModal, setShowMedicalModal] = useState(false);
   const [showBusinessTripModal, setShowBusinessTripModal] = useState(false);
 
   return (
     <>
       <div
-        className="table-responsive rounded-4 custom-scroll"
+        className="table-wrapper  custom-scroll"
         style={{
-          backgroundColor: '#2e3a4b',
-          border: '1px solid rgba(255,255,255,0.05)',
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+          // backgroundColor: '#2e3a4b',
+          // border: '1px solid rgba(255,255,255,0.05)',
+          // boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
           maxHeight: '75vh',
         }}
       >
         <table className="custom-dark-table w-100">
           <thead>
             <tr className="text-uppercase small">
-              <th className='nowrap-cell freeze-header-left'>{returnTitle('staff.photo')}</th>
+              <th className="nowrap-cell">{returnTitle('staff.photo')}</th>
               <th className="ps-4 nowrap-cell">{returnTitle('staff.fio')}</th>
               <th className='nowrap-cell'>{returnTitle('staff.position')}</th>
               <th className='nowrap-cell'>{returnTitle('staff.position_start_date')}</th>
@@ -49,6 +52,9 @@ export default function StaffTable({ staffList,onUpdated }) {
               <th className='nowrap-cell'>{returnTitle('staff.vocation')}</th>
               <th className='nowrap-cell'>{returnTitle('staff.on_vocation_start')}</th>
               <th className='nowrap-cell'>{returnTitle('staff.on_vocation_end')}</th>
+              <th className='nowrap-cell'>{returnTitle('staff.on_medical_leave')}</th>
+              <th className='nowrap-cell'>{returnTitle('staff.on_medical_leave_start')}</th>
+              <th className='nowrap-cell'>{returnTitle('staff.on_medical_leave_end')}</th>
               <th className='nowrap-cell'>{returnTitle('staff.on_business_trip')}</th>
               <th className='nowrap-cell'>{returnTitle('staff.on_business_trip_start')}</th>
               <th className='nowrap-cell'>{returnTitle('staff.on_business_trip_end')}</th>
@@ -60,7 +66,7 @@ export default function StaffTable({ staffList,onUpdated }) {
           <tbody>
             {staffList.map(staff => (
               <tr key={staff.user_id}>
-                <td className="py-3 text-center freeze-left">
+                <td className="py-3 text-center">
                     <ProfileImage src={staff.profile_image} size={100} />
                   </td>
                 <td className="ps-4 nowrap-cell py-3 fw-semibold text-info">{staff?.fio}</td>
@@ -79,7 +85,20 @@ export default function StaffTable({ staffList,onUpdated }) {
 
                 <td className="py-3 nowrap-cell">{staff?.on_vocation_start || '—'}</td>
                 <td className="py-3 nowrap-cell">{staff?.on_vocation_end || '—'}</td>
-                                <td className="py-3 text-center">
+
+
+                <td className="py-3 nowrap-cell text-center">
+                  {staff.on_medical_leave ? (
+                    <FaBriefcaseMedical className="text-warning" size={'1rem'} title={returnTitle('staff.on_medical_leave')} />
+                  ) : (
+                    '—'
+                  )}
+                </td>
+
+                <td className="py-3 nowrap-cell">{staff?.on_medical_leave_start || '—'}</td>
+                <td className="py-3 nowrap-cell">{staff?.on_medical_leave_end || '—'}</td>
+
+                <td className="py-3 text-center">
                   {staff.on_business_trip ? (
                     <FaCheckCircle className="text-info" size={'1rem'} title={returnTitle('staff.on_business_trip')} />
                   ) : (
@@ -114,6 +133,16 @@ export default function StaffTable({ staffList,onUpdated }) {
                     <MdWorkOff size={16} />
                   </button>
                   <button
+                    className="edit-btn-icon  text-danger"
+                    title={staff.on_medical_leave ? returnTitle('staff.remove_medical_leave') : returnTitle('staff.make_medical_leave')}
+                    onClick={() => {
+                      setSelectedStaff(staff);
+                      setShowMedicalModal(true); // ✅ fix this line
+                    }}
+                  >
+                    <FaBriefcaseMedical size={15} />
+                  </button>
+                  <button
                     className="edit-btn-icon  text-info"
                     title={staff.on_business_trip ? returnTitle('staff.remove_business_trip') : returnTitle('staff.make_on_business_trip')}
                     onClick={() => {
@@ -146,6 +175,14 @@ export default function StaffTable({ staffList,onUpdated }) {
         <MakeVacationModal
           show={showVacationModal}
           onHide={() => setShowVacationModal(false)}
+          staff={selectedStaff}
+          onUpdated={onUpdated} // ✅ trigger refetch
+        />
+      )}
+      {selectedStaff && showMedicalModal && (
+        <MakeMedicalLeaveModal
+          show={showMedicalModal}
+          onHide={() => setShowMedicalModal(false)}
           staff={selectedStaff}
           onUpdated={onUpdated} // ✅ trigger refetch
         />

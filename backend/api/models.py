@@ -167,10 +167,17 @@ class StaffUser(AbstractBaseUser, PermissionsMixin):
     on_vocation_update = models.DateTimeField(auto_now=True)  # auto-tracks changes
     on_vocation_start = models.DateField(null=True, blank=True)
     on_vocation_end = models.DateField(null=True, blank=True)
+    
     on_business_trip = models.BooleanField(default=False)
     on_business_trip_update = models.DateTimeField(auto_now=True)  # auto-tracks changes
     on_business_trip_start = models.DateField(null=True, blank=True)
     on_business_trip_end = models.DateField(null=True, blank=True)
+    
+    on_medical_leave = models.BooleanField(default=False)
+    on_medical_leave_update = models.DateTimeField(auto_now=True)  # auto-tracks changes
+    on_medical_leave_start = models.DateField(null=True, blank=True)
+    on_medical_leave_end = models.DateField(null=True, blank=True)
+    
     pnfl = models.CharField(max_length=20, null=True, blank=True)
     phone_number = models.CharField(max_length=20)  # ✅ required
     position_start_date = models.DateField(null=True, blank=True)

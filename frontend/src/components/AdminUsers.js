@@ -135,12 +135,7 @@ export default function AdminUsers() {
       {/* Table */}
       {!loading && (
         <div
-          className="table-responsive rounded-4 custom-scroll"
-          style={{
-            backgroundColor: '#2e3a4b',
-            border: '1px solid rgba(255,255,255,0.05)',
-            maxHeight: '70vh',
-          }}
+          className="table-wrapper  custom-scroll"
         >
           <table className="custom-dark-table w-100">
             <thead className="sticky-header">
@@ -168,14 +163,14 @@ export default function AdminUsers() {
                     <td className='nowrap-cell'>{u.fio|| '—'}</td>
                     <td className='nowrap-cell'>{u.phone_number|| '—'}</td>
                     <td className='nowrap-cell'>{u.role_name || '—'}</td>
-                    <td className="text-center">
+                    <td className="nowrap-cell text-center">
                     {u.is_active ? (
                         <FaCheckCircle className="text-success" />
                     ) : (
                         <FaTimesCircle className="text-danger" />
                     )}
                     </td>
-                    <td>  {u.is_superuser ? (
+                    <td className="nowrap-cell text-center">  {u.is_superuser ? (
                             <FaCheckCircle className="text-info" />
                         ) : (
                             '—'

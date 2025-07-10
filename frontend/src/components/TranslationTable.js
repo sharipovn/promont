@@ -15,36 +15,33 @@ export default function TranslationTable({ translations, onUpdated }) {
   return (
     <>
       <div
-        className="table-responsive rounded-4 custom-scroll"
+        className="table-wrapper  custom-scroll"
         style={{
-          backgroundColor: '#2e3a4b',
-          border: '1px solid rgba(255,255,255,0.05)',
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
           maxHeight: '75vh',
         }}
       >
         <table className="custom-dark-table w-100 ">
           <thead>
             <tr className="text-uppercase small">
-              <th className="ps-4" style={{ width: '20%' }}>{returnTitle('internalization.key')}</th>
-              <th>{returnTitle('internalization.en')}</th>
-              <th>{returnTitle('internalization.ru')}</th>
-              <th>{returnTitle('internalization.uz')}</th>
-              <th>{returnTitle('internalization.update_time')}</th>
-              <th>{returnTitle('internalization.translated')}</th>
-              <th className="text-center" style={{ width: '60px' }}></th>
+              <th className="nowrap-cell">{returnTitle('internalization.key')}</th>
+              <th className='nowrap-cell'>{returnTitle('internalization.en')}</th>
+              <th className='nowrap-cell'>{returnTitle('internalization.ru')}</th>
+              <th className='nowrap-cell'>{returnTitle('internalization.uz')}</th>
+              <th className='nowrap-cell'>{returnTitle('internalization.update_time')}</th>
+              <th className='nowrap-cell'>{returnTitle('internalization.translated')}</th>
+              <th className="nowrap-cell text-center freeze-header-right" style={{ width: '60px' }}>{returnTitle('internalization.actions')}</th>
             </tr>
           </thead>
           <tbody>
             {translations.map((tr) => (
               <tr key={tr.translation_id}>
-                <td className="ps-4 py-3 fw-semibold text-info">{tr.key}</td>
-                <td className="py-3">{tr.en || <span className="text-muted">—</span>}</td>
-                <td className="py-3">{tr.ru || <span className="text-muted">—</span>}</td>
-                <td className="py-3">{tr.uz || <span className="text-muted">—</span>}</td>
-                <td className="py-3">{formatDateOnly(tr.update_time) || <span className="text-muted">—</span>}</td>
-                <td className="py-3"><HoverText>{tr.translated_by_fio || <span className="text-muted">—</span>}</HoverText></td>
-                <td className="text-center py-3">
+                <td className="nowrap-cell fw-semibold text-info">{tr.key}</td>
+                <td className="nowrap-cell py-3">{tr.en || <span className="text-muted">—</span>}</td>
+                <td className="nowrap-cell py-3">{tr.ru || <span className="text-muted">—</span>}</td>
+                <td className="nowrap-cell py-3">{tr.uz || <span className="text-muted">—</span>}</td>
+                <td className="nowrap-cell py-3">{formatDateOnly(tr.update_time) || <span className="text-muted">—</span>}</td>
+                <td className="nowrap-cell py-3"><HoverText>{tr.translated_by_fio || <span className="text-muted">—</span>}</HoverText></td>
+                <td className="freeze-right nowrap-cell text-center py-3">
                   <button
                     onClick={() => setEditingTranslation(tr)}
                     className="edit-btn-icon"

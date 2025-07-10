@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthProvider';
 import { createAxiosInstance } from '../utils/createAxiosInstance';
 import Alert from './Alert';
 
-export default function MakeVacationModal({ show, onHide, staff, onUpdated }) {
+export default function MakeMedicalLeaveModal({ show, onHide, staff, onUpdated }) {
   const { returnTitle } = useI18n();
   const { setUser, setAccessToken } = useAuth();
   const navigate = useNavigate();
@@ -33,34 +33,34 @@ export default function MakeVacationModal({ show, onHide, staff, onUpdated }) {
     }
   }, [show]);
 
-  const toggleVacation = () => {
+  const toggleMedicalLeave = () => {
     setWarning('');
     setSuccess('');
     setError('');
 
-    if (!staff.on_vocation && (!startDate || !endDate)) {
-      setWarning(returnTitle('staff.vacation_dates_required'));
+    if (!staff.on_medical_leave && (!startDate || !endDate)) {
+      setWarning(returnTitle('staff.medical_leave_dates_required'));
       return;
     }
 
     const payload = {
-      on_vocation: !staff.on_vocation,
-      on_vocation_start: staff.on_vocation ? null : startDate,
-      on_vocation_end: staff.on_vocation ? null : endDate,
+      on_medical_leave: !staff.on_medical_leave,
+      on_medical_leave_start: staff.on_medical_leave ? null : startDate,
+      on_medical_leave_end: staff.on_medical_leave ? null : endDate,
     };
 
     setSubmitting(true);
     axiosInstance
-      .patch(`/manage-staff/staff-users/${staff.user_id}/toggle-vacation/`, payload)
+      .patch(`/manage-staff/staff-users/${staff.user_id}/toggle-medical-leave/`, payload)
       .then(() => {
-        setSuccess(returnTitle('staff.vacation_status_updated_successfully'));
+        setSuccess(returnTitle('staff.medical_leave_status_updated_successfully'));
         onUpdated?.();
         setLocked(true);
         setTimeout(() => onHide(), 1200);
       })
       .catch((err) => {
         console.error(err);
-        setError(returnTitle('staff.vacation_status_update_failed'));
+        setError(returnTitle('staff.medical_leave_status_update_failed'));
       })
       .finally(() => setSubmitting(false));
   };
@@ -76,9 +76,9 @@ export default function MakeVacationModal({ show, onHide, staff, onUpdated }) {
     <Modal show={show} onHide={onHide} centered>
       <Modal.Header closeButton style={{ backgroundColor: '#2e3a4b', color: 'white' }}>
         <Modal.Title>
-          {staff.on_vocation
-            ? returnTitle('staff.remove_vacation')
-            : returnTitle('staff.make_vacation')}
+          {staff.on_medical_leave
+            ? returnTitle('staff.remove_medical_leave')
+            : returnTitle('staff.make_medical_leave')}
         </Modal.Title>
       </Modal.Header>
 
@@ -88,16 +88,16 @@ export default function MakeVacationModal({ show, onHide, staff, onUpdated }) {
         {warning && <div className="text-danger text-center">{warning}</div>}
 
         <p className="mb-3">
-          {staff.on_vocation
-            ? returnTitle('staff.confirm_remove_vacation')
-            : returnTitle('staff.confirm_make_vacation')}{' '}
+          {staff.on_medical_leave
+            ? returnTitle('staff.confirm_remove_medical_leave')
+            : returnTitle('staff.confirm_make_medical_leave')}{' '}
             <span className='text-info'>{staff?.fio}</span>
         </p>
 
-        {!staff.on_vocation && (
+        {!staff.on_medical_leave && (
           <>
             <Form.Group className="mb-3">
-              <Form.Label>{returnTitle('staff.vacation_start')}</Form.Label>
+              <Form.Label>{returnTitle('staff.medical_leave_start')}</Form.Label>
               <Form.Control
                 type="date"
                 value={startDate}
@@ -107,7 +107,7 @@ export default function MakeVacationModal({ show, onHide, staff, onUpdated }) {
               />
             </Form.Group>
             <Form.Group className="mb-3">
-              <Form.Label>{returnTitle('staff.vacation_end')}</Form.Label>
+              <Form.Label>{returnTitle('staff.medical_leave_end')}</Form.Label>
               <Form.Control
                 type="date"
                 value={endDate}
@@ -125,16 +125,16 @@ export default function MakeVacationModal({ show, onHide, staff, onUpdated }) {
           {returnTitle('app.cancel')}
         </Button>
         <Button
-          variant={staff.on_vocation ? 'danger' : 'success'}
-          onClick={toggleVacation}
+          variant={staff.on_medical_leave ? 'danger' : 'success'}
+          onClick={toggleMedicalLeave}
           disabled={submitting || locked}
         >
           {submitting ? (
             <Spinner size="sm" animation="border" />
-          ) : staff.on_vocation ? (
-            returnTitle('staff.remove_vacation')
+          ) : staff.on_medical_leave ? (
+            returnTitle('staff.remove_medical_leave')
           ) : (
-            returnTitle('staff.make_vacation')
+            returnTitle('staff.make_medical_leave')
           )}
         </Button>
       </Modal.Footer>

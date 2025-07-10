@@ -168,57 +168,57 @@ export default function ProjectLogTable() {
         </div>
       ) : (
         <div
-          className="table-responsive rounded-4 custom-scroll"
-          style={{ backgroundColor: '#2e3a4b', border: '1px solid rgba(255,255,255,0.05)', maxHeight: '50vh' }}
+          className="table-wrapper  custom-scroll"
+          style={{maxHeight:'50vh'}}
         >
           <table className="custom-dark-table w-100">
             <thead>
               <tr className="text-uppercase small">
                 <th>#</th>
-                <th>{returnTitle('audit_log.project_id')}</th>
-                <th>{returnTitle('audit_log.project_name')}</th>
-                <th>{returnTitle('audit_log.operation_type')}</th>
-                <th>{returnTitle('audit_log.changed_by')}</th>
-                <th>{returnTitle('audit_log.when')}</th>
-                <th>{returnTitle('audit_log.field')}</th>
-                <th>{returnTitle('audit_log.old_value')}</th>
-                <th>{returnTitle('audit_log.new_value')}</th>
-                <th>{returnTitle('audit_log.actions')}</th>
+                <th className='nowrap-cell'>{returnTitle('audit_log.project_id')}</th>
+                <th className='nowrap-cell'>{returnTitle('audit_log.project_name')}</th>
+                <th  className='nowrap-cell'>{returnTitle('audit_log.operation_type')}</th>
+                <th  className='nowrap-cell'>{returnTitle('audit_log.changed_by')}</th>
+                <th  className='nowrap-cell'>{returnTitle('audit_log.when')}</th>
+                <th  className='nowrap-cell'>{returnTitle('audit_log.field')}</th>
+                <th  className='nowrap-cell'>{returnTitle('audit_log.old_value')}</th>
+                <th  className='nowrap-cell'>{returnTitle('audit_log.new_value')}</th>
+                <th  className='nowrap-cell freeze-header-right'>{returnTitle('audit_log.actions')}</th>
               </tr>
             </thead>
             <tbody>
               {logs.map((log, idx) => (
                 <tr key={log?.id}>
-                  <td>{(currentPage - 1) * 15 + idx + 1}</td>
-                  <td>{log?.project_id}</td>
-                  <td>{log?.project_name}</td>
-                  <td>
+                  <td  className='nowrap-cell'>{(currentPage - 1) * 15 + idx + 1}</td>
+                  <td  className='nowrap-cell'>{log?.project_id}</td>
+                  <td  className='nowrap-cell'>{log?.project_name}</td>
+                  <td  className='nowrap-cell'>
                     {{
                       '+': returnTitle('audit_log.created'),
                       '~': returnTitle('audit_log.updated'),
                       '-': returnTitle('audit_log.deleted'),
                     }[log?.history_type] || log?.history_type}
                   </td>
-                  <td>{log?.changed_by || '-'}</td>
-                  <td>{formatDateTime(log?.history_date)}</td>
-                  <td>
+                  <td  className='nowrap-cell'>{log?.changed_by || '-'}</td>
+                  <td  className='nowrap-cell'>{formatDateTime(log?.history_date)}</td>
+                  <td  className='nowrap-cell'>
                     {(log?.history_type === '+' || log?.history_type === '-')
                       ? returnTitle('audit_log.all_fields')
                       : (log?.field || '-')}
                   </td>
 
-                  <td>
+                  <td  className='nowrap-cell'>
                     {(log?.history_type === '+' || log?.history_type === '-')
                       ? ''
                       : (log?.old_value || '-')}
                   </td>
 
-                  <td>
+                  <td  className='nowrap-cell'>
                     {(log?.history_type === '+' || log?.history_type === '-')
                       ? ''
                       : (log?.new_value || '-')}
                   </td>
-                  <td>
+                  <td  className='freeze-right nowrap-cell'>
                     <FaEye
                         className="text-info cursor-pointer"
                         title={returnTitle('audit_log.view_snapshot')}

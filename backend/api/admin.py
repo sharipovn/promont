@@ -48,7 +48,7 @@ class StaffUserAdmin(UserAdmin):
     list_display = (
         'user_id', 'username', 'fio','position__position_name', 'phone_number',  # ✅ added phone_number
         'is_staff', 'is_active', 'last_login', 'create_time',
-        'department', 'role', 'on_vocation','on_business_trip'  # ✅ added on_vocation status
+        'department', 'role', 'on_vocation','on_medical_leave','on_business_trip'  # ✅ added on_vocation status
     )
     search_fields = ('username', 'fio', 'phone_number')  # ✅ added phone_number to search
     ordering = ('user_id',)
@@ -64,6 +64,11 @@ class StaffUserAdmin(UserAdmin):
         ('Vacation Info', {
             'fields': (
                 'on_vocation', 'on_vocation_start', 'on_vocation_end'
+            )
+        }),
+        ('Medical Leave Info', {
+            'fields': (
+                'on_medical_leave', 'on_medical_leave_start', 'on_medical_leave_end'
             )
         }),
         ('Business Trip Info', {

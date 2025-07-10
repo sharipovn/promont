@@ -2163,6 +2163,36 @@ class ToggleVacationAPIView(APIView):
         return Response({"detail": "Vacation status updated successfully."}, status=200)
     
 
+class ToggleMedicalLeaveAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, user_id):
+        try:
+            staff = StaffUser.objects.get(user_id=user_id)
+        except StaffUser.DoesNotExist:
+            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        on_medical_leave = request.data.get('on_medical_leave')
+        start_date = request.data.get('on_medical_leave_start')
+        end_date = request.data.get('on_medical_leave_end')
+
+        if on_medical_leave:
+            if not start_date or not end_date:
+                return Response({"detail": "Medical leave start and end dates are required."}, status=400)
+            staff.on_medical_leave = True
+            staff.on_medical_leave_start = start_date
+            staff.on_medical_leave_end = end_date
+        else:
+            staff.on_medical_leave = False
+            staff.on_medical_leave_start = None
+            staff.on_medical_leave_end = None
+
+        staff.save()
+        return Response({"detail": "Medical leave status updated successfully."}, status=200)
+
+
+
+
 class ToggleBusinessTripPIView(APIView):
     permission_classes = [IsAuthenticated]
 

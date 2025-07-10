@@ -58,6 +58,13 @@ export default function Sidebar() {
 
 
       {/* Navigation Links */}
+      <div
+        className="sidebar-nav-scroll mt-2"
+        style={{
+          overflowY: 'auto',
+          flexGrow: 1,
+        }}
+      >
       <ul className="nav flex-column" >
         <li className="nav-item mt-1  mx-3">
             <NavLink
@@ -231,6 +238,7 @@ export default function Sidebar() {
             </li>
          )}
       </ul>
+      </div>
     </div>
   );
 }

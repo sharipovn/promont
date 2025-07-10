@@ -90,7 +90,8 @@ export default function MakeBusinessTripModal({ show, onHide, staff, onUpdated }
         <p className="mb-3">
           {staff.on_business_trip
             ? returnTitle('staff.confirm_remove_business_trip')
-            : returnTitle('staff.confirm_make_business_trip')}
+            : returnTitle('staff.confirm_make_business_trip')}{' '}
+            <span className='text-info'>{staff?.fio}</span>
         </p>
 
         {!staff.on_business_trip && (

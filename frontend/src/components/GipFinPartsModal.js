@@ -14,6 +14,7 @@ export default function GipFinPartsModal({ show, onHide, project,onCreated,onUpd
   const [parts, setParts] = useState([]);
   const [loadingParts, setLoadingParts] = useState(true);
   const [selectedFinancePart, setSelectedFinancePart] = useState(null);
+  console.log('project in gip view:',project.total_price)
 
   const { setUser, setAccessToken } = useAuth();
   const navigate = useNavigate();
@@ -65,7 +66,7 @@ export default function GipFinPartsModal({ show, onHide, project,onCreated,onUpd
             <div className="viewmodal-table">
               <Row className="fw-bold mb-2 px-2">
                 <Col>{returnTitle('fn_part.fs_part_name')}</Col>
-                <Col>{returnTitle('fn_part.fs_part_price')}</Col>
+                <Col>{returnTitle('fn_part.fs_part_price')} (%)</Col>
                 <Col>{returnTitle('fn_part.fs_part_start_date')}</Col>
                 <Col>{returnTitle('fn_part.fs_finish_date')}</Col>
                 <Col>{returnTitle('fn_part.financier_fio')}</Col>
@@ -74,7 +75,12 @@ export default function GipFinPartsModal({ show, onHide, project,onCreated,onUpd
               {parts.map((part, index) => (
                 <Row key={index} className="border-top py-2 px-2 align-items-center">
                   <Col>{part.fs_part_name || '-'}</Col>
-                  <Col>{Number(part.fs_part_price || 0).toLocaleString()} {returnTitle(`currency.${project?.currency_name?.toLowerCase()}`)}</Col>
+                    {/* <Col>{Number(part.fs_part_price || 0).toLocaleString()} {returnTitle(`currency.${project?.currency_name?.toLowerCase()}`)}</Col> */}
+                  <Col>
+                    {project?.total_price
+                      ? `${((part?.fs_part_price / project.total_price) * 100).toFixed(1)} %`
+                      : '0.0 %'}
+                  </Col>
                   <Col>{part.fs_start_date}</Col>
                   <Col>{part.fs_finish_date}</Col>
                   <Col><HoverText>{part.financier_fio || '-'}</HoverText></Col>

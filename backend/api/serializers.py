@@ -3,7 +3,8 @@
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from api.models import StaffUser,Project,ProjectFinancePart,Partner,UserTask,Currency,Translation,Department,ProjectGipPart,ChatMessage,ActionLog,WorkOrder,WorkOrderFile,PhaseType,Role,JobPosition,ChatMessageFile
 from rest_framework import serializers
-
+from django.utils.timezone import now
+from datetime import date
 
 
 class StaffUserTokenSerializer(TokenObtainPairSerializer):
@@ -92,11 +93,59 @@ class ProjectSerializer(serializers.ModelSerializer):
 
 class StaffUserSimpleSerializer(serializers.ModelSerializer):
     position = serializers.SerializerMethodField()
+    department_name = serializers.CharField(source='department.department_name', read_only=True)
+    not_selectable = serializers.SerializerMethodField()
+    reason = serializers.SerializerMethodField()
+
     class Meta:
         model = StaffUser
-        fields = ['user_id', 'username', 'fio', 'position']
+        fields = [
+            'user_id', 'username', 'fio', 'position', 'department_name',
+            'not_selectable', 'reason'
+        ]
+
     def get_position(self, obj):
         return obj.position.position_name if obj.position else None
+
+    def _get_status(self, obj):
+        today = date.today()
+        if (
+            obj.on_vocation and
+            obj.on_vocation_start and obj.on_vocation_end and
+            obj.on_vocation_start <= today <= obj.on_vocation_end
+        ):
+            return 'vocation'
+        elif (
+            obj.on_medical_leave and
+            obj.on_medical_leave_start and obj.on_medical_leave_end and
+            obj.on_medical_leave_start <= today <= obj.on_medical_leave_end
+        ):
+            return 'medical'
+        elif (
+            obj.on_business_trip and
+            obj.on_business_trip_start and obj.on_business_trip_end and
+            obj.on_business_trip_start <= today <= obj.on_business_trip_end
+        ):
+            return 'business'
+        return None
+
+    def get_not_selectable(self, obj):
+        return self._get_status(obj) is not None
+
+    def get_reason(self, obj):
+        status = self._get_status(obj)
+        if status == 'vocation':
+            return 'staffuser.on_vocation'
+        elif status == 'medical':
+            return 'staffuser.on_medical_leave'
+        elif status == 'business':
+            return 'staffuser.on_business_trip'
+        return None
+    
+    
+    
+    
+    
         
         
 class ProjectFinancePartCreateSerializer(serializers.ModelSerializer):

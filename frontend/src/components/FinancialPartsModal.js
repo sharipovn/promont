@@ -15,14 +15,22 @@ import Alert from './Alert';
 
 
 export default function FinancialPartsModal({ show, onHide, project, onCreated }) {
+  console.log('project:',project)
   const { returnTitle } = useI18n();
   const { setUser, setAccessToken } = useAuth();
   const navigate = useNavigate();
   const axiosInstance = useMemo(() => createAxiosInstance(navigate, setUser, setAccessToken), [navigate, setUser, setAccessToken]);
 
   const [parts, setParts] = useState([
-    { fs_part_name: '', fs_part_price: '', fs_start_date: '', fs_finish_date: '' },
+    {
+      fs_part_name: '',
+      fs_part_price: '',
+      fs_start_date: project?.start_date || '',
+      fs_finish_date: project?.end_date || '',
+    },
   ]);
+
+  
   const [warning, setWarning] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
@@ -40,9 +48,18 @@ export default function FinancialPartsModal({ show, onHide, project, onCreated }
   }, [show]); // ✅ Clears all alerts and messages when modal opens
 
 
-  const handleAddPart = () => {
-    setParts([...parts, { fs_part_name: '', fs_part_price: '', fs_start_date: '', fs_finish_date: '' }]);
-  };
+    const handleAddPart = () => {
+      setParts([
+        ...parts,
+        {
+          fs_part_name: '',
+          fs_part_price: '',
+          fs_start_date: project?.start_date || '',
+          fs_finish_date: project?.end_date || '',
+        },
+      ]);
+    };
+
 
   const handleRemovePart = (index) => {
     const updated = [...parts];

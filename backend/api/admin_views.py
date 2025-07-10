@@ -204,6 +204,7 @@ class UserLogListView(ListAPIView):
     pagination_class = ProjectLogPagination
 
     def get_queryset(self):
+        EXCLUDED_FIELDS = {'last_login'}
         queryset = StaffUser.history.all().order_by('-history_date')
 
         username = self.request.query_params.get('username')

@@ -63,7 +63,16 @@ export default function UpdateProjectModal({ show, onHide, project, onUpdated })
         .then((res) => {
           const options = res.data.map((user) => ({
             value: user.user_id,
-            label: `${user.fio} (${user.position || '---'})`,
+            label: (
+              <div>
+                {user.fio}
+                {user.position && ` (${user.position})`}
+                {user.reason && (
+                  <div  className='text-success' style={{ fontSize: '0.85em'}}>{user.reason}</div>
+                )}
+              </div>
+            ),
+            not_selectable: user.not_selectable,
           }));
           setFinancierOptions(options);
           setAlertMsg(''); // ✅ Clear alert if success
@@ -310,6 +319,7 @@ export default function UpdateProjectModal({ show, onHide, project, onUpdated })
                   placeholder={returnTitle('create_proj.select_financier')}
                   classNamePrefix="react-select"
                   styles={customSelectStyles}
+                  isOptionDisabled={(option) => option.not_selectable}
                 />
               </Form.Group>
             </div>

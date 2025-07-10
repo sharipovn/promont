@@ -210,7 +210,36 @@ class ProjectListFinancierConfirmView(generics.ListAPIView):
         return qs
     
     
-    
+
+   
+class WoUsersWithCapabilityAPIView(generics.ListAPIView):
+    serializer_class = StaffUserSimpleSerializer
+    permission_classes = [IsAuthenticated]
+    queryset = StaffUser.objects.all()  # required for DRF
+
+    def get_queryset(self):
+        cap = self.request.query_params.get('capability')
+        tch_part_nach_id = self.request.query_params.get('tch_part_nach')  # user_id
+
+        if not cap:
+            return StaffUser.objects.none()
+
+        qs = StaffUser.objects.filter(
+            role__capabilities__capability_name=cap
+        )
+
+        if tch_part_nach_id:
+            try:
+                staff = StaffUser.objects.get(user_id=tch_part_nach_id)
+                qs = qs.filter(department=staff.department)
+            except StaffUser.DoesNotExist:
+                return StaffUser.objects.none()
+
+        return qs.distinct()
+   
+   
+   
+   
     
 
 class UsersWithCapabilityAPIView(generics.ListAPIView):

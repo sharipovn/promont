@@ -37,17 +37,30 @@ export default function UpdateWorkOrderModal({ show, onHide, part, onUpdated }) 
     .then(res => setOrders(res.data));
 
   // Fetch staff
-  axiosInstance.get('/users-with-capability/', {
-    params: { capability: 'CAN_COMPLETE_WORK_ORDER' },
-  })
-    .then(res => {
-      const options = res.data.map(user => ({
-        label: user.fio,
-        value: user.user_id,
-      }));
-      setStaffOptions(options);
-    })
-    .catch(err => console.error("❌ Failed to fetch staff:", err));
+  axiosInstance.get('/work-order/users-with-capability/', 
+      { params: { 
+        capability: 'CAN_COMPLETE_WORK_ORDER' ,
+        tch_part_nach: part?.tch_part_nach  // ✅ Send part ID (like 9)
+      }})
+      .then((res) => {
+        const options = res.data.map((user) => ({
+            value: user.user_id,
+            label: (
+              <div>
+                {user.fio}
+                {user.position && ` (${user.position})`}
+                {user.reason && (
+                  <div  className='text-success' style={{ fontSize: '0.85em'}}>{user.reason}</div>
+                )}
+              </div>
+            ),
+            not_selectable: user.not_selectable,
+          }));
+        setStaffOptions(options);
+      })
+      .catch((err) => {
+        console.error("❌ Failed to fetch staff:", err);
+      });
 }, [show, part?.tch_part_code, axiosInstance]);
 
 
@@ -178,7 +191,7 @@ export default function UpdateWorkOrderModal({ show, onHide, part, onUpdated }) 
                     className="unified-input"
                   />
                 </Col>
-                <Col md={2}>
+                <Col md={5}>
                   <Form.Label>{returnTitle('create_wo.wo_name')}</Form.Label>
                   <Form.Control
                     value={order.wo_name}
@@ -204,7 +217,15 @@ export default function UpdateWorkOrderModal({ show, onHide, part, onUpdated }) 
                     className="unified-input"
                   />
                 </Col>
-                <Col md={3}>
+                <Col md="auto">
+                  <Button variant="outline-danger" onClick={() => handleRemove(index)}>
+                    <FaTrash />
+                  </Button>
+                </Col>
+              </Row>
+               <Row className="align-items-end g-3">
+                <Col md={1}></Col>
+                <Col md={5}>
                   <Form.Label>{returnTitle('create_wo.staffusers')}</Form.Label>
                   <Select
                     options={staffOptions}
@@ -214,14 +235,10 @@ export default function UpdateWorkOrderModal({ show, onHide, part, onUpdated }) 
                     className="unified-input"
                     classNamePrefix="react-select"
                     menuPlacement="auto"
+                    isOptionDisabled={(option) => option.not_selectable}
                   />
                 </Col>
-                <Col md="auto">
-                  <Button variant="outline-danger" onClick={() => handleRemove(index)}>
-                    <FaTrash />
-                  </Button>
-                </Col>
-              </Row>
+                </Row>
               {order.error && (
                 <div className="text-danger small mt-2 px-2">{order.error}</div>
               )}

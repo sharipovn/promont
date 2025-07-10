@@ -44,7 +44,19 @@ export default function GipCreateTechnicalPartsModal({ show, onHide, financialPa
   useEffect(() => {
     axiosInstance.get('/users-with-capability/', { params: { capability: 'CAN_CREATE_WORK_ORDER' } })
       .then((res) => {
-        const options = res.data.map((user) => ({ label: user.fio, value: user.user_id }));
+        const options = res.data.map((user) => ({
+            value: user.user_id,
+            label: (
+              <div>
+                {user.fio}
+                {user.position && ` (${user.position})`}
+                {user.reason && (
+                  <div  className='text-success' style={{ fontSize: '0.85em'}}>{user.reason}</div>
+                )}
+              </div>
+            ),
+            not_selectable: user.not_selectable,
+          }));
         setNachOptions(options);
       })
       .catch((err) => console.error('❌ Failed to load users with capability:', err))
@@ -199,26 +211,13 @@ export default function GipCreateTechnicalPartsModal({ show, onHide, financialPa
                     required
                   />
                 </Col>
-                <Col md={2}>
+                <Col md={5}>
                   <Form.Label>{returnTitle('gip_form.technical_part_name')}</Form.Label>
                   <Form.Control
                     value={part.tch_part_name}
                     onChange={(e) => handleChange(index, 'tch_part_name', e.target.value)}
                     className="unified-input"
                     required
-                  />
-                </Col>
-                <Col md={3}>
-                  <Form.Label>{returnTitle('gip_form.department_head')}</Form.Label>
-                  <Select
-                    isLoading={loadingNach}
-                    value={part.tch_part_nach}
-                    onChange={(value) => handleChange(index, 'tch_part_nach', value)}
-                    options={nachOptions}
-                    styles={customSelectStyles}
-                    className="unified-input"
-                    classNamePrefix="react-select"
-                    menuPlacement="auto"
                   />
                 </Col>
                 <Col md={2}>
@@ -245,6 +244,23 @@ export default function GipCreateTechnicalPartsModal({ show, onHide, financialPa
                   <Button variant="outline-danger" onClick={() => handleRemovePart(index)}>
                     <FaTrash />
                   </Button>
+                </Col>
+              </Row>
+              <Row  className="align-items-end g-3">
+                <Col md={1}></Col>
+                <Col md={5}>
+                  <Form.Label>{returnTitle('gip_form.department_head')}</Form.Label>
+                  <Select
+                    isLoading={loadingNach}
+                    value={part.tch_part_nach}
+                    onChange={(value) => handleChange(index, 'tch_part_nach', value)}
+                    options={nachOptions}
+                    styles={customSelectStyles}
+                    className="unified-input"
+                    classNamePrefix="react-select"
+                    menuPlacement="auto"
+                    isOptionDisabled={(option) => option.not_selectable}
+                  />
                 </Col>
               </Row>
               {part.error && (

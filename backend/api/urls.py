@@ -4,6 +4,7 @@ from .views import (StaffUserLoginView,
                     ProjectCreateAPIView,
                     ProjectListCreateView,
                     UsersWithCapabilityAPIView,
+                    WoUsersWithCapabilityAPIView,
                     ProjectListNotificationFinancierView,
                     ProjectListAPIView,
                     ProjectListFinancierConfirmView,
@@ -145,6 +146,7 @@ urlpatterns = [
     path('work-order/by-part/<int:tch_part_code>/', LoadWorkOrdersByPartView.as_view(), name='load_work_orders_by_part'),
     path('work-order/create/', CreateWorkOrderView.as_view(), name='create_work_order'),
     path('work-order/update/', UpdateWorkOrdersView.as_view(), name='update_work_orders'),
+    path('work-order/users-with-capability/', WoUsersWithCapabilityAPIView.as_view(), name='wo-users-with-capability'),
     
     #complete-work-order
     path('complete-work-order/my-tasks/', CompleteWorkOrderListAPIView.as_view(), name='complete_work_order_list'),

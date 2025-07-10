@@ -124,7 +124,16 @@ export default function ViewModal({ show, onHide, project, onVerified }) {
 
   const gipOptions = gipUsers.map((user) => ({
     value: user.user_id,
-    label: `${user.fio} (${user.position || '---'})`,
+      label: (
+        <div>
+          {user.fio}
+          {user.position && ` (${user.position})`}
+          {user.reason && (
+            <div  className='text-success' style={{ fontSize: '0.85em'}}>{user.reason}</div>
+          )}
+        </div>
+      ),
+      not_selectable: user.not_selectable,
   }));
 
   const selectStyles = useMemo(() => ({
@@ -193,6 +202,7 @@ export default function ViewModal({ show, onHide, project, onVerified }) {
                   isClearable
                   isDisabled={loadingGips}
                   required
+                  isOptionDisabled={(option) => option.not_selectable}
                 />
               </div>
 

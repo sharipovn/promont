@@ -1,7 +1,31 @@
 from rest_framework import serializers
 from .models import StaffUser,Role,Project,Currency,Partner
+from django.utils.timezone import localtime
+from django.utils.dateparse import parse_datetime
 
+def format_datetime(value):
+    print('value:',type(value))
+    print('value:',value)
+    if not value:
+        return '-'
+    try:
+        if isinstance(value, str):
+            value = parse_datetime(value)
+        if value is not None:
+            return localtime(value).strftime('%d.%m.%Y %H:%M')
+        return '-'
+    except Exception:
+        return str(value)
 
+def format_date(value):
+    if not value:
+        return '-'
+    try:
+        if isinstance(value, str):
+            value = parse_datetime(value)
+        return value.strftime('%d.%m.%Y')
+    except Exception:
+        return str(value)
 
 
 
@@ -286,14 +310,43 @@ class UserLogSerializer(serializers.ModelSerializer):
             'position': 'position_name',
             'department': 'department_name',
         }
-
+        datetime_fields = {
+            'create_time', 'update_time', 'last_login_time_fail',
+            'on_vocation_update', 'on_business_trip_update', 'on_medical_leave_update','last_login'
+        }
+        date_only_fields = {
+            'on_vocation_start', 'on_vocation_end',
+            'on_business_trip_start', 'on_business_trip_end',
+            'on_medical_leave_start', 'on_medical_leave_end',
+        }
+        
         for change in diff.changes:
             field_name = change.field
+            
             if field_name in fk_snapshot_map:
                 snapshot_field = fk_snapshot_map[field_name]
                 old_value = getattr(prev, snapshot_field, str(change.old)) or '-'
                 new_value = getattr(obj, snapshot_field, str(change.new)) or '-'
-                changes.append({'field': field_name, 'old': old_value, 'new': new_value})
+                changes.append({
+                    'field': field_name,
+                    'old': old_value,
+                    'new': new_value,
+                })
+
+            elif field_name in datetime_fields:
+                changes.append({
+                    'field': field_name,
+                    'old': format_datetime(change.old),
+                    'new': format_datetime(change.new),
+                })
+
+            elif field_name in date_only_fields:
+                changes.append({
+                    'field': field_name,
+                    'old': format_date(change.old),
+                    'new': format_date(change.new),
+                })
+
             else:
                 changes.append({
                     'field': field_name,

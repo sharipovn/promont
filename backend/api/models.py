@@ -45,7 +45,9 @@ class Department(models.Model):
     )
     create_time = models.DateTimeField(auto_now_add=True)
     update_time = models.DateTimeField(auto_now=True)
-
+        # 🔹 Faqat shu qo‘shiladi
+    is_for_all = models.BooleanField(default=False)
+    
     class Meta:
         db_table = 'department'
         verbose_name = 'Department'

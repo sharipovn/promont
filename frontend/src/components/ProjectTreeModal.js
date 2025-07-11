@@ -259,7 +259,7 @@ const updateTreeMessageCount = useCallback((node, fullId) => {
   const renderInfoCard = (info) => {
     if (!info) return null;
     const fieldsToShow = {
-      PROJECT: ['project_name', 'start_date', 'end_date', 'total_price', 'create_date','p_gip_fio','p_create_user_fio','p_financier_fio','full_id','last_status','path_type'],
+      PROJECT: ['project_name', 'start_date', 'end_date', 'create_date','p_gip_fio','p_create_user_fio','p_financier_fio','full_id','last_status','path_type'],
       FIN_PART: ['fs_part_no', 'fs_part_name', 'fs_part_price', 'fs_start_date', 'fs_finish_date','fs_create_user','full_id','last_status','path_type'],
       TECH_PART: ['tch_part_no', 'tch_part_name', 'tch_part_nach', 'tch_start_date', 'tch_finish_date','tech_create_user', 'full_id','last_status','path_type'],
       WORK_ORDER: ['wo_no', 'wo_name', 'wo_start_date', 'wo_finish_date', 'staff_confirm', 'wo_answer','wo_remark','wo_staff_fio','full_id', 'files', 'last_status','path_type']

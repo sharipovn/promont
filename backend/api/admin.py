@@ -32,7 +32,7 @@ class CapabilityAdmin(admin.ModelAdmin):
 
 @admin.register(Department)
 class DepartmentAdmin(admin.ModelAdmin):
-    list_display = ('department_id', 'department_name', 'parent', 'create_time', 'update_time')
+    list_display = ('department_id', 'department_name', 'parent','is_for_all','create_time', 'update_time')
     search_fields = ('department_name',)
     list_filter = ('parent',)
 

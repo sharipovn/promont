@@ -11,6 +11,7 @@ export default function EditDepartmentModal({ show, onHide, department, onUpdate
   const { returnTitle } = useI18n();
   const [name, setName] = useState('');
   const [parentId, setParentId] = useState('');
+  const [isForAll, setIsForAll] = useState(false);
   const [departments, setDepartments] = useState([]);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -28,6 +29,7 @@ export default function EditDepartmentModal({ show, onHide, department, onUpdate
     if (department) {
       setName(department.department_name);
       setParentId(department.parent || '');
+      setIsForAll(department?.is_for_all || false);
     }
   }, [department]);
 
@@ -56,6 +58,7 @@ export default function EditDepartmentModal({ show, onHide, department, onUpdate
       await axiosInstance.put(`/departments/${department.department_id}/update/`, {
         department_name: name,
         parent: parentId || null,
+        is_for_all: isForAll,  // ✅
       });
 
       setSuccess(returnTitle('add_depart.department_updated_successfully'));
@@ -102,7 +105,6 @@ export default function EditDepartmentModal({ show, onHide, department, onUpdate
               disabled={locked}
             />
           </Form.Group>
-
           <Form.Group className="mb-2">
             <Form.Label>{returnTitle('add_depart.parent_department')}</Form.Label>
             <Form.Select
@@ -124,7 +126,29 @@ export default function EditDepartmentModal({ show, onHide, department, onUpdate
           <span className="text-info d-flex align-items-center mt-2 mb-3 ms-1" style={{ fontSize: '0.85em' }}>
             <FaInfoCircle className="me-1" /> {returnTitle('add_depart.parent_can_be_null')}
           </span>
-
+            <Form.Group className="mb-3">
+                <div className="d-flex align-items-center">
+                  <input
+                    type="checkbox"
+                    id="isForAllCheckbox"
+                    checked={isForAll}
+                    onChange={(e) => setIsForAll(e.target.checked)}
+                    disabled={locked}
+                    style={{
+                      cursor: locked ? 'not-allowed' : 'pointer',
+                      height:'1rem',
+                      width:'1rem'
+                    }}
+                  />
+                  <label htmlFor="isForAllCheckbox" className="text-light ms-2 mb-0">
+                    {returnTitle('add_depart.is_for_all_label')}
+                  </label>
+                </div>
+              </Form.Group>
+            <span className="text-info d-flex align-items-center mt-2 mb-2 ms-1" style={{ fontSize: '0.85em' }}>
+              <FaInfoCircle className="me-1" />
+              {returnTitle('add_depart.is_for_all_info')}
+            </span>
           <div className="d-flex justify-content-between">
             <Button variant="outline-light" onClick={onHide} disabled={locked}>
               {returnTitle('app.cancel')}

@@ -10,6 +10,7 @@ import Alert from './Alert';
 import { Spinner } from 'react-bootstrap';
 import StaffUserItem from './StaffUserItem';
 import { FaPlus } from "react-icons/fa6";
+import { FaStar } from 'react-icons/fa';
 
 
 
@@ -40,9 +41,11 @@ export default function TaskSidebar({onSelectStaff}) {
     axiosInstance
       .get('/my-departments/tree/')
       .then(res => {
-        const flatList = flattenDepartments(res.data);
-        setDepartments(flatList);
-        setMyDepartmentId(res.data.department_id);
+        const flatList = flattenDepartments(res.data.tree);
+        const globalList = res.data.globals || [];
+        const combined = [...flatList, ...globalList.map(g => ({ ...g, level: 0, isGlobal: true }))];
+        setDepartments(combined);
+        setMyDepartmentId(res.data.tree.department_id);
         setError('');
       })
       .catch(err => {
@@ -130,6 +133,7 @@ export default function TaskSidebar({onSelectStaff}) {
                 onClick={() => toggleDepartment(dep.department_id)}
               >
                 <span className="me-2"><FaRegCircle /></span>{dep.department_name}
+                {dep.is_for_all && <FaStar className="ms-2 text-warning" />}
               </li>
 
               {expandedDepartments[dep.department_id] && staffByDept[dep.department_id]?.length > 0 && (

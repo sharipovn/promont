@@ -6,6 +6,9 @@ import EditDepartmentModal from './EditDepartmentModal';
 import DepartmentPositionsModal from './DepartmentPositionsModal';
 import { useI18n } from '../context/I18nProvider';
 import { formatDateTime } from '../utils/formatDateTime';
+import { FaStar } from 'react-icons/fa';
+
+
 
 export default function DepartmentRow({ dept, onUpdated }) {
   const { returnTitle } = useI18n();
@@ -16,7 +19,10 @@ export default function DepartmentRow({ dept, onUpdated }) {
     <>
       <div className="financial-row d-flex flex-column flex-md-row justify-content-between align-items-center gap-3" style={{ minHeight: '75px' }}>
         <div className="flex-grow-1">
-          <h6 className="text-success mb-1 fs-6"><HoverText>{dept.department_name}</HoverText></h6>
+          <h6 className="text-success mb-1 fs-6 d-flex align-items-center">
+            <HoverText>{dept.department_name}</HoverText>
+            {dept.is_for_all && <FaStar className="ms-2 text-warning" />}
+          </h6>
           <span className="text-secondary mb-1 fs-6">{returnTitle('add_depart.created')} : {formatDateTime(dept.create_time)}</span>
           <div className="text-light mb-1 fs-6">
             <strong>{returnTitle('add_depart.parent_department')}:</strong>{' '}

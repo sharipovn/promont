@@ -13,6 +13,7 @@ export default function AddDepartmentModal({ show, onHide, onCreated }) {
   const { returnTitle } = useI18n();
   const [name, setName] = useState('');
   const [parentId, setParentId] = useState(null);
+  const [isForAll, setIsForAll] = useState(false);
   const [departments, setDepartments] = useState([]);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -30,6 +31,7 @@ export default function AddDepartmentModal({ show, onHide, onCreated }) {
     if (show) {
       setName('');
       setParentId(null);
+      setIsForAll(false);
       setError('');
       setSuccess('');
       setIsSubmitting(false);
@@ -52,6 +54,7 @@ export default function AddDepartmentModal({ show, onHide, onCreated }) {
       await axiosInstance.post('/departments/', {
         department_name: name,
         parent: parentId || null,
+        is_for_all: isForAll,  // ✅
       });
 
       setSuccess(returnTitle('add_depart.department_added_successfully'));
@@ -124,6 +127,33 @@ export default function AddDepartmentModal({ show, onHide, onCreated }) {
             <FaInfoCircle className="me-1" />
             {returnTitle('add_depart.parent_can_be_null')}
           </span>
+            <Form.Group className="mb-3">
+              <div className="d-flex align-items-center">
+                <input
+                  type="checkbox"
+                  id="isForAllCheckbox"
+                  checked={isForAll}
+                  onChange={(e) => setIsForAll(e.target.checked)}
+                  disabled={locked}
+                  style={{
+                    cursor: locked ? 'not-allowed' : 'pointer',
+                    height:'1rem',
+                    width:'1rem'
+                  }}
+                />
+                <label htmlFor="isForAllCheckbox" className="text-light ms-2 mb-0">
+                  {returnTitle('add_depart.is_for_all_label')}
+                </label>
+              </div>
+            </Form.Group>
+
+
+          <span className="text-info d-flex align-items-center mt-2 mb-2 ms-1" style={{ fontSize: '0.85em' }}>
+            <FaInfoCircle className="me-1" />
+            {returnTitle('add_depart.is_for_all_info')}
+          </span>
+
+
           <div className="d-flex justify-content-between">
             <Button variant="outline-light" onClick={onHide} disabled={locked}>{returnTitle('app.cancel')}</Button>
             <Button variant="success" onClick={handleSubmit} disabled={locked}>

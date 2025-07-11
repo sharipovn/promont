@@ -2332,8 +2332,22 @@ class MyDepartmentsTreeView(APIView):
         if not user_department:
             return Response({'detail': 'User has no department.'}, status=404)
 
-        data = MyDepartmentTreeSerializer(user_department).data
-        return Response(data)
+        # Get the base tree
+        base_tree = MyDepartmentTreeSerializer(user_department).data
+
+        # Get all is_for_all departments that are not part of the user's department tree
+        global_departments = Department.objects.filter(is_for_all=True).exclude(
+            department_id=user_department.department_id
+        ).exclude(
+            parent=user_department  # optional: prevent direct children too
+        ).order_by('department_name')
+
+        global_serialized = MyDepartmentTreeSerializer(global_departments, many=True).data
+
+        return Response({
+            'tree': base_tree,
+            'globals': global_serialized
+        })
     
     
 class StaffByDepartmentView(APIView):

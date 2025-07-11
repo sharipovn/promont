@@ -272,6 +272,7 @@ class DepartmentSerializer(serializers.ModelSerializer):
             'create_time',
             'update_time',
             'job_positions',  # ✅ added
+            'is_for_all',  # ✅ NEW
         ]
     
 
@@ -622,7 +623,7 @@ class MyDepartmentTreeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Department
-        fields = ['department_id', 'department_name', 'sub_departments']
+        fields = ['department_id', 'department_name', 'sub_departments','is_for_all']
 
     def get_sub_departments(self, obj):
         children = obj.sub_departments.all().order_by('department_name')
